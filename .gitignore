@@ -58,6 +58,9 @@ docker/volumes/
 Thumbs.db
 desktop.ini
 
+# Caché local de descargas (Android SDK, etc.)
+.cache/
+
 # Logs
 logs/
 *.log
