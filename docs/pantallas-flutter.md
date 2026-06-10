@@ -36,6 +36,7 @@
 | 4 | Perfil usuario | `/profile` | Autenticado | 16 |
 | 5 | No autorizado | `/unauthorized` | Todos | 16 |
 | 6 | No encontrado | `/not-found` | Todos | 16 |
+| 7 | Mantenimiento | `/maintenance` | Público | 30 |
 
 ---
 
@@ -52,10 +53,13 @@
 | 13 | Crear usuario | `/admin/users/new` | 21 |
 | 14 | Editar usuario | `/admin/users/:id/edit` | 21 |
 | 15 | Catálogo carreras | `/admin/careers` | 9/20 |
-| 16 | Gestión preguntas RIASEC | `/admin/questions` | 10/20 |
-| 17 | Rebuild índice Qdrant | `/admin/vector` | 12 |
-| 18 | Auditoría | `/admin/audit` | 26 |
-| 19 | Configuración sistema | `/admin/settings` | 18 |
+| 16 | Detalle carrera | `/admin/careers/:id` | 20 |
+| 17 | Gestión preguntas RIASEC | `/admin/questions` | 10/20 |
+| 18 | Detalle pregunta | `/admin/questions/:id` | 20 |
+| 19 | Rebuild índice Qdrant | `/admin/vector` | 12 |
+| 20 | Auditoría (lista) | `/admin/audit` | 26 |
+| 21 | Detalle auditoría | `/admin/audit/:id` | 30 |
+| 22 | Configuración sistema | `/admin/settings` | 18 |
 
 ---
 
@@ -68,10 +72,13 @@
 | 22 | Crear estudiante | `/institution/students/new` | 22 |
 | 23 | Editar estudiante | `/institution/students/:id/edit` | 22 |
 | 24 | Perfil estudiante | `/institution/students/:id` | 22 |
-| 25 | Gestión orientadores | `/institution/counselors` | 21 |
-| 26 | Reportes institución | `/institution/reports` | 24 |
-| 27 | Exportaciones | `/institution/exports` | 19 |
-| 28 | Config institución | `/institution/settings` | 20 |
+| 25 | Lista orientadores | `/institution/counselors` | 21 |
+| 26 | Crear orientador | `/institution/counselors/new` | 21 |
+| 27 | Detalle orientador | `/institution/counselors/:id` | 21 |
+| 28 | Editar orientador | `/institution/counselors/:id/edit` | 21 |
+| 29 | Reportes institución | `/institution/reports` | 24 |
+| 30 | Exportaciones | `/institution/exports` | 19 |
+| 31 | Config institución | `/institution/settings` | 20 |
 
 ---
 
@@ -95,7 +102,7 @@
 | 35 | Completar perfil | `/student/profile` | 22 |
 | 36 | Instrucciones test | `/student/test/instructions` | 23 |
 | 37 | Test vocacional | `/student/test/session/:id` | 23 |
-| 38 | Confirmar finalización | `/student/test/finish` | 23 |
+| 38 | Confirmar finalización | `/student/test/finish/:id` | 23 |
 | 39 | Resultados RIASEC | `/student/results` | 24 |
 | 40 | Carreras recomendadas | `/student/recommendations` | 24 |
 | 41 | Asistente virtual | `/student/assistant` | 25 |
@@ -107,33 +114,32 @@
 
 ### Web / Tablet (≥ 768px)
 
-- `AppScaffold` con sidebar lateral fijo
-- Menú contextual según rol
+- `DashboardShell` con barra superior y acciones por rol
+- Menú contextual desde cada dashboard
 - Contenido en área principal con scroll
 
 ### Móvil (< 768px)
 
-- `AppScaffold` con bottom navigation bar
-- Drawer opcional para menú secundario
+- `DashboardShell` responsive (misma estructura adaptada)
 - Formularios en `SingleChildScrollView` con manejo de teclado
+
+> **Nota:** `AppScaffold` existe en `shared/widgets/` como base reutilizable; las pantallas operativas usan `DashboardShell`.
 
 ---
 
 ## 7. Componentes compartidos (`shared/widgets/`)
 
-| Widget | Uso |
-|--------|-----|
-| `AppScaffold` | Layout principal responsive |
-| `LoadingOverlay` | Bloqueo visual durante operaciones |
-| `ErrorBanner` | Mensajes de error amigables |
-| `PaginatedDataTable` | Listas CRUD con paginación |
-| `ConfirmDialog` | Confirmaciones destructivas |
-| `SearchBar` | Búsqueda en listas |
-| `StatusChip` | Estados ACTIVE/INACTIVE/BLOCKED |
-| `RiasecChart` | Gráfico barras RIASEC |
-| `ProgressBar` | Progreso del test |
-| `LikertScale1to5` | Escala de respuesta 1-5 |
-| `EthicalDisclaimerBanner` | Nota ética obligatoria |
+| Widget | Uso | Estado |
+|--------|-----|--------|
+| `AppScaffold` | Layout base (sidebar/drawer) | Disponible, no integrado globalmente |
+| `DashboardShell` | Layout operativo de dashboards | **En uso** |
+| `AdminPaginatedList` | Listas CRUD admin con paginación | **En uso** |
+| `DashboardErrorMessage` | Errores en dashboards | **En uso** |
+| `ScaleAnswerSelector` | Escala Likert 1-5 del test | **En uso** |
+| `EthicalDisclaimerBanner` | Nota ética (texto desde API) | **En uso** |
+| `LoadingOverlay` | Bloqueo visual durante operaciones | Planificado |
+| `PaginatedDataTable` | Tabla genérica paginada | Sustituido por listas por feature |
+| `RiasecChart` | Gráfico barras RIASEC | Parcial (tarjetas en resultados) |
 
 ---
 
@@ -167,14 +173,31 @@ GoRouter(
 
 ---
 
-## Resumen por rol
+## 9. Rutas auxiliares
 
-| Rol | Pantallas |
-|-----|-----------|
-| Comunes | 6 |
-| Super Admin | 13 |
-| Institución | 9 |
+| Pantalla | Ruta | Notas |
+|----------|------|-------|
+| Inicio (health check) | `/inicio` | Legacy; usuarios autenticados redirigen al dashboard |
+
+## 10. Pendiente planificado (no bloquea MVP)
+
+| Funcionalidad | Estado |
+|---------------|--------|
+| Recuperación de contraseña (`/forgot-password`) | Sin API ni pantalla; contactar administrador |
+| Gráfico RIASEC dedicado (`RiasecChart`) | Mejora visual opcional |
+
+---
+
+## Resumen por rol (auditoría 2026-06)
+
+| Rol | Pantallas implementadas |
+|-----|-------------------------|
+| Comunes | 7 (incl. mantenimiento) |
+| Super Admin | 16 |
+| Institución | 12 |
 | Orientador | 5 |
 | Estudiante | 9 |
-| Componentes | 11 widgets |
-| **Total vistas** | **42 pantallas + 11 widgets** |
+| Auxiliar | 1 (`/inicio`) |
+| **Total archivos `*_screen.dart`** | **43** |
+
+**Estado:** Todas las pantallas del plan operativo están implementadas y enrutadas en `app_router.dart`. La protección por rol usa `AuthGuard` + `RoleRouteMapper` (rutas no reconocidas → `/unauthorized`).
