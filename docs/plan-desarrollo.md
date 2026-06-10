@@ -107,13 +107,17 @@ El proyecto se considera terminado cuando:
 
 | Fase | Estado |
 |------|--------|
-| 0 | **Completada** — Documentación en `docs/` |
-| 1 | **Completada** — Estructura monorepo profesional |
-| 2 | **Completada** — Docker Compose operativo |
-| 3 | **Completada** — Backend base + errores estándar |
-| 4 | **Completada** — 17 tablas + migraciones Alembic |
-| 5-32 | Pendiente |
+| 0–4 | **Completadas** — Análisis, monorepo, Docker, BD |
+| 5–15 | **Completadas** — Auth, CRUD, test RIASEC, Qdrant, IA, PDF |
+| 16–25 | **Completadas** — Flutter base, login, dashboards, módulos FE |
+| 26 | **Completada** — Auditoría (API + pantalla admin) |
+| 27–28 | **Completadas** — Tests backend/frontend en curso continuo |
+| 29 (seg.) | **Parcial** — Rate limit login; pendiente hardening OWASP completo |
+| 29 (FE) | **Completada** — Admin CRUD carreras/preguntas + settings |
+| 30 | **Completada** — Manuales, checklist QA, variables ([fase-30-documentacion.md](fase-30-documentacion.md)) |
+| 31 | **Completada** — Producción Docker, Nginx, backups ([fase-31-produccion.md](fase-31-produccion.md)) |
+| 32 | **Completada** — Checklist final integral ([fase-32-checklist-final.md](fase-32-checklist-final.md)) |
 
-### Próximo paso
+### Estado del roadmap
 
-Escribir **"Continúa con la FASE 1"** para completar estructura del monorepo.
+Las **32 fases** del plan están completadas. Validación automatizada: `.\scripts\validate-fase32.ps1`. Cierre operativo: marcar pruebas E2E en [checklist-qa.md](checklist-qa.md) y desplegar según [manual-produccion.md](manual-produccion.md).

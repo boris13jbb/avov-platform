@@ -31,10 +31,13 @@ $requiredDirs = @(
 
 $requiredFiles = @(
     ".env.example",
+    ".env.production.example",
     "docker-compose.yml",
+    "docker-compose.prod.yml",
     "README.md",
     "backend\requirements.txt",
     "backend\Dockerfile",
+    "backend\Dockerfile.prod",
     "frontend\pubspec.yaml"
 )
 
@@ -59,4 +62,5 @@ if ($errors.Count -gt 0) {
 }
 
 Write-Host "Estructura del monorepo AVOV: OK" -ForegroundColor Green
+Write-Host "Validacion integral: .\scripts\validate-fase32.ps1" -ForegroundColor Cyan
 exit 0

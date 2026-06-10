@@ -64,6 +64,12 @@ Verificar estructura:
 .\scripts\verify-structure.ps1
 ```
 
+Validación integral (Fase 32 — 15 criterios):
+
+```powershell
+.\scripts\validate-fase32.ps1
+```
+
 ## Instalación local
 
 ### 1. Clonar y configurar entorno
@@ -74,7 +80,7 @@ Copy-Item .env.example .env
 # Editar .env con tus valores (especialmente APP_SECRET_KEY y JWT_SECRET_KEY)
 ```
 
-### 2. Levantar servicios con Docker
+### 2. Levantar servicios con Docker (desarrollo)
 
 ```powershell
 docker compose up --build -d
@@ -85,6 +91,16 @@ O usar el script:
 ```powershell
 .\scripts\dev-up.ps1
 ```
+
+### Producción
+
+```powershell
+Copy-Item .env.production.example .env
+# Editar claves y dominios
+.\scripts\prod-up.ps1
+```
+
+Ver [docs/manual-produccion.md](docs/manual-produccion.md) y [docker/README.md](docker/README.md).
 
 ### 3. Verificar servicios
 
@@ -128,6 +144,10 @@ flutter test
 
 # Docker completo
 docker compose up --build
+docker compose exec -T backend pytest -q
+
+# Validacion integral Fase 32
+.\scripts\validate-fase32.ps1
 ```
 
 ## Variables de entorno
@@ -142,6 +162,10 @@ Ver [docs/variables-entorno.md](docs/variables-entorno.md) y `.env.example`.
 - [Fase 1 — Monorepo](docs/fase-1-monorepo.md)
 - [Fase 3 — Backend base](docs/fase-3-backend-base.md)
 - [Fase 4 — Modelo BD](docs/fase-4-modelo-bd.md)
+- [Fase 29 — Admin CRUD y settings](docs/fase-29-admin-crud-settings.md)
+- [Fase 30 — Documentación operativa](docs/fase-30-documentacion.md)
+- [Fase 31 — Producción](docs/fase-31-produccion.md)
+- [Fase 32 — Checklist final](docs/fase-32-checklist-final.md)
 
 ### Documentación técnica
 - [Arquitectura](docs/arquitectura.md)
