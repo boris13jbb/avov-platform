@@ -1,0 +1,51 @@
+---
+description: Reglas de infraestructura AVOV — Docker, MySQL, Qdrant, Redis, Nginx, producción
+globs: docker/**/*,nginx/**/*,database/**/*,qdrant/**/*,scripts/**/*,docker-compose*.yml,.env*
+alwaysApply: false
+---
+
+# Infraestructura AVOV
+
+## Servicios obligatorios
+
+| Servicio | Uso |
+|----------|-----|
+| MySQL 8 | Base transaccional principal (fuente de verdad) |
+| phpMyAdmin | Administración en desarrollo |
+| Qdrant | Embeddings, búsqueda semántica, RAG |
+| Redis | Caché, rate limit, sesiones temporales |
+| Nginx | Proxy reverso en producción |
+
+## Regla arquitectónica
+
+**MySQL gana siempre.** Qdrant es derivado; el índice vectorial debe poder reconstruirse desde MySQL.
+
+## Variables de entorno
+
+- Sensibles solo en `.env` (nunca en código ni frontend).
+- `.env` en `.gitignore`; proveer `.env.example` documentado.
+- Sin API keys, tokens ni contraseñas en logs.
+
+## Docker
+
+```bash
+docker compose up --build        # desarrollo
+docker compose -f docker-compose.prod.yml up --build  # producción
+```
+
+- Health checks en todos los servicios críticos.
+- Reinicio automático (`restart: unless-stopped`).
+- Logs persistentes en producción.
+
+## Producción
+
+- No exponer phpMyAdmin públicamente sin protección.
+- SSL/TLS con Nginx.
+- Backups documentados: MySQL y Qdrant.
+- No usar configuración de desarrollo en producción.
+
+## Qdrant — metadata mínima
+
+`career_id`, `name`, `area`, `riasec_profile`, `degree_type`, `institution_type`
+
+No almacenar datos sensibles innecesarios en Qdrant.

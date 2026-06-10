@@ -1,0 +1,59 @@
+---
+description: Reglas de frontend AVOV — Flutter, Riverpod, GoRouter, validadores
+globs: frontend/**/*
+alwaysApply: false
+---
+
+# Frontend AVOV — Flutter
+
+## Arquitectura feature-first
+
+```
+features/<modulo>/
+├── data/        # datasources, repositories impl
+├── domain/      # entities, repositories abstract
+└── presentation/ # screens, widgets, providers
+```
+
+Estructura global: `lib/core`, `config`, `features`, `shared`, `router`, `main.dart`
+
+## Stack obligatorio
+
+- **Riverpod** — estado
+- **GoRouter** — navegación
+- **Dio** — APIs
+- **Flutter Secure Storage** — tokens (nunca SharedPreferences)
+
+## Reglas de UI
+
+- Formularios con validación visual antes de enviar.
+- Botones de envío con estado loading.
+- Errores claros en español para el usuario final.
+- Responsive: móvil, tablet, web.
+- No hardcodear URLs; usar `config/` por entorno.
+
+## Validadores reutilizables
+
+Crear en `shared/validators/`: requerido, email, contraseña segura, confirmación, teléfono, texto min/max, número, fecha, identificación, URL, selección obligatoria, escala 1–5.
+
+```dart
+// ✅ Mensajes en español
+return 'El correo electrónico es obligatorio';
+
+// ❌ Incorrecto
+return 'Email is required';
+```
+
+## Separación de responsabilidades
+
+- Widgets: render y disparar acciones.
+- Providers: estado y orquestación.
+- Repositories/Services: llamadas API.
+- No poner lógica de negocio pesada en widgets.
+
+## Pruebas
+
+```bash
+flutter analyze
+flutter test
+```

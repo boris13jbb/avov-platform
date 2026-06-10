@@ -1,0 +1,74 @@
+# Artefactos accidentales (curl mal formado)
+-Headers
+-Method
+
+# Entorno
+.env
+.env.local
+.env.*.local
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Flutter / Dart
+frontend/.dart_tool/
+frontend/.packages
+frontend/.pub-cache/
+frontend/.pub/
+frontend/build/
+frontend/**/doc/api/
+frontend/**/*.g.dart
+frontend/**/*.freezed.dart
+frontend/**/ios/Pods/
+frontend/**/ios/.symlinks/
+frontend/**/android/.gradle/
+frontend/**/android/local.properties
+frontend/**/android/key.properties
+frontend/**/*.iml
+frontend/.idea/
+
+# Docker
+docker/volumes/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+logs/
+*.log
+
+# Backups
+backups/
+*.sql.gz
+
+# Almacenamiento backend
+backend/storage/
+storage/
+
+# Qdrant local storage
+qdrant/storage/

@@ -1,0 +1,285 @@
+---
+description: Reglas completas del proyecto AVOV — Flutter + FastAPI + MySQL + Qdrant + Redis + Docker + DeepSeek
+alwaysApply: true
+---
+
+# REGLAS DEL PROYECTO PARA CURSOR — AVOV
+
+**Proyecto:** AVOV — Asistente Virtual de Orientación Vocacional con IA  
+**Tipo:** Aplicación multiplataforma profesional  
+**Stack obligatorio:** Flutter + FastAPI + MySQL + phpMyAdmin + Qdrant + Redis + Docker + DeepSeek API
+
+> **Lee estas reglas antes de tocar cualquier archivo. Debes cumplirlas durante todo el proyecto y no puedes avanzar de fase sin mi confirmación.**
+
+---
+
+## 1. REGLA PRINCIPAL
+
+Desarrolla este proyecto como un sistema real de producción, no como ejemplo académico simple.
+
+- No generes código incompleto.
+- No uses pseudocódigo.
+- No dejes comentarios como: `TODO`, `implementar después`, `aquí va la lógica`, `pendiente`, `ejemplo básico`.
+- Cada archivo que crees debe ser funcional, coherente y compatible con el resto del proyecto.
+- Trabaja siempre fase por fase.
+- No avances a la siguiente fase hasta que la fase actual esté validada.
+
+Al terminar cada fase debes entregar:
+
+1. Resumen de lo realizado.
+2. Archivos creados.
+3. Archivos modificados.
+4. Comandos para probar.
+5. Validaciones realizadas.
+6. Errores encontrados y corregidos.
+7. Estado final de la fase.
+8. Siguiente fase sugerida.
+
+**Solo puedes avanzar cuando el usuario escriba:** `Continúa con la siguiente fase`.
+
+---
+
+## 2. IDIOMA DEL PROYECTO
+
+- Toda explicación debe estar en español.
+- Nombres técnicos del código pueden estar en inglés cuando sea buena práctica: `models`, `schemas`, `services`, `repositories`, `controllers`, `providers`, `widgets`, `routes`, `auth`, `users`, `students`, `careers`.
+- Los mensajes visibles para el usuario final deben estar en español.
+
+**Correcto:** "Correo electrónico requerido", "Contraseña incorrecta", "El test vocacional fue finalizado correctamente"  
+**Incorrecto:** "Email is required", "Invalid password", "Something went wrong"
+
+---
+
+## 3. STACK TECNOLÓGICO OBLIGATORIO
+
+No cambies el stack sin autorización.
+
+| Capa | Tecnologías |
+|------|-------------|
+| Frontend | Flutter, Dart, Riverpod, GoRouter, Dio, Flutter Secure Storage, arquitectura feature-first, diseño responsive |
+| Backend | Python, FastAPI, SQLAlchemy, Alembic, Pydantic, JWT, Bcrypt, ReportLab o WeasyPrint para PDF |
+| Base de datos | MySQL 8, phpMyAdmin |
+| Motor vectorial | Qdrant |
+| IA | DeepSeek API (backend debe permitir cambiar proveedor en el futuro) |
+| Infraestructura | Docker, Docker Compose, Redis, Nginx (producción), `.env`, logs estructurados, backups documentados |
+
+---
+
+## 4. ESTRUCTURA GENERAL OBLIGATORIA
+
+Monorepo `avov-platform/`:
+
+```
+avov-platform/
+├── backend/
+├── frontend/
+├── docker/
+├── docs/
+├── scripts/
+├── database/
+├── qdrant/
+├── nginx/
+├── .env.example
+├── .gitignore
+├── docker-compose.yml
+└── README.md
+```
+
+**Backend:** `app/api`, `core`, `db`, `models`, `schemas`, `services`, `repositories`, `security`, `utils`, `main.py` + `alembic/`, `tests/`, `requirements.txt`, `Dockerfile`
+
+**Frontend:** `lib/core`, `config`, `features`, `shared`, `router`, `main.dart` + `assets/`, `test/`, `pubspec.yaml`
+
+---
+
+## 5. REGLAS DE BACKEND
+
+Arquitectura por capas. No mezcles lógica de negocio en endpoints.
+
+Los endpoints solo deben: recibir petición → validar con schemas → llamar al service → retornar respuesta estándar.
+
+**Respuesta exitosa:**
+```json
+{
+  "success": true,
+  "message": "Operación realizada correctamente",
+  "data": {},
+  "errors": []
+}
+```
+
+**Respuesta de error:**
+```json
+{
+  "success": false,
+  "message": "Error de validación",
+  "data": null,
+  "errors": [{ "field": "email", "message": "El correo electrónico no tiene un formato válido" }]
+}
+```
+
+---
+
+## 6. VALIDACIÓN BACKEND
+
+Todo campo debe validarse en backend aunque exista validación en frontend.
+
+- Campos requeridos no vacíos, emails válidos, teléfonos con formato permitido.
+- Contraseñas seguras: mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 número, 1 símbolo.
+- Fechas válidas, IDs existentes, FK respetadas, estados en catálogos permitidos, roles controlados.
+- No permitir acceso a datos de otra institución.
+
+---
+
+## 7. BASE DE DATOS MYSQL
+
+Todas las tablas: `id`, `created_at`, `updated_at`. Cuando aplique: `status`, `deleted_at`, `created_by`, `updated_by`.
+
+- No eliminar físicamente registros importantes que afecten auditoría.
+- Usar Alembic; no SQL manual disperso.
+- Tablas obligatorias: `institutions`, `users`, `students`, `riasec_categories`, `questions`, `test_sessions`, `test_answers`, `riasec_results`, `careers`, `recommendations`, `reports`, `audit_logs`.
+- Toda relación con foreign key. Campos únicos con índice único. Campos de búsqueda frecuente con índice.
+
+---
+
+## 8. QDRANT
+
+Solo datos vectoriales, búsqueda semántica y RAG. No guardar datos sensibles innecesarios.
+
+Embeddings de: carreras, áreas profesionales, perfiles RIASEC, descripciones vocacionales, documentos de orientación. Información crítica en MySQL.
+
+Metadata mínima: `career_id`, `name`, `area`, `riasec_profile`, `degree_type`, `institution_type`.
+
+El backend debe poder reconstruir el índice desde MySQL. Si Qdrant falla, responder con recomendaciones básicas desde MySQL.
+
+---
+
+## 9. DEEPSEEK API
+
+- Solo llamar desde el backend. Nunca desde Flutter.
+- API Key en `.env`, nunca expuesta en frontend.
+- Servicio IA con: timeout, manejo de errores, reintentos controlados, fallback básico, sanitización de entradas.
+- Respuestas orientativas, no deterministas.
+- Incluir siempre advertencia ética: *"Este resultado es orientativo y no reemplaza la orientación profesional de un psicólogo, docente u orientador educativo."*
+- No enviar datos sensibles innecesarios del estudiante.
+
+---
+
+## 10. SEGURIDAD
+
+Obligatorio: JWT, bcrypt, middleware de autenticación y roles, validación backend, CORS, rate limiting en login, protección de rutas, variables en `.env`, `.env` en `.gitignore`, sin stack trace en producción, sin contraseñas/tokens/API keys en logs.
+
+**Roles:** `SUPER_ADMIN`, `INSTITUTION_ADMIN`, `COUNSELOR`, `STUDENT`
+
+| Rol | Alcance |
+|-----|---------|
+| SUPER_ADMIN | Todo |
+| INSTITUTION_ADMIN | Solo su institución |
+| COUNSELOR | Solo estudiantes permitidos |
+| STUDENT | Solo su propia información |
+
+---
+
+## 11. FRONTEND FLUTTER
+
+Arquitectura feature-first: `features/<modulo>/data`, `domain`, `presentation`.
+
+- Riverpod (estado), GoRouter (navegación), Dio (APIs), Flutter Secure Storage (tokens — nunca SharedPreferences).
+- Validación visual en formularios, loading en envíos, errores claros.
+- Responsive: móvil, tablet, web.
+- No hardcodear URLs; usar configuración por entorno.
+
+---
+
+## 12. VALIDACIÓN FRONTEND
+
+Validadores reutilizables para: requerido, email, contraseña segura, confirmación de contraseña, teléfono, texto min/max, número, fecha, identificación, URL, selección obligatoria, escala 1–5.
+
+Validar antes de enviar. El backend siempre tiene la validación final.
+
+---
+
+## 13. TEST VOCACIONAL RIASEC
+
+60 preguntas (10 por categoría: R, I, A, S, E, C). Escala 1–5: No me gusta nada → Me gusta mucho.
+
+- No finalizar incompleto. No responder fuera de escala.
+- No modificar test finalizado salvo permiso especial.
+- Si hay test en progreso, continuar ese test.
+- Calcular puntajes por categoría, perfil dominante y secundario, generar recomendaciones.
+
+---
+
+## 14. REPORTES PDF
+
+Incluir: institución, datos del estudiante, fecha del test, perfil RIASEC, puntajes, carreras recomendadas, explicación IA, observaciones del orientador, nota ética, código único.
+
+Seguridad: solo usuarios autorizados, sin path traversal, registro en `reports`, auditoría de generación y descarga.
+
+---
+
+## 15. AUDITORÍA
+
+Registrar en `audit_logs`: login, logout, CRUD usuarios, cambios de estado, inicio/fin de test, resultados, PDF generado/descargado, cambios de institución/carreras, errores importantes.
+
+No registrar: contraseñas, tokens, API keys, datos sensibles innecesarios.
+
+---
+
+## 16. PRUEBAS
+
+No considerar fase terminada sin pruebas mínimas.
+
+| Capa | Herramientas |
+|------|--------------|
+| Backend | `python -m pytest` — auth, roles, validaciones, CRUD, test vocacional, recomendaciones, PDF |
+| Frontend | `flutter analyze`, `flutter test` — validadores, formularios, navegación, widgets críticos |
+| Docker | `docker compose up --build` |
+
+---
+
+## 17. DOCUMENTACIÓN
+
+Carpeta `docs/`: `arquitectura.md`, `instalacion-local.md`, `variables-entorno.md`, `api-endpoints.md`, `modelo-base-datos.md`, `manual-usuario.md`, `manual-administrador.md`, `manual-produccion.md`, `checklist-qa.md`.
+
+README: descripción, stack, requisitos, instalación, Docker, variables, comandos de prueba, estructura.
+
+---
+
+## 18. PRODUCCIÓN
+
+Dockerfile optimizado, `docker-compose.prod.yml`, Nginx, SSL, variables de producción, backups MySQL y Qdrant, logs persistentes, health checks, reinicio automático, documentación de despliegue.
+
+No usar config de desarrollo en producción. No claves débiles. No exponer phpMyAdmin públicamente sin protección.
+
+---
+
+## 19. CALIDAD DE CÓDIGO
+
+Código claro, modular, escalable, seguro, probable y documentado. Sin duplicación innecesaria. Separar responsabilidades. No mezclar UI con lógica de negocio ni acceso a datos con lógica de negocio.
+
+---
+
+## 20. FORMATO DE RESPUESTA AL COMPLETAR UNA FASE
+
+```markdown
+# FASE X COMPLETADA
+
+## 1. Resumen
+## 2. Archivos creados
+## 3. Archivos modificados
+## 4. Validaciones realizadas
+## 5. Comandos ejecutados o sugeridos
+## 6. Errores encontrados
+## 7. Estado final
+## 8. Próximo paso
+```
+
+No avances automáticamente. Espera confirmación del usuario.
+
+---
+
+## 21. REGLA FINAL
+
+Prioriza en este orden: seguridad → validación → arquitectura limpia → funcionamiento real → escalabilidad → documentación → producción.
+
+El objetivo es construir una aplicación completa, funcional y lista para crecer.

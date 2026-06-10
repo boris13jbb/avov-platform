@@ -1,0 +1,69 @@
+---
+description: Reglas de backend AVOV — FastAPI, capas, validación, respuestas estándar
+globs: backend/**/*
+alwaysApply: false
+---
+
+# Backend AVOV — FastAPI
+
+## Arquitectura por capas
+
+| Capa | Responsabilidad |
+|------|-----------------|
+| `api/` | Rutas y endpoints (sin lógica de negocio) |
+| `schemas/` | Validación Pydantic |
+| `models/` | Modelos SQLAlchemy |
+| `repositories/` | Acceso a datos |
+| `services/` | Lógica de negocio |
+| `security/` | JWT, passwords, permisos |
+| `core/` | Configuración general |
+| `db/` | Conexión y sesión |
+| `utils/` | Funciones auxiliares |
+
+## Flujo de endpoint
+
+1. Recibir petición
+2. Validar con schemas
+3. Llamar al service
+4. Retornar respuesta estándar
+
+```python
+# ✅ Correcto
+@router.post("/users")
+async def create_user(payload: UserCreate, service: UserService = Depends()):
+    result = await service.create_user(payload)
+    return success_response(data=result, message="Usuario creado correctamente")
+
+# ❌ Incorrecto — lógica de negocio en el endpoint
+@router.post("/users")
+async def create_user(payload: UserCreate, db: Session = Depends(get_db)):
+    user = User(**payload.dict())
+    db.add(user)
+    db.commit()
+```
+
+## Formato de respuesta
+
+```json
+{ "success": true, "message": "Operación realizada correctamente", "data": {}, "errors": [] }
+{ "success": false, "message": "Error de validación", "data": null, "errors": [{ "field": "email", "message": "El correo electrónico no tiene un formato válido" }] }
+```
+
+## Validación obligatoria
+
+- Siempre validar en backend aunque el frontend ya valide.
+- Contraseña: mín. 8 chars, 1 mayúscula, 1 minúscula, 1 número, 1 símbolo.
+- No permitir acceso a datos de otra institución.
+- IDs deben existir; FK respetadas; roles controlados.
+
+## IA y servicios externos
+
+- DeepSeek solo desde backend; API Key en `.env`.
+- Timeout, reintentos, fallback, sanitización de entradas.
+- Qdrant: solo vectores; MySQL es fuente de verdad; fallback a MySQL si Qdrant falla.
+
+## Pruebas
+
+```bash
+python -m pytest
+```
