@@ -52,6 +52,32 @@ class Settings(BaseSettings):
         alias="JWT_REFRESH_TOKEN_EXPIRE_DAYS",
     )
 
+    login_rate_limit_max: int = Field(default=5, alias="LOGIN_RATE_LIMIT_MAX")
+    login_rate_limit_window_seconds: int = Field(
+        default=900,
+        alias="LOGIN_RATE_LIMIT_WINDOW_SECONDS",
+    )
+
+    password_reset_expire_hours: int = Field(
+        default=1,
+        alias="PASSWORD_RESET_EXPIRE_HOURS",
+    )
+    frontend_base_url: str = Field(
+        default="http://localhost:8080",
+        alias="FRONTEND_BASE_URL",
+    )
+
+    smtp_enabled: bool = Field(default=False, alias="SMTP_ENABLED")
+    smtp_host: str = Field(default="localhost", alias="SMTP_HOST")
+    smtp_port: int = Field(default=587, alias="SMTP_PORT")
+    smtp_use_tls: bool = Field(default=True, alias="SMTP_USE_TLS")
+    smtp_username: str = Field(default="", alias="SMTP_USERNAME")
+    smtp_password: str = Field(default="", alias="SMTP_PASSWORD")
+    smtp_from_email: str = Field(
+        default="noreply@avov.local",
+        alias="SMTP_FROM_EMAIL",
+    )
+
     deepseek_api_key: str = Field(default="", alias="DEEPSEEK_API_KEY")
     deepseek_api_base_url: str = Field(
         default="https://api.deepseek.com",

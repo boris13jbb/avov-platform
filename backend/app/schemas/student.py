@@ -156,6 +156,10 @@ class StudentStatusUpdate(BaseModel):
     status: UserStatus
 
 
+class StudentCounselorAssignRequest(BaseModel):
+    counselor_id: int = Field(gt=0)
+
+
 class StudentUserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

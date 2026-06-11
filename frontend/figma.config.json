@@ -1,0 +1,12 @@
+{
+  "codeConnect": {
+    "parser": "custom",
+    "include": [
+      "lib/**/*.figma.ts"
+    ],
+    "label": "Flutter",
+    "language": "dart"
+  },
+  "documentUrl": "https://www.figma.com/design/kZ0uYN2ZYLFcBjNBGhZEU3/AVOV-Prototipo-UI",
+  "fileKey": "kZ0uYN2ZYLFcBjNBGhZEU3"
+}

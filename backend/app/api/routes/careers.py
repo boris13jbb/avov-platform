@@ -55,13 +55,19 @@ def get_career(
 @router.post("", dependencies=[Depends(security)])
 def create_career(
     body: CareerCreate,
-    _current_user: User = Depends(require_roles(UserRole.SUPER_ADMIN)),
+    current_user: User = Depends(require_roles(UserRole.SUPER_ADMIN)),
     db: Session = Depends(get_db),
 ):
-    career = CareerService(db).create_career(body)
+    service = CareerService(db)
+    career, vector_synced = service.create_career(body, current_user)
+    payload = career.model_dump(mode="json")
+    payload["vector_synced"] = vector_synced
     return success_response(
-        data=career.model_dump(mode="json"),
-        message="Carrera creada correctamente",
+        data=payload,
+        message=service.build_mutation_message(
+            "Carrera creada correctamente",
+            vector_synced,
+        ),
     )
 
 
@@ -69,24 +75,36 @@ def create_career(
 def update_career(
     career_id: int,
     body: CareerUpdate,
-    _current_user: User = Depends(require_roles(UserRole.SUPER_ADMIN)),
+    current_user: User = Depends(require_roles(UserRole.SUPER_ADMIN)),
     db: Session = Depends(get_db),
 ):
-    career = CareerService(db).update_career(career_id, body)
+    service = CareerService(db)
+    career, vector_synced = service.update_career(career_id, body, current_user)
+    payload = career.model_dump(mode="json")
+    payload["vector_synced"] = vector_synced
     return success_response(
-        data=career.model_dump(mode="json"),
-        message="Carrera actualizada correctamente",
+        data=payload,
+        message=service.build_mutation_message(
+            "Carrera actualizada correctamente",
+            vector_synced,
+        ),
     )
 
 
 @router.delete("/{career_id}", dependencies=[Depends(security)])
 def delete_career(
     career_id: int,
-    _current_user: User = Depends(require_roles(UserRole.SUPER_ADMIN)),
+    current_user: User = Depends(require_roles(UserRole.SUPER_ADMIN)),
     db: Session = Depends(get_db),
 ):
-    career = CareerService(db).delete_career(career_id)
+    service = CareerService(db)
+    career, vector_synced = service.delete_career(career_id, current_user)
+    payload = career.model_dump(mode="json")
+    payload["vector_synced"] = vector_synced
     return success_response(
-        data=career.model_dump(mode="json"),
-        message="Carrera desactivada correctamente",
+        data=payload,
+        message=service.build_mutation_message(
+            "Carrera desactivada correctamente",
+            vector_synced,
+        ),
     )

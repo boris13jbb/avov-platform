@@ -314,3 +314,68 @@ def test_update_student_status_success(
     assert response.status_code == 200
     assert response.json()["data"]["user"]["status"] == "INACTIVE"
     _delete_student_by_id(student_id)
+
+
+def test_assign_counselor_to_student(
+    client: TestClient,
+    institution_admin_headers: dict[str, str],
+    super_admin_headers: dict[str, str],
+    sample_institution,
+):
+    counselor_payload = {
+        "email": f"orient_assign_{uuid.uuid4().hex[:6]}@instituto.edu.co",
+        "password": "Test1234!",
+        "first_name": "Orient",
+        "last_name": "Asignar",
+        "role": "COUNSELOR",
+        "institution_id": sample_institution.id,
+    }
+    counselor_response = client.post(
+        "/api/v1/users",
+        headers=super_admin_headers,
+        json=counselor_payload,
+    )
+    assert counselor_response.status_code == 200
+    counselor_id = counselor_response.json()["data"]["id"]
+
+    student_payload = _student_payload(sample_institution.id)
+    created = client.post(
+        "/api/v1/students",
+        headers=super_admin_headers,
+        json=student_payload,
+    )
+    student_id = created.json()["data"]["id"]
+
+    try:
+        response = client.post(
+            f"/api/v1/students/{student_id}/assign-counselor",
+            headers=institution_admin_headers,
+            json={"counselor_id": counselor_id},
+        )
+        assert response.status_code == 200
+
+        login = client.post(
+            "/api/v1/auth/login",
+            json={
+                "email": counselor_payload["email"],
+                "password": counselor_payload["password"],
+            },
+        )
+        counselor_headers = {
+            "Authorization": f"Bearer {login.json()['data']['access_token']}"
+        }
+        get_response = client.get(
+            f"/api/v1/students/{student_id}",
+            headers=counselor_headers,
+        )
+        assert get_response.status_code == 200
+    finally:
+        _delete_student_by_id(student_id)
+        cleanup_session = SessionLocal()
+        try:
+            user_repo = UserRepository(cleanup_session)
+            counselor = user_repo.get_by_id(counselor_id)
+            if counselor is not None:
+                user_repo.delete(counselor)
+        finally:
+            cleanup_session.close()

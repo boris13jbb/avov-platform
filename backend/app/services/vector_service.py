@@ -1,3 +1,5 @@
+import logging
+
 from sqlalchemy.orm import Session
 
 from app.core.enums import CareerStatus
@@ -12,6 +14,8 @@ from app.schemas.vector import (
 )
 from app.services.embedding_service import build_profile_search_text
 from app.services.qdrant_service import QdrantService
+
+logger = logging.getLogger(__name__)
 
 
 class VectorService:
@@ -36,6 +40,29 @@ class VectorService:
             indexed=indexed,
             vector_size=self.qdrant.settings.qdrant_vector_size,
         )
+
+    def sync_career(self, career: Career) -> bool:
+        """Sincroniza una carrera en Qdrant sin reconstruir todo el índice."""
+        if not self.qdrant.is_available():
+            logger.warning(
+                "Qdrant no disponible; se omitió la sincronización de la carrera %s",
+                career.id,
+            )
+            return False
+
+        try:
+            self.qdrant.ensure_collection()
+            if career.status == CareerStatus.ACTIVE:
+                self.qdrant.upsert_careers([career])
+            else:
+                self.qdrant.delete_career_points([career.id])
+            return True
+        except Exception:
+            logger.exception(
+                "No se pudo sincronizar la carrera %s en Qdrant",
+                career.id,
+            )
+            return False
 
     def search_careers(self, payload: CareerSearchRequest) -> CareerSearchResponse:
         if not payload.has_search_criteria():

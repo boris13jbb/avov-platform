@@ -54,10 +54,10 @@ def get_question(
 @router.post("", dependencies=[Depends(security)])
 def create_question(
     body: QuestionCreate,
-    _current_user: User = Depends(require_roles(UserRole.SUPER_ADMIN)),
+    current_user: User = Depends(require_roles(UserRole.SUPER_ADMIN)),
     db: Session = Depends(get_db),
 ):
-    question = QuestionService(db).create_question(body)
+    question = QuestionService(db).create_question(body, current_user)
     return success_response(
         data=question.model_dump(mode="json"),
         message="Pregunta creada correctamente",
@@ -68,10 +68,10 @@ def create_question(
 def update_question(
     question_id: int,
     body: QuestionUpdate,
-    _current_user: User = Depends(require_roles(UserRole.SUPER_ADMIN)),
+    current_user: User = Depends(require_roles(UserRole.SUPER_ADMIN)),
     db: Session = Depends(get_db),
 ):
-    question = QuestionService(db).update_question(question_id, body)
+    question = QuestionService(db).update_question(question_id, body, current_user)
     return success_response(
         data=question.model_dump(mode="json"),
         message="Pregunta actualizada correctamente",
@@ -82,11 +82,28 @@ def update_question(
 def update_question_status(
     question_id: int,
     body: QuestionStatusUpdate,
-    _current_user: User = Depends(require_roles(UserRole.SUPER_ADMIN)),
+    current_user: User = Depends(require_roles(UserRole.SUPER_ADMIN)),
     db: Session = Depends(get_db),
 ):
-    question = QuestionService(db).update_question_status(question_id, body)
+    question = QuestionService(db).update_question_status(
+        question_id,
+        body,
+        current_user,
+    )
     return success_response(
         data=question.model_dump(mode="json"),
         message="Estado de la pregunta actualizado correctamente",
+    )
+
+
+@router.delete("/{question_id}", dependencies=[Depends(security)])
+def delete_question(
+    question_id: int,
+    current_user: User = Depends(require_roles(UserRole.SUPER_ADMIN)),
+    db: Session = Depends(get_db),
+):
+    question = QuestionService(db).delete_question(question_id, current_user)
+    return success_response(
+        data=question.model_dump(mode="json"),
+        message="Pregunta desactivada correctamente",
     )

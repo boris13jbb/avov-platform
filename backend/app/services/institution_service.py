@@ -11,6 +11,7 @@ from app.schemas.institution import (
     InstitutionUpdate,
     PaginatedInstitutions,
 )
+from app.utils.file_storage import save_institution_logo
 
 
 class InstitutionService:
@@ -63,8 +64,12 @@ class InstitutionService:
         self,
         institution_id: int,
         payload: InstitutionUpdate,
+        current_user: User | None = None,
     ) -> InstitutionResponse:
         institution = self._get_or_404(institution_id)
+
+        if current_user is not None:
+            self._ensure_can_update(institution, current_user, payload)
 
         if not payload.model_dump(exclude_unset=True):
             raise ValidationException("Debe enviar al menos un campo para actualizar")
@@ -75,6 +80,27 @@ class InstitutionService:
                 raise ValidationException("El código de institución ya está registrado")
 
         updated = self.repo.update(institution, payload)
+        return InstitutionResponse.model_validate(updated)
+
+    def upload_logo(
+        self,
+        institution_id: int,
+        content: bytes,
+        content_type: str,
+        current_user: User,
+    ) -> InstitutionResponse:
+        institution = self._get_or_404(institution_id)
+        self._ensure_can_manage(institution, current_user)
+
+        try:
+            logo_url = save_institution_logo(institution_id, content, content_type)
+        except ValueError as exc:
+            raise ValidationException(str(exc)) from exc
+
+        updated = self.repo.update(
+            institution,
+            InstitutionUpdate(logo_url=logo_url),
+        )
         return InstitutionResponse.model_validate(updated)
 
     def delete_institution(self, institution_id: int) -> InstitutionResponse:
@@ -103,3 +129,37 @@ class InstitutionService:
             raise ForbiddenException("No tienes permisos para ver esta institución")
 
         raise ForbiddenException("No tienes permisos para ver esta institución")
+
+    @staticmethod
+    def _ensure_can_manage(institution: Institution, current_user: User) -> None:
+        if current_user.role == UserRole.SUPER_ADMIN:
+            return
+
+        if current_user.role == UserRole.INSTITUTION_ADMIN:
+            if current_user.institution_id == institution.id:
+                return
+            raise ForbiddenException("No tienes permisos para gestionar esta institución")
+
+        raise ForbiddenException("No tienes permisos para gestionar esta institución")
+
+    @staticmethod
+    def _ensure_can_update(
+        institution: Institution,
+        current_user: User,
+        payload: InstitutionUpdate,
+    ) -> None:
+        if current_user.role == UserRole.SUPER_ADMIN:
+            return
+
+        if current_user.role != UserRole.INSTITUTION_ADMIN:
+            raise ForbiddenException("No tienes permisos para actualizar esta institución")
+
+        if current_user.institution_id != institution.id:
+            raise ForbiddenException("No tienes permisos para actualizar esta institución")
+
+        restricted_fields = {"code", "status"}
+        payload_data = payload.model_dump(exclude_unset=True)
+        if restricted_fields.intersection(payload_data.keys()):
+            raise ForbiddenException(
+                "No puedes modificar el código ni el estado de la institución"
+            )

@@ -11,7 +11,9 @@ import '../features/admin/presentation/screens/question_form_screen.dart';
 import '../features/admin/presentation/screens/question_list_screen.dart';
 import '../features/admin/presentation/screens/vector_admin_screen.dart';
 import '../features/auth/presentation/screens/change_password_screen.dart';
+import '../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
+import '../features/auth/presentation/screens/reset_password_screen.dart';
 import '../features/auth/presentation/screens/maintenance_screen.dart';
 import '../features/auth/presentation/screens/not_found_screen.dart';
 import '../features/auth/presentation/screens/profile_screen.dart';
@@ -64,6 +66,19 @@ class AppRouter {
         path: RouteNames.login,
         name: 'login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.forgotPassword,
+        name: 'forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.resetPassword,
+        name: 'reset-password',
+        builder: (context, state) {
+          final token = state.uri.queryParameters['token'] ?? '';
+          return ResetPasswordScreen(token: token);
+        },
       ),
       GoRoute(
         path: RouteNames.maintenance,

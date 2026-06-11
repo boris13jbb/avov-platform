@@ -9,6 +9,7 @@ from app.repositories.student_repository import StudentRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.student import (
     PaginatedStudents,
+    StudentCounselorAssignRequest,
     StudentCreate,
     StudentResponse,
     StudentStatusUpdate,
@@ -101,6 +102,9 @@ class StudentService:
         student = self._get_or_404(student_id)
         self._ensure_can_manage(student, current_user)
 
+        if current_user.role == UserRole.STUDENT:
+            payload = self._filter_student_self_update(payload)
+
         if not payload.model_dump(exclude_unset=True):
             raise ValidationException("Debe enviar al menos un campo para actualizar")
 
@@ -131,6 +135,39 @@ class StudentService:
 
         updated = self.repo.update_user_status(student, payload.status)
         return StudentResponse.model_validate(updated)
+
+    def assign_counselor(
+        self,
+        student_id: int,
+        payload: StudentCounselorAssignRequest,
+        current_user: User,
+    ) -> StudentResponse:
+        if current_user.role not in self.MANAGE_ROLES:
+            raise ForbiddenException(
+                "No tienes permisos para asignar orientadores a estudiantes"
+            )
+
+        student = self._get_or_404(student_id)
+        self._ensure_can_manage(student, current_user)
+
+        counselor = self.user_repo.get_by_id(payload.counselor_id)
+        if counselor is None:
+            raise NotFoundException("Orientador no encontrado")
+        if counselor.role != UserRole.COUNSELOR:
+            raise ValidationException("El usuario indicado no es un orientador")
+        if counselor.status != UserStatus.ACTIVE:
+            raise ValidationException("El orientador no está activo")
+        if counselor.institution_id != student.institution_id:
+            raise ValidationException(
+                "El orientador debe pertenecer a la misma institución del estudiante"
+            )
+
+        self.repo.assign_counselor(
+            student_id=student.id,
+            counselor_id=counselor.id,
+            institution_id=student.institution_id,
+        )
+        return StudentResponse.model_validate(student)
 
     def _get_or_404(self, student_id: int) -> Student:
         student = self.repo.get_by_id(student_id)
@@ -199,9 +236,32 @@ class StudentService:
         if current_user.role == UserRole.SUPER_ADMIN:
             return
 
+        if current_user.role == UserRole.STUDENT:
+            if student.user_id == current_user.id:
+                return
+            raise ForbiddenException("No tienes permisos para gestionar este estudiante")
+
         if current_user.role == UserRole.INSTITUTION_ADMIN:
             if student.institution_id == current_user.institution_id:
                 return
             raise ForbiddenException("No tienes permisos para gestionar este estudiante")
 
         raise ForbiddenException("No tienes permisos para gestionar este estudiante")
+
+    @staticmethod
+    def _filter_student_self_update(payload: StudentUpdate) -> StudentUpdate:
+        user_data = None
+        if payload.user is not None:
+            user_data = payload.user.model_dump(exclude_unset=True)
+            user_data.pop("email", None)
+
+        filtered = payload.model_dump(exclude_unset=True)
+        filtered.pop("identification", None)
+        filtered.pop("user", None)
+
+        if user_data:
+            from app.schemas.student import StudentUserUpdate
+
+            filtered["user"] = StudentUserUpdate.model_validate(user_data)
+
+        return StudentUpdate.model_validate(filtered)

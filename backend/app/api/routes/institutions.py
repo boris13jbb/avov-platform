@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, File, Query, UploadFile
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db, security
@@ -67,13 +67,41 @@ def create_institution(
 def update_institution(
     institution_id: int,
     body: InstitutionUpdate,
-    _current_user: User = Depends(require_roles(UserRole.SUPER_ADMIN)),
+    current_user: User = Depends(
+        require_roles(UserRole.SUPER_ADMIN, UserRole.INSTITUTION_ADMIN)
+    ),
     db: Session = Depends(get_db),
 ):
-    institution = InstitutionService(db).update_institution(institution_id, body)
+    institution = InstitutionService(db).update_institution(
+        institution_id,
+        body,
+        current_user=current_user,
+    )
     return success_response(
         data=institution.model_dump(mode="json"),
         message="Institución actualizada correctamente",
+    )
+
+
+@router.post("/{institution_id}/logo", dependencies=[Depends(security)])
+async def upload_institution_logo(
+    institution_id: int,
+    file: UploadFile = File(...),
+    current_user: User = Depends(
+        require_roles(UserRole.SUPER_ADMIN, UserRole.INSTITUTION_ADMIN)
+    ),
+    db: Session = Depends(get_db),
+):
+    content = await file.read()
+    institution = InstitutionService(db).upload_logo(
+        institution_id,
+        content,
+        file.content_type or "",
+        current_user,
+    )
+    return success_response(
+        data=institution.model_dump(mode="json"),
+        message="Logo de institución actualizado correctamente",
     )
 
 

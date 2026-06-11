@@ -4,6 +4,7 @@ from app.core.enums import QuestionStatus, UserRole
 from app.core.exceptions import ForbiddenException, NotFoundException, ValidationException
 from app.models.user import User
 from app.repositories.question_repository import QuestionRepository
+from app.services.audit_service import AuditService
 from app.schemas.question import (
     PaginatedQuestions,
     QuestionCreate,
@@ -19,6 +20,7 @@ class QuestionService:
     def __init__(self, db: Session) -> None:
         self.db = db
         self.repo = QuestionRepository(db)
+        self.audit = AuditService(db)
 
     def list_questions(
         self,
@@ -56,14 +58,30 @@ class QuestionService:
             self._ensure_super_admin(current_user)
         return QuestionResponse.model_validate(question)
 
-    def create_question(self, payload: QuestionCreate) -> QuestionResponse:
+    def create_question(
+        self,
+        payload: QuestionCreate,
+        current_user: User,
+    ) -> QuestionResponse:
         self._validate_category(payload.category_id)
         self._validate_unique_order(payload.category_id, payload.order_number)
 
         question = self.repo.create(payload)
+        self.audit.log(
+            action="QUESTION_CREATED",
+            entity="questions",
+            user_id=current_user.id,
+            entity_id=question.id,
+            details={"category_id": question.category_id},
+        )
         return QuestionResponse.model_validate(question)
 
-    def update_question(self, question_id: int, payload: QuestionUpdate) -> QuestionResponse:
+    def update_question(
+        self,
+        question_id: int,
+        payload: QuestionUpdate,
+        current_user: User,
+    ) -> QuestionResponse:
         question = self._get_or_404(question_id)
 
         if not payload.model_dump(exclude_unset=True):
@@ -91,15 +109,48 @@ class QuestionService:
                 )
 
         updated = self.repo.update(question, payload)
+        self.audit.log(
+            action="QUESTION_UPDATED",
+            entity="questions",
+            user_id=current_user.id,
+            entity_id=updated.id,
+        )
         return QuestionResponse.model_validate(updated)
 
     def update_question_status(
         self,
         question_id: int,
         payload: QuestionStatusUpdate,
+        current_user: User,
     ) -> QuestionResponse:
         question = self._get_or_404(question_id)
         updated = self.repo.update_status(question, payload.status)
+        self.audit.log(
+            action="QUESTION_STATUS_UPDATED",
+            entity="questions",
+            user_id=current_user.id,
+            entity_id=updated.id,
+            details={"status": updated.status.value},
+        )
+        return QuestionResponse.model_validate(updated)
+
+    def delete_question(
+        self,
+        question_id: int,
+        current_user: User,
+    ) -> QuestionResponse:
+        question = self._get_or_404(question_id)
+
+        if question.status == QuestionStatus.INACTIVE:
+            raise ValidationException("La pregunta ya está inactiva")
+
+        updated = self.repo.update_status(question, QuestionStatus.INACTIVE)
+        self.audit.log(
+            action="QUESTION_DEACTIVATED",
+            entity="questions",
+            user_id=current_user.id,
+            entity_id=updated.id,
+        )
         return QuestionResponse.model_validate(updated)
 
     def _get_or_404(self, question_id: int):

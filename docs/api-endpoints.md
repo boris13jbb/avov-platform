@@ -64,8 +64,8 @@ Authorization: Bearer <access_token>
 | POST | `/auth/refresh` | Autenticado | Renovar access token |
 | GET | `/auth/me` | Autenticado | Perfil del usuario actual |
 | POST | `/auth/change-password` | Autenticado | Cambiar contraseña |
-| POST | `/auth/forgot-password` | Público | Solicitar recuperación (opcional) |
-| POST | `/auth/reset-password` | Público | Restablecer con token (opcional) |
+| POST | `/auth/forgot-password` | Público | Solicitar enlace de recuperación (respuesta genérica) |
+| POST | `/auth/reset-password` | Público | Restablecer contraseña con token del correo |
 
 ---
 
@@ -111,7 +111,7 @@ Authorization: Bearer <access_token>
 |--------|------|-----|-------------|
 | GET | `/careers` | Autenticado | Listar con filtros área/RIASEC/título |
 | GET | `/careers/{id}` | Autenticado | Detalle carrera |
-| POST | `/careers` | SUPER_ADMIN | Crear carrera |
+| POST | `/careers` | SUPER_ADMIN | Crear carrera (sincroniza Qdrant automáticamente) |
 | PUT | `/careers/{id}` | SUPER_ADMIN | Actualizar |
 | DELETE | `/careers/{id}` | SUPER_ADMIN | Eliminación lógica |
 
@@ -125,6 +125,7 @@ Authorization: Bearer <access_token>
 | POST | `/questions` | SUPER_ADMIN | Crear pregunta |
 | PUT | `/questions/{id}` | SUPER_ADMIN | Actualizar |
 | PATCH | `/questions/{id}/status` | SUPER_ADMIN | Activar/inactivar |
+| DELETE | `/questions/{id}` | SUPER_ADMIN | Desactivar pregunta (baja lógica) |
 
 ---
 
@@ -198,7 +199,33 @@ Authorization: Bearer <access_token>
 
 ---
 
-## 15. Exportaciones (Fase 19)
+## 15. Configuración del sistema (Fase 29)
+
+| Método | Ruta | Rol | Descripción |
+|--------|------|-----|-------------|
+| GET | `/settings/public` | Público | Nombre app, disclaimer ético y modo mantenimiento |
+| GET | `/settings` | SUPER_ADMIN | Listar parámetros del sistema |
+| PUT | `/settings/{key}` | SUPER_ADMIN | Actualizar parámetro (`app_display_name`, `ethical_disclaimer`, `max_recommendations_per_session`, `maintenance_mode`) |
+
+---
+
+## 16. Categorías RIASEC (Fase 29)
+
+| Método | Ruta | Rol | Descripción |
+|--------|------|-----|-------------|
+| GET | `/riasec-categories` | Autenticado | Listar categorías RIASEC |
+
+---
+
+## 17. Media (Fase 28)
+
+| Método | Ruta | Rol | Descripción |
+|--------|------|-----|-------------|
+| GET | `/media/{path}` | Público/Autenticado | Servir archivos de medios (logos, avatares) |
+
+---
+
+## 18. Exportaciones (Fase 19)
 
 | Método | Ruta | Rol | Descripción |
 |--------|------|-----|-------------|
@@ -217,7 +244,10 @@ Authorization: Bearer <access_token>
 | Usuarios | 5 |
 | Estudiantes | 5 |
 | Carreras | 5 |
-| Preguntas | 4 |
+| Preguntas | 6 |
+| Configuración | 3 |
+| RIASEC | 1 |
+| Media | 1 |
 | Test | 5 |
 | Vector | 2 |
 | Asistente | 3 |

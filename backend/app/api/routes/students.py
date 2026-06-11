@@ -5,7 +5,12 @@ from app.api.deps import get_current_user, get_db, security
 from app.core.enums import Gender, UserRole, UserStatus
 from app.core.responses import success_response
 from app.models.user import User
-from app.schemas.student import StudentCreate, StudentStatusUpdate, StudentUpdate
+from app.schemas.student import (
+    StudentCounselorAssignRequest,
+    StudentCreate,
+    StudentStatusUpdate,
+    StudentUpdate,
+)
 from app.security.permissions import require_roles
 from app.services.student_service import StudentService
 
@@ -87,6 +92,22 @@ def update_student(
     return success_response(
         data=student.model_dump(mode="json"),
         message="Estudiante actualizado correctamente",
+    )
+
+
+@router.post("/{student_id}/assign-counselor", dependencies=[Depends(security)])
+def assign_counselor_to_student(
+    student_id: int,
+    body: StudentCounselorAssignRequest,
+    current_user: User = Depends(
+        require_roles(UserRole.SUPER_ADMIN, UserRole.INSTITUTION_ADMIN)
+    ),
+    db: Session = Depends(get_db),
+):
+    student = StudentService(db).assign_counselor(student_id, body, current_user)
+    return success_response(
+        data=student.model_dump(mode="json"),
+        message="Orientador asignado al estudiante correctamente",
     )
 
 

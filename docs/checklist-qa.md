@@ -55,6 +55,8 @@ Ejecutar:
 - [ ] Refresh token renueva access y revoca el anterior
 - [ ] Logout revoca refresh token
 - [ ] Cambio de contraseña valida requisitos de seguridad
+- [ ] Recuperación: `/forgot-password` respuesta genérica
+- [ ] Restablecimiento: `/reset-password` con token válido
 - [ ] Modo mantenimiento bloquea login de no super admin
 - [ ] Super admin accede durante mantenimiento
 

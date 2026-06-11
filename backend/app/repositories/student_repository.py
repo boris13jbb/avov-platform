@@ -162,6 +162,37 @@ class StudentRepository:
             self.db.delete(user)
             self.db.commit()
 
+    def assign_counselor(
+        self,
+        *,
+        student_id: int,
+        counselor_id: int,
+        institution_id: int,
+    ) -> CounselorAssignment:
+        stmt = select(CounselorAssignment).where(
+            CounselorAssignment.student_id == student_id,
+            CounselorAssignment.counselor_id == counselor_id,
+        )
+        existing = self.db.scalar(stmt)
+        if existing is not None:
+            existing.status = AssignmentStatus.ACTIVE
+            existing.institution_id = institution_id
+            self.db.add(existing)
+            self.db.commit()
+            self.db.refresh(existing)
+            return existing
+
+        assignment = CounselorAssignment(
+            counselor_id=counselor_id,
+            student_id=student_id,
+            institution_id=institution_id,
+            status=AssignmentStatus.ACTIVE,
+        )
+        self.db.add(assignment)
+        self.db.commit()
+        self.db.refresh(assignment)
+        return assignment
+
     def is_assigned_to_counselor(self, student_id: int, counselor_id: int) -> bool:
         stmt = select(CounselorAssignment.id).where(
             CounselorAssignment.student_id == student_id,

@@ -5,6 +5,7 @@ from qdrant_client.models import (
     FieldCondition,
     Filter,
     MatchValue,
+    PointIdsList,
     PointStruct,
     VectorParams,
 )
@@ -79,6 +80,17 @@ class QdrantService:
         ]
         client.upsert(collection_name=collection_name, points=points)
         return len(points)
+
+    def delete_career_points(self, career_ids: list[int]) -> None:
+        if not career_ids:
+            return
+
+        client = self.get_client()
+        collection_name = self.settings.qdrant_collection_careers
+        client.delete(
+            collection_name=collection_name,
+            points_selector=PointIdsList(points=career_ids),
+        )
 
     def search_careers(
         self,

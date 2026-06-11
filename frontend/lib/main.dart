@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'config/app_config.dart';
+import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'router/app_router.dart';
 
@@ -23,7 +24,14 @@ class AvovApp extends StatelessWidget {
       title: AppConfig.development.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
+      themeMode: ThemeMode.light,
       routerConfig: AppRouter.router,
+      builder: (context, child) {
+        return ColoredBox(
+          color: AppColors.background,
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }

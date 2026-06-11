@@ -24,9 +24,11 @@ class ErrorBanner extends StatelessWidget {
             const Icon(Icons.error_outline, color: AppColors.error),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                message,
-                style: const TextStyle(color: AppColors.error),
+              child: SingleChildScrollView(
+                child: Text(
+                  message,
+                  style: const TextStyle(color: AppColors.error, height: 1.35),
+                ),
               ),
             ),
             if (onDismiss != null)

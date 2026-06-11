@@ -1,38 +1,89 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/models/public_settings.dart';
+import '../../../../core/models/user_role.dart';
+import '../../../../core/providers/public_settings_provider.dart';
+import '../../../../features/auth/presentation/providers/auth_provider.dart';
+import '../../../../router/role_route_mapper.dart';
 import '../../../../router/route_names.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
-  Timer? _navigationTimer;
-
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _navigationTimer = Timer(const Duration(seconds: 2), () {
-      if (mounted) {
-        context.go(RouteNames.home);
-      }
-    });
+    unawaited(_navigate());
   }
 
-  @override
-  void dispose() {
-    _navigationTimer?.cancel();
-    super.dispose();
+  Future<void> _navigate() async {
+    await Future<void>.delayed(const Duration(seconds: 2));
+    if (!mounted) {
+      return;
+    }
+
+    PublicSettings? settings;
+    try {
+      settings = await ref.read(publicSettingsProvider.future);
+    } catch (_) {
+      settings = null;
+    }
+
+    final authRepository = ref.read(authRepositoryProvider);
+    final isAuthenticated = await authRepository.isAuthenticated();
+    UserRole? userRole;
+
+    if (isAuthenticated) {
+      final roleValue = await authRepository.getStoredRole();
+      userRole = UserRole.fromApi(roleValue);
+      if (userRole == null) {
+        try {
+          final profile = await authRepository.getCurrentUser();
+          userRole = profile.role;
+        } catch (_) {
+          userRole = null;
+        }
+      }
+    }
+
+    if (!mounted) {
+      return;
+    }
+
+    final maintenance = settings?.maintenanceMode ?? false;
+    final isSuperAdmin = userRole == UserRole.superAdmin;
+
+    if (maintenance && !isSuperAdmin) {
+      context.go(RouteNames.maintenance);
+      return;
+    }
+
+    if (isAuthenticated && userRole != null) {
+      context.go(RoleRouteMapper.routeFor(userRole));
+      return;
+    }
+
+    context.go(RouteNames.login);
   }
 
   @override
   Widget build(BuildContext context) {
+    final settingsAsync = ref.watch(publicSettingsProvider);
+    final appName = settingsAsync.when(
+      data: (settings) => settings.appDisplayName,
+      loading: () => 'AVOV',
+      error: (_, __) => 'AVOV',
+    );
+
     return Scaffold(
       body: Center(
         child: Column(
@@ -45,15 +96,14 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              'AVOV',
+              appName,
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
             const SizedBox(height: 8),
-            Text(
+            const Text(
               'Asistente Virtual de Orientación Vocacional',
-              style: Theme.of(context).textTheme.bodyLarge,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),

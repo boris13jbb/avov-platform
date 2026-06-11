@@ -4,11 +4,19 @@ from fastapi.openapi.utils import get_openapi
 
 from app.api.routes import (
     assistant,
+    audit,
     auth,
     careers,
+    dashboard,
+    exports,
     health,
     institutions,
+    media,
     questions,
+    recommendations,
+    reports,
+    riasec_categories,
+    settings as settings_routes,
     status,
     students,
     tests,
@@ -20,20 +28,20 @@ from app.core.handlers import register_exception_handlers
 from app.core.logging import setup_logging
 from app.core.responses import success_response
 
-settings = get_settings()
+app_settings = get_settings()
 setup_logging()
 
 app = FastAPI(
     title="AVOV API",
     description="Asistente Virtual de Orientación Vocacional con IA",
     version="0.1.0",
-    docs_url="/docs" if settings.app_debug else None,
-    redoc_url="/redoc" if settings.app_debug else None,
+    docs_url="/docs" if app_settings.app_debug else None,
+    redoc_url="/redoc" if app_settings.app_debug else None,
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
+    allow_origins=app_settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -45,7 +53,9 @@ API_PREFIX = "/api/v1"
 app.include_router(health.router, prefix=API_PREFIX)
 app.include_router(status.router, prefix=API_PREFIX)
 app.include_router(auth.router, prefix=API_PREFIX)
+app.include_router(audit.router, prefix=API_PREFIX)
 app.include_router(institutions.router, prefix=API_PREFIX)
+app.include_router(media.router, prefix=API_PREFIX)
 app.include_router(users.router, prefix=API_PREFIX)
 app.include_router(students.router, prefix=API_PREFIX)
 app.include_router(careers.router, prefix=API_PREFIX)
@@ -53,6 +63,12 @@ app.include_router(questions.router, prefix=API_PREFIX)
 app.include_router(tests.router, prefix=API_PREFIX)
 app.include_router(vector.router, prefix=API_PREFIX)
 app.include_router(assistant.router, prefix=API_PREFIX)
+app.include_router(recommendations.router, prefix=API_PREFIX)
+app.include_router(reports.router, prefix=API_PREFIX)
+app.include_router(dashboard.router, prefix=API_PREFIX)
+app.include_router(exports.router, prefix=API_PREFIX)
+app.include_router(riasec_categories.router, prefix=API_PREFIX)
+app.include_router(settings_routes.router, prefix=API_PREFIX)
 
 
 def custom_openapi():
@@ -86,6 +102,14 @@ def custom_openapi():
         "/tests",
         "/vector",
         "/assistant",
+        "/recommendations",
+        "/reports",
+        "/dashboard",
+        "/exports",
+        "/audit",
+        "/settings",
+        "/riasec-categories",
+        "/media",
     )
     for path, path_item in openapi_schema.get("paths", {}).items():
         if any(fragment in path for fragment in protected_paths):
@@ -102,11 +126,13 @@ app.openapi = custom_openapi
 
 @app.get("/")
 def root():
+    payload: dict[str, str] = {
+        "name": app_settings.app_name,
+        "version": "0.1.0",
+    }
+    if app_settings.app_debug:
+        payload["docs"] = "/docs"
     return success_response(
-        data={
-            "name": settings.app_name,
-            "version": "0.1.0",
-            "docs": "/docs",
-        },
+        data=payload,
         message="Bienvenido a la API de AVOV",
     )

@@ -2,6 +2,8 @@ from sqlalchemy.orm import Session
 
 from app.core.enums import CareerStatus, DegreeType
 from app.core.exceptions import NotFoundException, ValidationException
+from app.models.career import Career
+from app.models.user import User
 from app.repositories.career_repository import CareerRepository
 from app.schemas.career import (
     CareerCreate,
@@ -9,6 +11,8 @@ from app.schemas.career import (
     CareerUpdate,
     PaginatedCareers,
 )
+from app.services.audit_service import AuditService
+from app.services.vector_service import VectorService
 
 
 class CareerService:
@@ -17,6 +21,8 @@ class CareerService:
     def __init__(self, db: Session) -> None:
         self.db = db
         self.repo = CareerRepository(db)
+        self.vector_service = VectorService(db)
+        self.audit = AuditService(db)
 
     def list_careers(
         self,
@@ -51,27 +57,76 @@ class CareerService:
         career = self._get_or_404(career_id)
         return CareerResponse.model_validate(career)
 
-    def create_career(self, payload: CareerCreate) -> CareerResponse:
+    def create_career(
+        self,
+        payload: CareerCreate,
+        current_user: User,
+    ) -> tuple[CareerResponse, bool]:
         career = self.repo.create(payload)
-        return CareerResponse.model_validate(career)
+        synced = self.sync_career_vector(career)
+        self.audit.log(
+            action="CAREER_CREATED",
+            entity="careers",
+            user_id=current_user.id,
+            entity_id=career.id,
+            details={"name": career.name, "vector_synced": synced},
+        )
+        return CareerResponse.model_validate(career), synced
 
-    def update_career(self, career_id: int, payload: CareerUpdate) -> CareerResponse:
+    def update_career(
+        self,
+        career_id: int,
+        payload: CareerUpdate,
+        current_user: User,
+    ) -> tuple[CareerResponse, bool]:
         career = self._get_or_404(career_id)
 
         if not payload.model_dump(exclude_unset=True):
             raise ValidationException("Debe enviar al menos un campo para actualizar")
 
         updated = self.repo.update(career, payload)
-        return CareerResponse.model_validate(updated)
+        synced = self.sync_career_vector(updated)
+        self.audit.log(
+            action="CAREER_UPDATED",
+            entity="careers",
+            user_id=current_user.id,
+            entity_id=updated.id,
+            details={"name": updated.name, "vector_synced": synced},
+        )
+        return CareerResponse.model_validate(updated), synced
 
-    def delete_career(self, career_id: int) -> CareerResponse:
+    def delete_career(
+        self,
+        career_id: int,
+        current_user: User,
+    ) -> tuple[CareerResponse, bool]:
         career = self._get_or_404(career_id)
 
         if career.status == CareerStatus.INACTIVE:
             raise ValidationException("La carrera ya está inactiva")
 
         deleted = self.repo.soft_delete(career)
-        return CareerResponse.model_validate(deleted)
+        synced = self.sync_career_vector(deleted)
+        self.audit.log(
+            action="CAREER_DEACTIVATED",
+            entity="careers",
+            user_id=current_user.id,
+            entity_id=deleted.id,
+            details={"name": deleted.name, "vector_synced": synced},
+        )
+        return CareerResponse.model_validate(deleted), synced
+
+    def sync_career_vector(self, career: Career) -> bool:
+        return self.vector_service.sync_career(career)
+
+    @staticmethod
+    def build_mutation_message(base_message: str, vector_synced: bool) -> str:
+        if vector_synced:
+            return f"{base_message}. Índice vectorial actualizado"
+        return (
+            f"{base_message}. No se pudo sincronizar Qdrant; "
+            "puedes reconstruir el índice manualmente"
+        )
 
     def _get_or_404(self, career_id: int):
         career = self.repo.get_by_id(career_id)

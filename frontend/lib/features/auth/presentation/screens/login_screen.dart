@@ -4,12 +4,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/models/user_role.dart';
+import '../../../../core/providers/providers.dart';
 import '../../../../core/providers/public_settings_provider.dart';
 import '../../../../router/role_route_mapper.dart';
 import '../../../../router/route_names.dart';
 import '../../../../shared/validators/app_validators.dart';
 import '../../../../shared/widgets/error_banner.dart';
 import '../../../../shared/widgets/loading_overlay.dart';
+import '../../../dashboard/presentation/providers/dashboard_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/current_user_provider.dart';
 
@@ -48,6 +50,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
 
     ref.invalidate(currentUserProvider);
+    ref.invalidate(superAdminDashboardProvider);
+    ref.invalidate(institutionDashboardProvider);
+    ref.invalidate(counselorDashboardProvider);
+    ref.invalidate(studentDashboardProvider);
     final roleValue = await ref.read(authRepositoryProvider).getStoredRole();
     final role = UserRole.fromApi(roleValue);
     final destination =
@@ -68,10 +74,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       error: (_, __) => 'AVOV',
     );
     final isLoading = authState.isLoading;
+    final apiBaseUrl = ref.watch(dioClientProvider).config.apiBaseUrl;
     final errorMessage = authState.whenOrNull(
-      error: (error, _) => error is AppException
-          ? error.message
-          : 'No se pudo iniciar sesión. Intenta nuevamente.',
+      error: (error, _) => _buildLoginErrorMessage(error, apiBaseUrl),
     );
 
     return Scaffold(
@@ -168,16 +173,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           child: TextButton(
                             onPressed: isLoading
                                 ? null
-                                : () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Para recuperar tu contraseña, contacta al '
-                                          'administrador de tu institución.',
-                                        ),
-                                      ),
-                                    );
-                                  },
+                                : () => context.push(RouteNames.forgotPassword),
                             child: const Text('¿Olvidaste tu contraseña?'),
                           ),
                         ),
@@ -201,4 +197,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
     );
   }
+}
+
+String _buildLoginErrorMessage(Object error, String apiBaseUrl) {
+  final lines = <String>[];
+
+  if (error is AppException && error.message.isNotEmpty) {
+    lines.add(error.message);
+  } else {
+    lines.add('No se pudo iniciar sesión. Intenta nuevamente.');
+  }
+
+  if (error is NetworkException ||
+      (error is AppException &&
+          error.message.toLowerCase().contains('tiempo de espera'))) {
+    lines.add('Desactiva la VPN del teléfono.');
+    lines.add('Usa la misma red WiFi que la PC.');
+    lines.add('API: $apiBaseUrl');
+    lines.add('Prueba en el navegador del móvil: $apiBaseUrl/health/live');
+  }
+
+  return lines.join('\n');
 }

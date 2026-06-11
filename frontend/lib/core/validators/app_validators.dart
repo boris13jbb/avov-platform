@@ -57,9 +57,34 @@ class AppValidators {
     if (value == null || value.trim().isEmpty) {
       return 'El teléfono es obligatorio';
     }
-    final phoneRegex = RegExp(r'^[0-9+\-\s()]{7,20}$');
-    if (!phoneRegex.hasMatch(value.trim())) {
-      return 'El teléfono no tiene un formato válido';
+    return optionalPhone(value);
+  }
+
+  static String? optionalPhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+    final digits = value.replaceAll(RegExp(r'\D'), '');
+    if (digits.length < 7 || digits.length > 15) {
+      return 'El teléfono debe tener entre 7 y 15 dígitos';
+    }
+    return null;
+  }
+
+  static String? optionalEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+    return email(value);
+  }
+
+  static String? minLength(
+    String? value, {
+    required int min,
+    required String fieldName,
+  }) {
+    if (value == null || value.trim().length < min) {
+      return '$fieldName debe tener al menos $min caracteres';
     }
     return null;
   }

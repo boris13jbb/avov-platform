@@ -32,11 +32,13 @@
 |---|----------|------|-----|------|
 | 1 | Splash | `/` | Todos | 16 |
 | 2 | Login | `/login` | Público | 18 |
-| 3 | Cambiar contraseña | `/change-password` | Autenticado | 18 |
-| 4 | Perfil usuario | `/profile` | Autenticado | 16 |
-| 5 | No autorizado | `/unauthorized` | Todos | 16 |
-| 6 | No encontrado | `/not-found` | Todos | 16 |
-| 7 | Mantenimiento | `/maintenance` | Público | 30 |
+| 3 | Recuperar contraseña | `/forgot-password` | Público | 33 |
+| 4 | Restablecer contraseña | `/reset-password?token=` | Público | 33 |
+| 5 | Cambiar contraseña | `/change-password` | Autenticado | 18 |
+| 6 | Perfil usuario | `/profile` | Autenticado | 16 |
+| 7 | No autorizado | `/unauthorized` | Todos | 16 |
+| 8 | No encontrado | `/not-found` | Todos | 16 |
+| 9 | Mantenimiento | `/maintenance` | Público | 30 |
 
 ---
 
@@ -139,7 +141,7 @@
 | `EthicalDisclaimerBanner` | Nota ética (texto desde API) | **En uso** |
 | `LoadingOverlay` | Bloqueo visual durante operaciones | Planificado |
 | `PaginatedDataTable` | Tabla genérica paginada | Sustituido por listas por feature |
-| `RiasecChart` | Gráfico barras RIASEC | Parcial (tarjetas en resultados) |
+| `RiasecChart` | Gráfico barras RIASEC | **En uso** (resultados estudiante y orientador) |
 
 ---
 
@@ -183,8 +185,7 @@ GoRouter(
 
 | Funcionalidad | Estado |
 |---------------|--------|
-| Recuperación de contraseña (`/forgot-password`) | Sin API ni pantalla; contactar administrador |
-| Gráfico RIASEC dedicado (`RiasecChart`) | Mejora visual opcional |
+| — | Recuperación de contraseña y `RiasecChart` implementados (Fase 33) |
 
 ---
 

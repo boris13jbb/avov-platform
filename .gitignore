@@ -65,9 +65,21 @@ desktop.ini
 logs/
 *.log
 
+# Salidas temporales de pruebas/análisis locales
+analyze_out.txt
+docker_ps.txt
+pytest_out.txt
+test_out.txt
+
 # Backups
 backups/
 *.sql.gz
+
+# Certificados TLS (no commitear)
+nginx/certs/*.pem
+nginx/certs/*.key
+nginx/certs/*.crt
+!nginx/certs/.gitkeep
 
 # Almacenamiento backend
 backend/storage/

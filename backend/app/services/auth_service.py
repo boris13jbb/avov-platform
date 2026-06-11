@@ -1,11 +1,21 @@
+from datetime import datetime, timedelta, timezone
+
 from sqlalchemy.orm import Session
 
-from app.core.enums import UserStatus
+from app.core.config import get_settings
+from app.core.enums import UserRole, UserStatus
 from app.core.exceptions import UnauthorizedException, ValidationException
 from app.models.user import User
+from app.repositories.password_reset_repository import PasswordResetRepository
 from app.repositories.refresh_token_repository import RefreshTokenRepository
 from app.repositories.user_repository import UserRepository
-from app.schemas.auth import ChangePasswordRequest, TokenData, UserProfileData
+from app.schemas.auth import (
+    ChangePasswordRequest,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
+    TokenData,
+    UserProfileData,
+)
 from app.security.jwt import (
     create_access_token,
     generate_refresh_token,
@@ -13,16 +23,29 @@ from app.security.jwt import (
     refresh_token_expires_at,
 )
 from app.security.password import hash_password, verify_password
+from app.services.audit_service import AuditService
+from app.services.system_setting_service import SystemSettingService
+from app.utils.email_service import EmailService
 
 
 class AuthService:
     INVALID_CREDENTIALS_MSG = "Credenciales incorrectas"
     INACTIVE_ACCOUNT_MSG = "Tu cuenta no está activa. Contacta al administrador."
+    MAINTENANCE_MSG = (
+        "El sistema está en mantenimiento. Solo el super administrador puede acceder."
+    )
+
+    FORGOT_PASSWORD_MSG = (
+        "Si el correo está registrado, recibirás instrucciones para restablecer "
+        "tu contraseña en breve."
+    )
 
     def __init__(self, db: Session) -> None:
         self.db = db
         self.user_repo = UserRepository(db)
         self.refresh_repo = RefreshTokenRepository(db)
+        self.reset_repo = PasswordResetRepository(db)
+        self.email_service = EmailService()
 
     def login(self, email: str, password: str) -> TokenData:
         user = self.user_repo.get_by_email(email)
@@ -33,6 +56,7 @@ class AuthService:
         if user.status != UserStatus.ACTIVE:
             raise UnauthorizedException(self.INACTIVE_ACCOUNT_MSG)
 
+        self._ensure_can_access_during_maintenance(user)
         return self._issue_tokens(user)
 
     def refresh(self, refresh_token: str) -> TokenData:
@@ -46,6 +70,7 @@ class AuthService:
         if user is None or user.status != UserStatus.ACTIVE:
             raise UnauthorizedException(self.INACTIVE_ACCOUNT_MSG)
 
+        self._ensure_can_access_during_maintenance(user)
         self.refresh_repo.revoke(stored_token)
         return self._issue_tokens(user)
 
@@ -57,6 +82,86 @@ class AuthService:
             raise UnauthorizedException("Refresh token inválido o expirado")
 
         self.refresh_repo.revoke(stored_token)
+
+    def request_password_reset(
+        self,
+        payload: ForgotPasswordRequest,
+        *,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+    ) -> str:
+        email = payload.email.strip().lower()
+        user = self.user_repo.get_by_email(email)
+
+        if user is not None and user.status == UserStatus.ACTIVE:
+            raw_token = generate_refresh_token()
+            settings = get_settings()
+            expires_at = datetime.now(timezone.utc) + timedelta(
+                hours=settings.password_reset_expire_hours
+            )
+            self.reset_repo.create(
+                user_id=user.id,
+                token_hash=hash_token(raw_token),
+                expires_at=expires_at.replace(tzinfo=None),
+            )
+            reset_url = (
+                f"{settings.frontend_base_url.rstrip('/')}"
+                f"/reset-password?token={raw_token}"
+            )
+            self.email_service.send_password_reset(
+                to_email=user.email,
+                reset_url=reset_url,
+            )
+            AuditService(self.db).log(
+                action="PASSWORD_RESET_REQUEST",
+                entity="users",
+                user_id=user.id,
+                entity_id=user.id,
+                ip_address=ip_address,
+                user_agent=user_agent,
+                details={"email": user.email},
+            )
+
+        return self.FORGOT_PASSWORD_MSG
+
+    def reset_password(
+        self,
+        payload: ResetPasswordRequest,
+        *,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+    ) -> None:
+        token_hash = hash_token(payload.token.strip())
+        stored_token = self.reset_repo.get_valid_by_hash(token_hash)
+
+        if stored_token is None:
+            raise ValidationException(
+                "El enlace de recuperación es inválido o ha expirado"
+            )
+
+        user = self.user_repo.get_by_id(stored_token.user_id)
+        if user is None or user.status != UserStatus.ACTIVE:
+            raise ValidationException(
+                "El enlace de recuperación es inválido o ha expirado"
+            )
+
+        if verify_password(payload.new_password, user.password_hash):
+            raise ValidationException(
+                "La nueva contraseña debe ser diferente a la actual"
+            )
+
+        self.user_repo.update_password(user, hash_password(payload.new_password))
+        self.reset_repo.mark_used(stored_token)
+        self.refresh_repo.revoke_all_for_user(user.id)
+
+        AuditService(self.db).log(
+            action="PASSWORD_RESET_COMPLETE",
+            entity="users",
+            user_id=user.id,
+            entity_id=user.id,
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
 
     def change_password(self, user: User, payload: ChangePasswordRequest) -> None:
         if not verify_password(payload.current_password, user.password_hash):
@@ -84,6 +189,11 @@ class AuthService:
             avatar_url=user.avatar_url,
             last_login_at=user.last_login_at,
         )
+
+    def _ensure_can_access_during_maintenance(self, user: User) -> None:
+        if SystemSettingService(self.db).is_maintenance_mode():
+            if user.role != UserRole.SUPER_ADMIN:
+                raise UnauthorizedException(self.MAINTENANCE_MSG)
 
     def _issue_tokens(self, user: User) -> TokenData:
         access_token, expires_in = create_access_token(

@@ -37,3 +37,11 @@ class ValidationException(AppException):
         errors: list[dict[str, Any]] | None = None,
     ) -> None:
         super().__init__(message, status_code=422, errors=errors)
+
+
+class TooManyRequestsException(AppException):
+    def __init__(
+        self,
+        message: str = "Demasiados intentos. Intenta más tarde.",
+    ) -> None:
+        super().__init__(message, status_code=429)

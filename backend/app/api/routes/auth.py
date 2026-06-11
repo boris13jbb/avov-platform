@@ -1,14 +1,18 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db, security
+from app.core.exceptions import UnauthorizedException
 from app.core.responses import success_response
 from app.models.user import User
+from app.security.rate_limit import login_rate_limiter
 from app.schemas.auth import (
     ChangePasswordRequest,
+    ForgotPasswordRequest,
     LoginRequest,
     LogoutRequest,
     RefreshRequest,
+    ResetPasswordRequest,
 )
 from app.services.auth_service import AuthService
 
@@ -16,8 +20,19 @@ router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
 
 @router.post("/login")
-def login(body: LoginRequest, db: Session = Depends(get_db)):
-    tokens = AuthService(db).login(body.email, body.password)
+def login(body: LoginRequest, request: Request, db: Session = Depends(get_db)):
+    client_ip = request.client.host if request.client else "unknown"
+    rate_key = f"{client_ip}:{body.email.strip().lower()}"
+    login_rate_limiter.ensure_not_blocked(rate_key)
+
+    try:
+        tokens = AuthService(db).login(body.email, body.password)
+    except UnauthorizedException as exc:
+        if exc.message == AuthService.INVALID_CREDENTIALS_MSG:
+            login_rate_limiter.record_failed_attempt(rate_key)
+        raise
+
+    login_rate_limiter.clear(rate_key)
     return success_response(
         data=tokens.model_dump(),
         message="Inicio de sesión exitoso",
@@ -50,6 +65,40 @@ def get_me(current_user: User = Depends(get_current_user)):
         data=profile.model_dump(),
         message="Perfil obtenido correctamente",
     )
+
+
+@router.post("/forgot-password")
+def forgot_password(
+    body: ForgotPasswordRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    client_ip = request.client.host if request.client else "unknown"
+    rate_key = f"forgot:{client_ip}:{body.email.strip().lower()}"
+    login_rate_limiter.ensure_not_blocked(rate_key)
+    login_rate_limiter.record_failed_attempt(rate_key)
+
+    message = AuthService(db).request_password_reset(
+        body,
+        ip_address=client_ip,
+        user_agent=request.headers.get("user-agent"),
+    )
+    return success_response(message=message)
+
+
+@router.post("/reset-password")
+def reset_password(
+    body: ResetPasswordRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    client_ip = request.client.host if request.client else "unknown"
+    AuthService(db).reset_password(
+        body,
+        ip_address=client_ip,
+        user_agent=request.headers.get("user-agent"),
+    )
+    return success_response(message="Contraseña restablecida correctamente")
 
 
 @router.post("/change-password", dependencies=[Depends(security)])

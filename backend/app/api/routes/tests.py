@@ -5,7 +5,9 @@ from app.api.deps import get_current_user, get_db, security
 from app.core.enums import UserRole
 from app.core.responses import success_response
 from app.models.user import User
+from app.schemas.recommendation import CounselorObservationRequest
 from app.schemas.test_session import TestAnswerCreate
+from app.services.recommendation_service import RecommendationService
 from app.security.permissions import require_roles
 from app.services.test_session_service import TestSessionService
 
@@ -74,4 +76,22 @@ def get_test_result(
     return success_response(
         data=result.model_dump(mode="json"),
         message="Resultado RIASEC obtenido correctamente",
+    )
+
+
+@router.post("/{session_id}/observations", dependencies=[Depends(security)])
+def add_test_observation(
+    session_id: int,
+    body: CounselorObservationRequest,
+    current_user: User = Depends(require_roles(UserRole.COUNSELOR)),
+    db: Session = Depends(get_db),
+):
+    result = RecommendationService(db).add_observation_by_test_session(
+        session_id,
+        body.observation,
+        current_user,
+    )
+    return success_response(
+        data=result.model_dump(mode="json"),
+        message="Observación profesional registrada correctamente",
     )

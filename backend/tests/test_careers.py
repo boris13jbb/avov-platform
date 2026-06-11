@@ -130,6 +130,89 @@ def test_update_career_success(
     _delete_career_by_id(career_id)
 
 
+def test_create_career_reports_vector_sync_status(
+    client: TestClient,
+    super_admin_headers: dict[str, str],
+):
+    from app.services.qdrant_service import QdrantService
+
+    response = client.post(
+        "/api/v1/careers",
+        headers=super_admin_headers,
+        json=_career_payload(name=f"VectorSync {uuid.uuid4().hex[:6]}"),
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert "vector_synced" in body["data"]
+
+    if QdrantService().is_available():
+        assert body["data"]["vector_synced"] is True
+        assert "vectorial" in body["message"].lower()
+    else:
+        assert body["data"]["vector_synced"] is False
+
+    _delete_career_by_id(body["data"]["id"])
+
+
+def test_update_career_reports_vector_sync_status(
+    client: TestClient,
+    super_admin_headers: dict[str, str],
+):
+    from app.services.qdrant_service import QdrantService
+
+    created = client.post(
+        "/api/v1/careers",
+        headers=super_admin_headers,
+        json=_career_payload(name=f"UpdateSync {uuid.uuid4().hex[:6]}"),
+    )
+    career_id = created.json()["data"]["id"]
+
+    response = client.put(
+        f"/api/v1/careers/{career_id}",
+        headers=super_admin_headers,
+        json={"description": "Descripción actualizada para prueba vectorial."},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert "vector_synced" in body["data"]
+
+    if QdrantService().is_available():
+        assert body["data"]["vector_synced"] is True
+    else:
+        assert body["data"]["vector_synced"] is False
+
+    _delete_career_by_id(career_id)
+
+
+def test_delete_career_reports_vector_sync_status(
+    client: TestClient,
+    super_admin_headers: dict[str, str],
+):
+    from app.services.qdrant_service import QdrantService
+
+    created = client.post(
+        "/api/v1/careers",
+        headers=super_admin_headers,
+        json=_career_payload(name=f"DeleteSync {uuid.uuid4().hex[:6]}"),
+    )
+    career_id = created.json()["data"]["id"]
+
+    response = client.delete(
+        f"/api/v1/careers/{career_id}",
+        headers=super_admin_headers,
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert "vector_synced" in body["data"]
+
+    if QdrantService().is_available():
+        assert body["data"]["vector_synced"] is True
+    else:
+        assert body["data"]["vector_synced"] is False
+
+    _delete_career_by_id(career_id)
+
+
 def test_delete_career_soft_delete(
     client: TestClient,
     super_admin_headers: dict[str, str],

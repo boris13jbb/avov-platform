@@ -4,6 +4,7 @@ from math import ceil
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from app.core.enums import InstitutionStatus
+from app.utils.media_urls import normalize_institution_logo_url
 from app.utils.validators import is_valid_phone
 
 
@@ -36,6 +37,13 @@ class InstitutionBase(BaseModel):
         if value is not None and not is_valid_phone(value):
             raise ValueError("El teléfono debe contener entre 7 y 15 dígitos")
         return value
+
+    @field_validator("logo_url", mode="before")
+    @classmethod
+    def normalize_logo_url(cls, value: str | None) -> str | None:
+        if value is None or not isinstance(value, str):
+            return value
+        return normalize_institution_logo_url(value)
 
 
 class InstitutionCreate(InstitutionBase):
@@ -74,6 +82,13 @@ class InstitutionUpdate(BaseModel):
             raise ValueError("El teléfono debe contener entre 7 y 15 dígitos")
         return value
 
+    @field_validator("logo_url", mode="before")
+    @classmethod
+    def normalize_logo_url(cls, value: str | None) -> str | None:
+        if value is None or not isinstance(value, str):
+            return value
+        return normalize_institution_logo_url(value)
+
 
 class InstitutionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -90,6 +105,13 @@ class InstitutionResponse(BaseModel):
     status: InstitutionStatus
     created_at: datetime
     updated_at: datetime
+
+    @field_validator("logo_url", mode="before")
+    @classmethod
+    def normalize_logo_url(cls, value: str | None) -> str | None:
+        if value is None or not isinstance(value, str):
+            return value
+        return normalize_institution_logo_url(value)
 
 
 class PaginatedInstitutions(BaseModel):

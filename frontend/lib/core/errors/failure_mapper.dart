@@ -9,6 +9,15 @@ class FailureMapper {
     final statusCode = error.response?.statusCode;
     final data = error.response?.data;
 
+    if (statusCode == 401) {
+      final message = data is Map<String, dynamic>
+          ? data['message'] as String?
+          : null;
+      return UnauthorizedException(
+        message ?? 'Sesión expirada o no autorizada',
+      );
+    }
+
     if (data is Map<String, dynamic>) {
       final message = data['message'] as String?;
       if (message != null && message.isNotEmpty) {

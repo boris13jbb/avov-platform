@@ -190,6 +190,34 @@ def test_get_inactive_question_forbidden_for_student(
     _delete_question_by_id(question_id)
 
 
+def test_delete_question_soft_delete(
+    client: TestClient,
+    super_admin_headers: dict[str, str],
+    riasec_category_id: int,
+):
+    created = client.post(
+        "/api/v1/questions",
+        headers=super_admin_headers,
+        json=_question_payload(riasec_category_id, order_number=88),
+    )
+    question_id = created.json()["data"]["id"]
+
+    response = client.delete(
+        f"/api/v1/questions/{question_id}",
+        headers=super_admin_headers,
+    )
+    assert response.status_code == 200
+    assert response.json()["data"]["status"] == "INACTIVE"
+
+    second_delete = client.delete(
+        f"/api/v1/questions/{question_id}",
+        headers=super_admin_headers,
+    )
+    assert second_delete.status_code == 422
+
+    _delete_question_by_id(question_id)
+
+
 def test_super_admin_can_filter_inactive_questions(
     client: TestClient,
     super_admin_headers: dict[str, str],

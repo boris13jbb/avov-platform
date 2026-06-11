@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/providers/providers.dart';
+import '../../../../router/route_names.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/health_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -14,6 +18,18 @@ class HomeScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('AVOV'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            tooltip: 'Cerrar sesión',
+            onPressed: () async {
+              await ref.read(authControllerProvider.notifier).logout();
+              if (context.mounted) {
+                context.go(RouteNames.login);
+              }
+            },
+            icon: const Icon(Icons.logout),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(
@@ -32,7 +48,12 @@ class HomeScreen extends ConsumerWidget {
                 'Plataforma de orientación vocacional con IA',
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
+              Text(
+                'API: ${ref.watch(dioClientProvider).config.apiBaseUrl}',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 24),
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
