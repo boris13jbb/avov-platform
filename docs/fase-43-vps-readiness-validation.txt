@@ -1,0 +1,19 @@
+﻿AVOV - Validacion VPS Readiness (Fase 43)
+Fecha: 2026-06-12 18:01:52
+BaseUrl monitor: http://localhost:8000/api/v1
+OK: 5 | SKIP: 2 | FALLO: 0
+
+[OK] Estructura - Scripts operaciones VPS
+    9 presentes
+[SKIP] Scripts - Sintaxis bash
+    bash no ejecutable (backup-all.sh)
+[OK] Backup - Prune dry-run
+    retencion 14 dias
+[SKIP] Backup - backup-all prod-local
+    -SkipBackupTest
+[OK] Monitor - Health API
+    http://localhost:8000/api/v1
+[OK] Cron - Plantilla install-vps-cron
+    docs/cron/avov-backup.cron.example
+[OK] Manual - Checklist UI Flutter
+    docs/fase-41-flutter-ui-manual.md

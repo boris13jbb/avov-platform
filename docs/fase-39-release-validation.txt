@@ -1,0 +1,19 @@
+﻿AVOV - Validacion Release (Fase 39)
+Fecha: 2026-06-12 17:23:26
+Modo: Quick
+Duracion: 00:28
+OK: 8 | SKIP: 2 | FALLO: 0
+
+[OK] Estructura - verify-structure.ps1
+[OK] Release - .env en .gitignore
+[OK] Release - Sin phpMyAdmin en prod
+[OK] Release - docker compose prod config
+[OK] Release - Documentacion obligatoria
+    4 archivos
+[OK] Fase32 - validate-fase32.ps1
+[OK] Flutter - validate-flutter-qa.ps1
+[OK] Smoke - smoke-e2e.ps1
+[SKIP] Staging - validate-staging.ps1
+    modo Quick
+[SKIP] Vocacional - validate-vocational-e2e.ps1
+    modo Quick

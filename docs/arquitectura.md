@@ -277,14 +277,15 @@ Flutter → FastAPI → MySQL   (datos transaccionales)
 
 ## 8. Estado actual del workspace
 
-| Área | Estado (post Fase 0) |
-|------|----------------------|
-| Monorepo base | Parcialmente creado |
-| Docker Compose | MySQL, phpMyAdmin, Redis, Qdrant, backend definidos |
-| Backend FastAPI | Health check + respuestas estándar |
-| Frontend Flutter | Splash, home, Dio, GoRouter, Riverpod |
-| Base de datos | Init SQL; migraciones de negocio pendientes (Fase 4) |
-| Documentación Fase 0 | Completa en `docs/` |
+| Área | Estado (post Fase 33) |
+|------|------------------------|
+| Monorepo base | Completo (`backend/`, `frontend/`, `docker/`, `docs/`, `nginx/`) |
+| Docker Compose | Dev y prod: MySQL, Redis, Qdrant, backend, Nginx (prod) |
+| Backend FastAPI | API completa: auth, CRUD, test RIASEC, IA, PDF, auditoría, exports |
+| Frontend Flutter | 45 pantallas enrutadas, 4 dashboards por rol, guards de acceso |
+| Base de datos | Alembic + seeds; MySQL como fuente de verdad |
+| Seguridad | OWASP headers, rate limits, validación prod, JWT + roles |
+| Documentación | Manuales, API, checklist QA, fases 0–33 |
 
 **Decisión:** Mantener monorepo en `aplicstibi/`. El alias `avov-platform/` de las reglas Cursor mapea a la raíz actual.
 

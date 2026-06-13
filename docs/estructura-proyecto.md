@@ -114,7 +114,7 @@ backend/
 | `app/services/llm/` | Interface + fallback + deepseek stub |
 | `app/security/`, `app/utils/` | Paquetes creados |
 | `api/deps.py` | Implementado |
-| Lógica de negocio en rutas | Pendiente Fases 5-15 |
+| Lógica de negocio en rutas | Delegada a services (Fases 5-15 completadas) |
 
 ---
 
@@ -191,7 +191,7 @@ frontend/lib/
 | `shared/widgets/` (5 widgets) | Implementado |
 | `features/*/data|domain|presentation/` | Carpetas creadas |
 | `assets/images/` | Creado |
-| Pantallas de negocio completas | Pendiente Fases 16-25 |
+| Pantallas de negocio completas | Implementadas (Fases 16-29 + Fase 33) |
 
 ---
 

@@ -1,0 +1,30 @@
+﻿AVOV - Validacion Staging (Fase 36)
+Fecha: 2026-06-12 14:50:21
+BaseUrl: http://localhost:8080/api/v1
+Proyecto Docker: avov-staging
+OK: 11 | SKIP:  | FALLO: 0
+
+[OK] Estructura - Archivos staging
+    6 archivos presentes
+[OK] Config - .env.staging
+    archivo existente
+[OK] Config - docker compose config
+    sintaxis valida
+[OK] Deploy - staging-up
+    proyecto avov-staging
+[OK] Nginx - Health live via proxy
+    http://localhost:8080/api/v1
+[OK] Nginx - Health completo (MySQL)
+    services.mysql=true
+[OK] Seguridad - OpenAPI /docs bloqueado
+    404 desde Nginx
+[OK] Seguridad - Cabeceras Nginx
+    nosniff + SAMEORIGIN
+[OK] Seguridad - Sin phpMyAdmin en prod
+    no expuesto en staging
+[OK] Smoke - E2E API via Nginx
+    ver C:\Users\BRS\Documents\aplicstibi\docs\fase-36-staging-report.txt
+[OK] Backup - MySQL + Qdrant + storage
+    ./backups/
+[SKIP] Deploy - staging-down
+    stack sigue activo (-SkipTeardown)

@@ -57,6 +57,39 @@ class Settings(BaseSettings):
         default=900,
         alias="LOGIN_RATE_LIMIT_WINDOW_SECONDS",
     )
+    forgot_password_rate_limit_max: int = Field(
+        default=3,
+        alias="FORGOT_PASSWORD_RATE_LIMIT_MAX",
+    )
+    forgot_password_rate_limit_window_seconds: int = Field(
+        default=900,
+        alias="FORGOT_PASSWORD_RATE_LIMIT_WINDOW_SECONDS",
+    )
+    reset_password_rate_limit_max: int = Field(
+        default=5,
+        alias="RESET_PASSWORD_RATE_LIMIT_MAX",
+    )
+    reset_password_rate_limit_window_seconds: int = Field(
+        default=900,
+        alias="RESET_PASSWORD_RATE_LIMIT_WINDOW_SECONDS",
+    )
+    assistant_rate_limit_max: int = Field(
+        default=30,
+        alias="ASSISTANT_RATE_LIMIT_MAX",
+    )
+    assistant_rate_limit_window_seconds: int = Field(
+        default=3600,
+        alias="ASSISTANT_RATE_LIMIT_WINDOW_SECONDS",
+    )
+
+    security_headers_enabled: bool = Field(
+        default=True,
+        alias="SECURITY_HEADERS_ENABLED",
+    )
+    backend_allowed_hosts: str = Field(
+        default="localhost,127.0.0.1",
+        alias="BACKEND_ALLOWED_HOSTS",
+    )
 
     password_reset_expire_hours: int = Field(
         default=1,
@@ -88,11 +121,23 @@ class Settings(BaseSettings):
     deepseek_max_retries: int = Field(default=3, alias="DEEPSEEK_MAX_RETRIES")
 
     @property
+    def is_production(self) -> bool:
+        return self.app_env.strip().lower() == "production"
+
+    @property
     def cors_origins(self) -> List[str]:
         return [
             origin.strip()
             for origin in self.backend_cors_origins.split(",")
             if origin.strip()
+        ]
+
+    @property
+    def trusted_hosts(self) -> List[str]:
+        return [
+            host.strip()
+            for host in self.backend_allowed_hosts.split(",")
+            if host.strip()
         ]
 
 

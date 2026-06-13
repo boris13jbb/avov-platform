@@ -112,12 +112,25 @@ El proyecto se considera terminado cuando:
 | 16–25 | **Completadas** — Flutter base, login, dashboards, módulos FE |
 | 26 | **Completada** — Auditoría (API + pantalla admin) |
 | 27–28 | **Completadas** — Tests backend/frontend en curso continuo |
-| 29 (seg.) | **Parcial** — Rate limit login; pendiente hardening OWASP completo |
+| 29 (seg.) | **Completada** — OWASP headers, rate limits, validación prod ([fase-33-seguridad-owasp.md](fase-33-seguridad-owasp.md)) |
 | 29 (FE) | **Completada** — Admin CRUD carreras/preguntas + settings |
 | 30 | **Completada** — Manuales, checklist QA, variables ([fase-30-documentacion.md](fase-30-documentacion.md)) |
 | 31 | **Completada** — Producción Docker, Nginx, backups ([fase-31-produccion.md](fase-31-produccion.md)) |
 | 32 | **Completada** — Checklist final integral ([fase-32-checklist-final.md](fase-32-checklist-final.md)) |
+| 33 | **Completada** — Hardening OWASP ([fase-33-seguridad-owasp.md](fase-33-seguridad-owasp.md)) |
+| 34 | **Completada** — Auditoría huecos Fases 0–33 ([fase-34-auditoria-huecos.md](fase-34-auditoria-huecos.md)) |
+| 35 | **Completada** — Smoke E2E API automatizado ([fase-35-e2e-smoke.md](fase-35-e2e-smoke.md)) |
+| 36 | **Completada** — Staging producción local + Nginx ([fase-36-staging-produccion.md](fase-36-staging-produccion.md)) |
+| 37 | **Completada** — QA Flutter automatizado ([fase-37-flutter-qa.md](fase-37-flutter-qa.md)) |
+| 38 | **Completada** — E2E flujo vocacional completo ([fase-38-vocational-e2e.md](fase-38-vocational-e2e.md)) |
+| 39 | **Completada** — Validación integral release ([fase-39-release-readiness.md](fase-39-release-readiness.md)) |
+| 40 | **Completada** — Despliegue producción y prod-local ([fase-40-produccion-deploy.md](fase-40-produccion-deploy.md)) |
+| 41 | **Completada** — SSL, post-deploy servidor y checklist UI ([fase-41-servidor-ssl-postdeploy.md](fase-41-servidor-ssl-postdeploy.md)) |
+| 42 | **Completada** — Servidor real, Flutter Web y release ([fase-42-servidor-release.md](fase-42-servidor-release.md)) |
+| 43 | **Completada** — Operaciones VPS: backups, cron y monitoreo ([fase-43-vps-operaciones.md](fase-43-vps-operaciones.md)) |
+| 44 | **Completada** — Despliegue institucional y release publico ([fase-44-despliegue-institucional.md](fase-44-despliegue-institucional.md)) |
+| 45 | **Completada** — Soporte, rollback y capacitacion TI ([fase-45-soporte-rollback-capacitacion.md](fase-45-soporte-rollback-capacitacion.md)) |
 
 ### Estado del roadmap
 
-Las **32 fases** del plan están completadas. Validación automatizada: `.\scripts\validate-fase32.ps1`. Cierre operativo: marcar pruebas E2E en [checklist-qa.md](checklist-qa.md) y desplegar según [manual-produccion.md](manual-produccion.md).
+Las **32 fases formales** del plan están completadas, más fases de cierre **33–45**. Operaciones produccion: `.\scripts\validate-production-ops.ps1`.

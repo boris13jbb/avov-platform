@@ -78,4 +78,4 @@ Requiere que exista el estudiante `estudiante.test.fase11@instituto.edu.co`.
 
 ## Siguiente fase sugerida
 
-Módulos admin pendientes: catálogo carreras, preguntas RIASEC, auditoría, etc.
+Módulos admin relacionados (Fase 29): catálogo carreras, preguntas RIASEC, auditoría y configuración global — implementados en rutas `/admin/*`.

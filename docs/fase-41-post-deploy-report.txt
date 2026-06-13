@@ -1,0 +1,27 @@
+﻿AVOV - Post-Deploy Prod SSL Local (Fase 41)
+Fecha: 2026-06-12 17:52:06
+BaseUrl: https://localhost:8443/api/v1
+OK: 11 | SKIP: 0 | FALLO: 0
+
+[OK] Seed - Carreras desarrollo
+    seed-careers-dev.ps1
+[OK] Salud - Health live
+    success=true
+[OK] Salud - Health completo (MySQL/Redis/Qdrant)
+    todos up
+[OK] Config - Settings publicas
+    AVOV
+[OK] Auth - Login super admin
+    admin@avov.edu.co
+[OK] Auth - Rol super admin
+    SUPER_ADMIN
+[OK] Qdrant - Rebuild indice carreras
+    indexed=0
+[OK] Qdrant - Busqueda semantica
+    resultados=0
+[OK] SSL - Cabecera HSTS
+    max-age=31536000; includeSubDomains,max-age=31536000; includeSubDomains
+[OK] SSL - Redirect HTTP a HTTPS
+    status 301 -> https://localhost/api/v1/health/live
+[OK] Seguridad - OpenAPI bloqueado
+    404

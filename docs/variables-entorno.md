@@ -31,14 +31,29 @@ Copiar `.env.example` a `.env` y configurar los valores.
 
 Plantilla completa: `.env.production.example`
 
-## Rate limiting (login)
+## Rate limiting
 
 | Variable | Descripción | Default |
 |----------|-------------|---------|
 | `LOGIN_RATE_LIMIT_MAX` | Intentos fallidos máximos por IP+correo | `5` |
 | `LOGIN_RATE_LIMIT_WINDOW_SECONDS` | Ventana de bloqueo en segundos | `900` (15 min) |
+| `FORGOT_PASSWORD_RATE_LIMIT_MAX` | Solicitudes `/forgot-password` por IP+correo | `3` |
+| `FORGOT_PASSWORD_RATE_LIMIT_WINDOW_SECONDS` | Ventana forgot-password | `900` |
+| `RESET_PASSWORD_RATE_LIMIT_MAX` | Intentos `/reset-password` por IP | `5` |
+| `RESET_PASSWORD_RATE_LIMIT_WINDOW_SECONDS` | Ventana reset-password | `900` |
+| `ASSISTANT_RATE_LIMIT_MAX` | Consultas IA por usuario | `30` |
+| `ASSISTANT_RATE_LIMIT_WINDOW_SECONDS` | Ventana asistente (segundos) | `3600` |
 
-Requiere Redis operativo. Si Redis no está disponible, el login sigue funcionando (degradación controlada con log de advertencia).
+Requiere Redis operativo. Si Redis no está disponible, los endpoints siguen funcionando (degradación controlada con log de advertencia).
+
+## Seguridad HTTP (OWASP)
+
+| Variable | Descripción | Default |
+|----------|-------------|---------|
+| `SECURITY_HEADERS_ENABLED` | Añade cabeceras `X-Content-Type-Options`, `X-Frame-Options`, etc. | `true` |
+| `BACKEND_ALLOWED_HOSTS` | Hosts permitidos (`TrustedHostMiddleware`) en producción | `localhost,127.0.0.1` |
+
+En `APP_ENV=production` el backend valida al arrancar que `APP_SECRET_KEY`, `JWT_SECRET_KEY` tengan ≥32 caracteres, que `APP_DEBUG=false` y que CORS no use `*`.
 
 ## Recuperación de contraseña y correo
 

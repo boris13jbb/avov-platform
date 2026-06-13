@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
@@ -27,9 +29,18 @@ from app.core.config import get_settings
 from app.core.handlers import register_exception_handlers
 from app.core.logging import setup_logging
 from app.core.responses import success_response
+from app.core.startup import validate_runtime_settings
+from app.security.middleware import register_security_middleware
 
 app_settings = get_settings()
 setup_logging()
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    validate_runtime_settings(app_settings)
+    yield
+
 
 app = FastAPI(
     title="AVOV API",
@@ -37,6 +48,7 @@ app = FastAPI(
     version="0.1.0",
     docs_url="/docs" if app_settings.app_debug else None,
     redoc_url="/redoc" if app_settings.app_debug else None,
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -47,6 +59,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+register_security_middleware(app, app_settings)
 register_exception_handlers(app)
 
 API_PREFIX = "/api/v1"
@@ -69,6 +82,21 @@ app.include_router(dashboard.router, prefix=API_PREFIX)
 app.include_router(exports.router, prefix=API_PREFIX)
 app.include_router(riasec_categories.router, prefix=API_PREFIX)
 app.include_router(settings_routes.router, prefix=API_PREFIX)
+
+
+@app.get(f"{API_PREFIX}/")
+def api_root():
+    payload: dict[str, str] = {
+        "name": app_settings.app_name,
+        "version": "0.1.0",
+        "api_prefix": API_PREFIX,
+    }
+    if app_settings.app_debug:
+        payload["docs"] = "/docs"
+    return success_response(
+        data=payload,
+        message="Bienvenido a la API de AVOV",
+    )
 
 
 def custom_openapi():

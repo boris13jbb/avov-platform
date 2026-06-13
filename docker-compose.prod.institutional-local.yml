@@ -1,0 +1,18 @@
+# AVOV - Stack institucional local: prod + Flutter Web + SSL autofirmado (Fase 44)
+# Uso: docker compose -f docker-compose.prod.yml -f docker-compose.prod.web.yml -f docker-compose.prod.institutional-local.yml --env-file .env.institutional-local -p avov-institutional-local up -d
+
+services:
+  backend:
+    env_file:
+      - .env.institutional-local
+
+  nginx:
+    ports:
+      - "${NGINX_HTTP_PORT:-8180}:80"
+      - "${NGINX_HTTPS_PORT:-8443}:443"
+    volumes:
+      - ./frontend/build/web:/usr/share/nginx/html:ro
+      - ./nginx/nginx.prod.ssl.web.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/snippets:/etc/nginx/snippets:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - nginx_logs:/var/log/nginx

@@ -181,11 +181,13 @@ GoRouter(
 |----------|------|-------|
 | Inicio (health check) | `/inicio` | Legacy; usuarios autenticados redirigen al dashboard |
 
-## 10. Pendiente planificado (no bloquea MVP)
+## 10. Funcionalidades post-MVP ya implementadas
 
 | Funcionalidad | Estado |
 |---------------|--------|
-| — | Recuperación de contraseña y `RiasecChart` implementados (Fase 33) |
+| Recuperación de contraseña | Implementada (`/forgot-password`, `/reset-password`) |
+| Gráfico RIASEC (`RiasecChart`) | Implementado en resultados estudiante y orientador |
+| Hardening OWASP (Fase 33) | Cabeceras HTTP, rate limits ampliados, validación prod |
 
 ---
 
@@ -193,12 +195,12 @@ GoRouter(
 
 | Rol | Pantallas implementadas |
 |-----|-------------------------|
-| Comunes | 7 (incl. mantenimiento) |
-| Super Admin | 16 |
+| Comunes | 8 (incl. mantenimiento y cambio de contraseña) |
+| Super Admin | 18 (incl. formularios carrera/pregunta) |
 | Institución | 12 |
 | Orientador | 5 |
-| Estudiante | 9 |
-| Auxiliar | 1 (`/inicio`) |
-| **Total archivos `*_screen.dart`** | **43** |
+| Estudiante | 10 (incl. perfil autogestionado) |
+| Auxiliar | 1 (`/inicio`, legacy) |
+| **Total archivos `*_screen.dart`** | **45** |
 
-**Estado:** Todas las pantallas del plan operativo están implementadas y enrutadas en `app_router.dart`. La protección por rol usa `AuthGuard` + `RoleRouteMapper` (rutas no reconocidas → `/unauthorized`).
+**Estado:** Todas las pantallas del plan operativo están implementadas y enrutadas en `app_router.dart`. La protección por rol usa `AuthGuard` + `RoleRouteMapper`: rutas no permitidas redirigen a `/unauthorized`; sesión sin rol válido fuerza re-login.

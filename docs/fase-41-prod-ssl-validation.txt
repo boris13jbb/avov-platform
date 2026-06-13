@@ -1,0 +1,27 @@
+﻿AVOV - Validacion Prod SSL Deploy (Fase 41)
+Fecha: 2026-06-12 17:52:09
+HttpsBaseUrl: https://localhost:8443/api/v1
+HttpBaseUrl: http://localhost:8180/api/v1
+Proyecto: avov-prod-ssl-local
+OK: 10 | SKIP: 0 | FALLO: 0
+
+[OK] Estructura - Archivos prod-ssl-local
+    5 presentes
+[OK] SSL - Certificados dev
+    nginx/certs/
+[OK] Preflight - Variables produccion SSL
+    .env.prod-ssl-local
+[OK] Config - docker compose config
+    prod + ssl-local
+[OK] Deploy - prod-ssl-local-up
+    avov-prod-ssl-local
+[OK] SSL - Health live via HTTPS
+    https://localhost:8443/api/v1
+[OK] PostDeploy - Checklist completo
+    salud + Qdrant + HSTS + redirect
+[OK] Smoke - Health live HTTPS
+    success=true
+[OK] Smoke - Login admin HTTPS
+    token recibido
+[OK] Deploy - prod-ssl-local-down
+    stack detenido

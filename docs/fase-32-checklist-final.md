@@ -36,13 +36,13 @@ El proyecto queda **listo para entrega** a nivel de código, documentación y st
 | `validate-fase32.ps1` (15 criterios estáticos) | 15/15 ESTATICO OK o AUTO OK |
 | Inventario pantallas (`pantallas-flutter.md`) | 43+ pantallas enrutadas |
 
-### Pendientes de runtime (requieren Docker activo)
+### Pendientes de runtime
 
-| Verificación | Motivo |
+| Verificación | Estado |
 |--------------|--------|
-| `docker compose up --build -d` | Docker Desktop no estaba en ejecución en la sesión de validación |
-| `docker compose exec backend pytest -q` | Requiere stack levantado |
-| `GET /api/v1/health/live` en runtime | Requiere backend activo |
+| `docker compose up --build -d` | OK (validado 2026-06-12) |
+| `docker compose exec backend pytest -q` | OK (164+ tests) |
+| `GET /api/v1/health/live` en runtime | OK |
 | Flujo E2E: login → test 60 → PDF | Prueba manual con checklist QA |
 
 ## 5. Comandos ejecutados o sugeridos

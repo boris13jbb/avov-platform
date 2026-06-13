@@ -4,6 +4,11 @@
 
 # Entorno
 .env
+.env.staging
+.env.prod-local
+.env.prod-ssl-local
+.env.institutional-local
+.deploy/
 .env.local
 .env.*.local
 *.pem

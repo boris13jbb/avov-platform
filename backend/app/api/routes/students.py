@@ -83,9 +83,7 @@ def create_student(
 def update_student(
     student_id: int,
     body: StudentUpdate,
-    current_user: User = Depends(
-        require_roles(UserRole.SUPER_ADMIN, UserRole.INSTITUTION_ADMIN)
-    ),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     student = StudentService(db).update_student(student_id, body, current_user)

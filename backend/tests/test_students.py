@@ -268,6 +268,47 @@ def test_counselor_sees_only_assigned_students(
         cleanup.close()
 
 
+def test_update_student_self_as_student(
+    client: TestClient,
+    super_admin_headers: dict[str, str],
+    sample_institution,
+):
+    payload = _student_payload(sample_institution.id)
+    created = client.post(
+        "/api/v1/students",
+        headers=super_admin_headers,
+        json=payload,
+    )
+    student_id = created.json()["data"]["id"]
+
+    login = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": payload["user"]["email"],
+            "password": payload["user"]["password"],
+        },
+    )
+    headers = {"Authorization": f"Bearer {login.json()['data']['access_token']}"}
+
+    response = client.put(
+        f"/api/v1/students/{student_id}",
+        headers=headers,
+        json={
+            "grade": "11",
+            "user": {
+                "phone": "0998887766",
+                "email": "no-debe-cambiar@instituto.edu.co",
+            },
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["grade"] == "11"
+    assert data["user"]["phone"] == "0998887766"
+    assert data["user"]["email"] == payload["user"]["email"]
+    _delete_student_by_id(student_id)
+
+
 def test_update_student_success(
     client: TestClient,
     super_admin_headers: dict[str, str],

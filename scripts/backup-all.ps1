@@ -1,13 +1,23 @@
 # Backup completo: MySQL + Qdrant + storage del backend (producción por defecto)
 param(
-    [ValidateSet("dev", "prod")]
+    [ValidateSet("dev", "prod", "staging", "prod-local")]
     [string]$Target = "prod"
 )
 
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot\..
 
-if ($Target -eq "prod") {
+$stagingSwitch = $false
+$prodLocalSwitch = $false
+if ($Target -eq "staging") {
+    $compose = "docker-compose.prod.yml"
+    $project = if ($env:AVOV_STAGING_PROJECT) { $env:AVOV_STAGING_PROJECT } else { "avov-staging" }
+    $stagingSwitch = $true
+} elseif ($Target -eq "prod-local") {
+    $compose = "docker-compose.prod.yml"
+    $project = if ($env:AVOV_PROD_LOCAL_PROJECT) { $env:AVOV_PROD_LOCAL_PROJECT } else { "avov-prod-local" }
+    $prodLocalSwitch = $true
+} elseif ($Target -eq "prod") {
     $compose = "docker-compose.prod.yml"
     $project = if ($env:AVOV_PROD_PROJECT) { $env:AVOV_PROD_PROJECT } else { "avov-prod" }
 } else {
@@ -16,8 +26,11 @@ if ($Target -eq "prod") {
 }
 
 Write-Host "Backup AVOV ($Target)..." -ForegroundColor Cyan
-& "$PSScriptRoot\backup-mysql.ps1" -ComposeFile $compose -Project $project
-& "$PSScriptRoot\backup-qdrant.ps1" -ComposeFile $compose -Project $project
+$backupParams = @{ ComposeFile = $compose; Project = $project }
+if ($stagingSwitch) { $backupParams.Staging = $true }
+if ($prodLocalSwitch) { $backupParams.ProdLocal = $true }
+& "$PSScriptRoot\backup-mysql.ps1" @backupParams
+& "$PSScriptRoot\backup-qdrant.ps1" @backupParams
 
 $storageBackupDir = Join-Path $PWD "backups\storage"
 New-Item -ItemType Directory -Force -Path $storageBackupDir | Out-Null
@@ -25,6 +38,14 @@ $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $storageArchive = Join-Path $storageBackupDir "avov_storage_$timestamp.tar.gz"
 
 $composeArgs = @("-f", $compose)
+if ($stagingSwitch) {
+    $composeArgs += "-f", "docker-compose.staging.yml"
+    $composeArgs += "--env-file", ".env.staging"
+}
+if ($prodLocalSwitch) {
+    $composeArgs += "-f", "docker-compose.prod-local.yml"
+    $composeArgs += "--env-file", ".env.prod-local"
+}
 if ($project) { $composeArgs += "-p", $project }
 
 docker compose @composeArgs exec -T backend tar czf - -C /app storage 2>$null > $storageArchive

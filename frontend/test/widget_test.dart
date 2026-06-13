@@ -12,7 +12,6 @@ import 'package:avov_frontend/features/auth/data/repositories/auth_repository.da
 import 'package:avov_frontend/features/auth/presentation/providers/auth_provider.dart';
 import 'package:avov_frontend/features/auth/presentation/screens/login_screen.dart';
 import 'package:avov_frontend/features/splash/presentation/screens/splash_screen.dart';
-import 'package:avov_frontend/main.dart';
 import 'package:avov_frontend/router/route_names.dart';
 
 const _testPublicSettings = PublicSettings(
@@ -99,17 +98,50 @@ void main() {
     expect(button.onPressed, isNotNull);
   });
 
+  testWidgets('Login usa app_display_name de settings públicas', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          publicSettingsProvider.overrideWith(
+            (ref) async => const PublicSettings(
+              appDisplayName: 'Instituto Demo AVOV',
+              ethicalDisclaimer: 'Disclaimer demo.',
+              maintenanceMode: false,
+            ),
+          ),
+        ],
+        child: const MaterialApp(
+          home: LoginScreen(),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('Instituto Demo AVOV'), findsOneWidget);
+  });
+
   testWidgets('La app inicia sin errores de render', (tester) async {
+    final router = GoRouter(
+      initialLocation: RouteNames.login,
+      routes: [
+        GoRoute(
+          path: RouteNames.login,
+          builder: (context, state) => const LoginScreen(),
+        ),
+      ],
+    );
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: _publicSettingsOverrides,
-        child: const AvovApp(),
+        child: MaterialApp.router(routerConfig: router),
       ),
     );
 
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.byType(MaterialApp), findsOneWidget);
+    expect(find.text('Ingresar'), findsOneWidget);
   });
 }

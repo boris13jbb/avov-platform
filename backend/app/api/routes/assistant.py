@@ -11,9 +11,15 @@ from app.schemas.assistant import (
     ExplainProfileRequest,
 )
 from app.security.permissions import require_roles
+from app.security.rate_limit import assistant_rate_limiter
 from app.services.assistant_service import AssistantService
 
 router = APIRouter(prefix="/assistant", tags=["Asistente Virtual"])
+
+
+def _ensure_assistant_quota(user: User) -> None:
+    assistant_rate_limiter.ensure_not_blocked(str(user.id))
+    assistant_rate_limiter.record_attempt(str(user.id))
 
 
 @router.post("/chat", dependencies=[Depends(security)])
@@ -22,6 +28,7 @@ async def assistant_chat(
     current_user: User = Depends(require_roles(UserRole.STUDENT)),
     db: Session = Depends(get_db),
 ):
+    _ensure_assistant_quota(current_user)
     result = await AssistantService(db).chat(body, current_user)
     return success_response(
         data=result.model_dump(mode="json"),
@@ -37,6 +44,7 @@ async def explain_profile(
     ),
     db: Session = Depends(get_db),
 ):
+    _ensure_assistant_quota(current_user)
     result = await AssistantService(db).explain_profile(body, current_user)
     return success_response(
         data=result.model_dump(mode="json"),
@@ -52,6 +60,7 @@ async def explain_careers(
     ),
     db: Session = Depends(get_db),
 ):
+    _ensure_assistant_quota(current_user)
     result = await AssistantService(db).explain_careers(body, current_user)
     return success_response(
         data=result.model_dump(mode="json"),

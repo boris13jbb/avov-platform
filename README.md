@@ -70,6 +70,91 @@ Validación integral (Fase 32 — 15 criterios):
 .\scripts\validate-fase32.ps1
 ```
 
+Smoke E2E por API (Fase 35 — requiere Docker activo):
+
+```powershell
+.\scripts\smoke-e2e.ps1
+.\scripts\smoke-e2e.ps1 -EnsureStudentSeed   # crea estudiante de prueba si falta
+```
+
+Staging producción local (Fase 36 — Nginx en puerto 8080):
+
+```powershell
+Copy-Item .env.staging.example .env.staging
+.\scripts\staging-up.ps1
+.\scripts\validate-staging.ps1
+```
+
+Flutter QA (Fase 37):
+
+```powershell
+.\scripts\validate-flutter-qa.ps1
+```
+
+Flujo vocacional E2E (Fase 38 — requiere Docker activo):
+
+```powershell
+.\scripts\validate-vocational-e2e.ps1
+```
+
+Validación release unificada (Fase 39):
+
+```powershell
+.\scripts\validate-release.ps1
+.\scripts\validate-release.ps1 -Quick
+```
+
+Validación despliegue producción prod-local (Fase 40):
+
+```powershell
+.\scripts\preflight-prod.ps1 -EnvFile ".env.prod-local"
+.\scripts\validate-prod-deploy.ps1
+```
+
+Validación SSL + post-deploy (Fase 41):
+
+```powershell
+.\scripts\validate-prod-ssl-deploy.ps1
+.\scripts\post-deploy-prod.ps1 -BaseUrl "https://api.tudominio.edu.co/api/v1"
+```
+
+Checklist UI Flutter manual: [docs/fase-41-flutter-ui-manual.md](docs/fase-41-flutter-ui-manual.md)
+
+Validación release servidor + Flutter Web (Fase 42):
+
+```powershell
+.\scripts\validate-server-release.ps1
+.\scripts\build-flutter-web.ps1 -EnvFile ".env.production.server.example"
+```
+
+Servidor Linux: [docs/fase-42-servidor-release.md](docs/fase-42-servidor-release.md)
+
+Validación operaciones VPS (Fase 43):
+
+```powershell
+.\scripts\validate-vps-readiness.ps1
+.\scripts\monitor-health.ps1 -BaseUrl "http://localhost:8000/api/v1"
+```
+
+VPS Linux: [docs/fase-43-vps-operaciones.md](docs/fase-43-vps-operaciones.md)
+
+Validación despliegue institucional (Fase 44):
+
+```powershell
+.\scripts\prod-institutional-local-up.ps1
+.\scripts\validate-institutional-deploy.ps1 -SkipTlsVerify
+```
+
+Documentación: [docs/fase-44-despliegue-institucional.md](docs/fase-44-despliegue-institucional.md)
+
+Validación soporte y rollback (Fase 45):
+
+```powershell
+.\scripts\validate-production-ops.ps1
+```
+
+Documentación: [docs/fase-45-soporte-rollback-capacitacion.md](docs/fase-45-soporte-rollback-capacitacion.md)
+
 ## Instalación local
 
 ### 1. Clonar y configurar entorno
@@ -97,7 +182,16 @@ O usar el script:
 ```powershell
 Copy-Item .env.production.example .env
 # Editar claves y dominios
+.\scripts\preflight-prod.ps1 -EnvFile ".env"
 .\scripts\prod-up.ps1
+```
+
+Simulación prod local aislada (puerto 8090, no modifica `.env` dev):
+
+```powershell
+Copy-Item .env.prod-local.example .env.prod-local
+.\scripts\prod-local-up.ps1
+.\scripts\validate-prod-deploy.ps1
 ```
 
 Ver [docs/manual-produccion.md](docs/manual-produccion.md) y [docker/README.md](docker/README.md).
@@ -148,6 +242,9 @@ docker compose exec -T backend pytest -q
 
 # Validacion integral Fase 32
 .\scripts\validate-fase32.ps1
+
+# Smoke E2E API (Fase 35, Docker activo)
+.\scripts\smoke-e2e.ps1
 ```
 
 ## Variables de entorno

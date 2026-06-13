@@ -1,0 +1,33 @@
+﻿AVOV - Validacion Flujo Vocacional (Fase 38)
+Fecha: 2026-06-12 17:05:15
+BaseUrl: http://localhost:8000/api/v1
+Estudiante: estudiante.test.fase11@instituto.edu.co
+SessionId: 267
+OK: 13 | SKIP: 0 | FALLO: 0
+
+[OK] Infra - Backend disponible
+    health/live
+[OK] Auth - Login estudiante
+    estudiante.test.fase11@instituto.edu.co
+[OK] Test RIASEC - Iniciar sesion
+    session_id=267
+[OK] Test RIASEC - Continuar sesion en progreso
+    misma session_id=267
+[OK] Test RIASEC - Preguntas activas (>=60)
+    61 preguntas
+[OK] Test RIASEC - Guardar respuestas 1-5
+    61 respuestas
+[OK] Test RIASEC - Finalizar y calcular RIASEC
+    dominante=R secundario=I
+[OK] Test RIASEC - GET resultado RIASEC
+    perfil=R
+[OK] Test RIASEC - Bloqueo edicion post-finalizar
+    422 Validation
+[OK] Recomendaciones - Generar post-test
+    5 carreras + disclaimer etico
+[OK] Recomendaciones - Listar por estudiante
+    5 items
+[OK] Reportes PDF - Descarga PDF valida
+    5019 bytes -> C:\Users\BRS\Documents\aplicstibi\docs\fase-38-vocational-sample.pdf
+[OK] Reportes PDF - Historial reportes
+    2 reporte(s)

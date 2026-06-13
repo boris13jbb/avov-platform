@@ -1,7 +1,15 @@
 # AVOV — Sembrar carreras de desarrollo (mínimo 5 activas para recomendaciones)
-$ErrorActionPreference = "Stop"
+param(
+    [string]$BaseUrl = "http://localhost:8000/api/v1",
+    [switch]$SkipTlsVerify
+)
 
-$baseUrl = "http://localhost:8000/api/v1"
+$ErrorActionPreference = "Stop"
+if ($SkipTlsVerify) {
+    . (Join-Path $PSScriptRoot "_tls_helpers.ps1")
+    Enable-AvovTlsSkip
+}
+$baseUrl = $BaseUrl
 
 $login = Invoke-RestMethod `
     -Uri "$baseUrl/auth/login" `
@@ -51,14 +59,18 @@ $careers = @(
 Write-Host "Creando carreras de desarrollo..." -ForegroundColor Cyan
 foreach ($career in $careers) {
     $body = $career | ConvertTo-Json -Depth 5
-    $response = Invoke-RestMethod `
-        -Uri "$baseUrl/careers" `
-        -Method POST `
-        -Headers $headers `
-        -ContentType "application/json" `
-        -Body $body `
-        -TimeoutSec 30
-    Write-Host "  + $($response.data.name) (id=$($response.data.id))" -ForegroundColor Green
+    try {
+        $response = Invoke-RestMethod `
+            -Uri "$baseUrl/careers" `
+            -Method POST `
+            -Headers $headers `
+            -ContentType "application/json" `
+            -Body $body `
+            -TimeoutSec 30
+        Write-Host "  + $($response.data.name) (id=$($response.data.id))" -ForegroundColor Green
+    } catch {
+        Write-Host "  ~ $($career.name) ya existe o no se pudo crear" -ForegroundColor DarkYellow
+    }
 }
 
 Write-Host "`nListo. Ejecuta: .\scripts\test-recommendations.ps1" -ForegroundColor Yellow

@@ -1,0 +1,19 @@
+AVOV - Validacion Server Release (Fase 42)
+Fecha: 2026-06-12 18:20:28
+Env validacion: .env.server-release.example
+OK: 8 | SKIP: 0 | FALLO: 0
+
+[OK] Estructura - Archivos servidor release
+    10 presentes
+[OK] Preflight - Servidor (.env.server-release)
+    dominios HTTPS
+[OK] Config - compose prod + web
+[OK] Config - compose prod + web + ssl
+[OK] Flutter - analyze + test
+    validate-flutter-qa.ps1
+[OK] Flutter - build web release
+    frontend/build/web/
+[OK] Flutter - Artefacto web generado
+    index.html
+[OK] Manual - Checklist UI Flutter
+    docs/fase-41-flutter-ui-manual.md (ejecucion manual)

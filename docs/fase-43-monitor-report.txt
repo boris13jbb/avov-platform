@@ -1,0 +1,11 @@
+﻿AVOV - Monitor Health (Fase 43)
+Fecha: 2026-06-12 18:01:52
+BaseUrl: http://localhost:8000/api/v1
+OK: 3 | FALLO: 0
+
+[OK] Health live
+    success=true
+[OK] Servicios MySQL/Redis/Qdrant
+    todos up
+[OK] Espacio en disco
+    67.8% usado

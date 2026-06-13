@@ -9,8 +9,7 @@ import '../core/models/user_role.dart';
 import '../core/network/dio_client.dart';
 import '../core/storage/secure_token_storage.dart';
 import '../features/auth/data/datasources/auth_remote_datasource.dart';
-import 'role_route_mapper.dart';
-import 'route_names.dart';
+import 'auth_redirect_logic.dart';
 
 class AuthGuard {
   AuthGuard({SecureTokenStorage? tokenStorage})
@@ -18,70 +17,27 @@ class AuthGuard {
 
   final SecureTokenStorage _tokenStorage;
 
-  static const _publicRoutes = {
-    RouteNames.splash,
-    RouteNames.login,
-    RouteNames.forgotPassword,
-    RouteNames.resetPassword,
-    RouteNames.notFound,
-    RouteNames.unauthorized,
-    RouteNames.maintenance,
-  };
-
   static const _networkTimeout = Duration(seconds: 5);
 
   Future<String?> redirect(BuildContext context, GoRouterState state) async {
     final location = state.matchedLocation;
-
-    // No bloquear el primer frame: el splash gestiona su propia navegación.
-    if (location == RouteNames.splash) {
-      return null;
-    }
-
-    final isPublic = _publicRoutes.contains(location);
     final token = await _tokenStorage.getAccessToken();
     final isAuthenticated = token != null && token.isNotEmpty;
     final maintenanceMode = await _isMaintenanceMode();
-    final userRole =
-        isAuthenticated ? await _resolveUserRole() : null;
-    final isSuperAdmin = userRole == UserRole.superAdmin;
+    final userRole = isAuthenticated ? await _resolveUserRole() : null;
 
-    if (maintenanceMode && !isSuperAdmin) {
-      const maintenancePublicRoutes = {
-        RouteNames.maintenance,
-        RouteNames.login,
-        RouteNames.splash,
-        RouteNames.forgotPassword,
-        RouteNames.resetPassword,
-      };
-      if (!maintenancePublicRoutes.contains(location)) {
-        return RouteNames.maintenance;
-      }
+    final input = AuthRedirectInput(
+      location: location,
+      isAuthenticated: isAuthenticated,
+      userRole: userRole,
+      maintenanceMode: maintenanceMode,
+    );
+
+    if (AuthRedirectLogic.shouldClearTokensOnRedirect(input)) {
+      await _tokenStorage.clearTokens();
     }
 
-    if (!isAuthenticated && !isPublic) {
-      return RouteNames.login;
-    }
-
-    if (!isAuthenticated) {
-      return null;
-    }
-    final dashboardRoute =
-        userRole == null ? null : RoleRouteMapper.routeFor(userRole);
-
-    if (location == RouteNames.login) {
-      return dashboardRoute ?? RouteNames.home;
-    }
-
-    if (location == RouteNames.home && dashboardRoute != null) {
-      return dashboardRoute;
-    }
-
-    if (userRole != null && !RoleRouteMapper.canAccessRoute(userRole, location)) {
-      return dashboardRoute ?? RouteNames.unauthorized;
-    }
-
-    return null;
+    return AuthRedirectLogic.resolve(input);
   }
 
   Future<bool> _isMaintenanceMode() async {

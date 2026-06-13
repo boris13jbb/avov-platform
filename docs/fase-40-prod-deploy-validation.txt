@@ -1,0 +1,24 @@
+﻿AVOV - Validacion Prod Deploy (Fase 40)
+Fecha: 2026-06-12 17:38:13
+BaseUrl: http://localhost:8090/api/v1
+Proyecto: avov-prod-local
+OK: 9 | SKIP: 0 | FALLO: 0
+
+[OK] Estructura - Archivos prod-local
+    4 presentes
+[OK] Preflight - Variables produccion
+    .env.prod-local
+[OK] Config - docker compose config
+    prod + prod-local
+[OK] Deploy - prod-local-up
+    avov-prod-local
+[OK] Nginx - Health live via proxy
+    http://localhost:8090/api/v1
+[OK] Seguridad - OpenAPI bloqueado
+    404
+[OK] Smoke - E2E via Nginx prod-local
+    17 checks
+[OK] Backup - MySQL + Qdrant + storage
+    ./backups/
+[OK] Deploy - prod-local-down
+    stack detenido

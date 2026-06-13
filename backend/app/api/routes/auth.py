@@ -5,7 +5,11 @@ from app.api.deps import get_current_user, get_db, security
 from app.core.exceptions import UnauthorizedException
 from app.core.responses import success_response
 from app.models.user import User
-from app.security.rate_limit import login_rate_limiter
+from app.security.rate_limit import (
+    forgot_password_rate_limiter,
+    login_rate_limiter,
+    reset_password_rate_limiter,
+)
 from app.schemas.auth import (
     ChangePasswordRequest,
     ForgotPasswordRequest,
@@ -74,9 +78,9 @@ def forgot_password(
     db: Session = Depends(get_db),
 ):
     client_ip = request.client.host if request.client else "unknown"
-    rate_key = f"forgot:{client_ip}:{body.email.strip().lower()}"
-    login_rate_limiter.ensure_not_blocked(rate_key)
-    login_rate_limiter.record_failed_attempt(rate_key)
+    rate_key = f"{client_ip}:{body.email.strip().lower()}"
+    forgot_password_rate_limiter.ensure_not_blocked(rate_key)
+    forgot_password_rate_limiter.record_attempt(rate_key)
 
     message = AuthService(db).request_password_reset(
         body,
@@ -93,11 +97,15 @@ def reset_password(
     db: Session = Depends(get_db),
 ):
     client_ip = request.client.host if request.client else "unknown"
+    rate_key = client_ip
+    reset_password_rate_limiter.ensure_not_blocked(rate_key)
+    reset_password_rate_limiter.record_attempt(rate_key)
     AuthService(db).reset_password(
         body,
         ip_address=client_ip,
         user_agent=request.headers.get("user-agent"),
     )
+    reset_password_rate_limiter.clear(rate_key)
     return success_response(message="Contraseña restablecida correctamente")
 
 

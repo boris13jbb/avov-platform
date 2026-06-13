@@ -1,0 +1,24 @@
+﻿AVOV - Smoke Public Release (Fase 44)
+Fecha: 2026-06-12 18:28:21
+ApiUrl: https://localhost:8443/api/v1
+FrontendUrl: https://localhost:8443
+OK: 9 | SKIP: 0 | FALLO: 0
+
+[OK] API - Health live
+    success=true
+[OK] API - Servicios backend
+    mysql/redis/qdrant
+[OK] API - Settings publicas
+    AVOV
+[OK] API - Login super admin
+    token recibido
+[OK] API - CORS origin frontend
+    https://localhost:8443
+[OK] Web - Frontend raiz
+    HTTP 200
+[OK] Web - SPA fallback /login
+    index servido
+[OK] SSL - HSTS API
+    max-age=31536000; includeSubDomains,max-age=31536000; includeSubDomains
+[OK] SSL - Redirect HTTP a HTTPS
+    301 -> https://localhost/api/v1/health/live

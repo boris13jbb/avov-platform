@@ -15,6 +15,9 @@ if (-not (Test-Path ".env")) {
     }
 }
 
+& "$PSScriptRoot\preflight-prod.ps1" -EnvFile ".env"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
 if ($useSsl) {
     $composeFiles += "-f", "docker-compose.prod.ssl.yml"
     if (-not (Test-Path "nginx\certs\fullchain.pem")) {

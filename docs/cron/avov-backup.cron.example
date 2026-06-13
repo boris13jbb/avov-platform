@@ -1,0 +1,18 @@
+# AVOV - Cron de backups y monitoreo (Fase 43)
+# Copiar a crontab del usuario de despliegue o usar: INSTALL=1 ./scripts/install-vps-cron.sh
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+AVOV_ROOT=/opt/avov
+
+# Backup completo diario 02:00 (MySQL + Qdrant + storage)
+0 2 * * * cd $AVOV_ROOT && AVOV_PROD_WEB=1 AVOV_PROD_SSL=1 ./scripts/backup-all.sh prod >> ./logs/backup-cron.log 2>&1
+
+# Retencion backups (14 dias por defecto)
+30 2 * * * cd $AVOV_ROOT && RETENTION_DAYS=14 ./scripts/prune-backups.sh >> ./logs/backup-cron.log 2>&1
+
+# Monitoreo cada 5 minutos (ajustar API_BASE_URL segun .env)
+*/5 * * * * cd $AVOV_ROOT && API_BASE_URL=$(grep -E '^API_BASE_URL=' .env | head -1 | cut -d= -f2- | tr -d '\r') ./scripts/monitor-health.sh "$API_BASE_URL" >> ./logs/monitor-health.log 2>&1
+
+# Preview sin instalar:
+# INSTALL=0 AVOV_ROOT=/opt/avov ./scripts/install-vps-cron.sh

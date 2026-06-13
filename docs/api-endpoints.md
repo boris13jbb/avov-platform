@@ -1,7 +1,8 @@
 # API Endpoints — AVOV
 
 **Base URL:** `http://localhost:8000/api/v1`  
-**Fase documentada:** 0 (plan completo) — Implementación progresiva Fases 3-26
+**Raíz servidor:** `http://localhost:8000/` (misma información que `/api/v1/`)  
+**Última revisión:** Fase 33 — alineado con implementación actual
 
 ---
 
@@ -48,7 +49,8 @@ Authorization: Bearer <access_token>
 
 | Método | Ruta | Rol | Descripción |
 |--------|------|-----|-------------|
-| GET | `/` | Público | Información básica de la API |
+| GET | `/` | Público | Información básica (raíz del servidor) |
+| GET | `/api/v1/` | Público | Información básica bajo el prefijo API |
 | GET | `/health` | Público | Health completo (MySQL, Redis, Qdrant) |
 | GET | `/health/live` | Público | Liveness probe |
 | GET | `/status` | Público | Estado detallado de servicios |
@@ -61,7 +63,7 @@ Authorization: Bearer <access_token>
 |--------|------|-----|-------------|
 | POST | `/auth/login` | Público | Iniciar sesión, retorna JWT |
 | POST | `/auth/logout` | Autenticado | Cerrar sesión, revocar refresh token |
-| POST | `/auth/refresh` | Autenticado | Renovar access token |
+| POST | `/auth/refresh` | Público | Renovar access token (requiere `refresh_token` en body) |
 | GET | `/auth/me` | Autenticado | Perfil del usuario actual |
 | POST | `/auth/change-password` | Autenticado | Cambiar contraseña |
 | POST | `/auth/forgot-password` | Público | Solicitar enlace de recuperación (respuesta genérica) |
@@ -76,7 +78,8 @@ Authorization: Bearer <access_token>
 | GET | `/institutions` | SUPER_ADMIN | Listar con paginación y búsqueda |
 | GET | `/institutions/{id}` | SUPER_ADMIN, INSTITUTION_ADMIN (propia) | Detalle |
 | POST | `/institutions` | SUPER_ADMIN | Crear institución |
-| PUT | `/institutions/{id}` | SUPER_ADMIN | Actualizar |
+| PUT | `/institutions/{id}` | SUPER_ADMIN, INSTITUTION_ADMIN (propia; sin `code`/`status`) | Actualizar |
+| POST | `/institutions/{id}/logo` | SUPER_ADMIN, INSTITUTION_ADMIN (propia) | Subir logo institucional |
 | DELETE | `/institutions/{id}` | SUPER_ADMIN | Eliminación lógica (INACTIVE) |
 
 ---
@@ -97,11 +100,12 @@ Authorization: Bearer <access_token>
 
 | Método | Ruta | Rol | Descripción |
 |--------|------|-----|-------------|
-| GET | `/students` | Admin, Counselor (filtrado) | Listar estudiantes |
+| GET | `/students` | SUPER_ADMIN, INSTITUTION_ADMIN, COUNSELOR (filtrado) | Listar estudiantes |
 | GET | `/students/{id}` | Según permiso | Detalle estudiante |
 | POST | `/students` | SUPER_ADMIN, INSTITUTION_ADMIN | Crear estudiante + usuario |
-| PUT | `/students/{id}` | Según permiso | Actualizar |
-| PATCH | `/students/{id}/status` | Admin | Cambiar estado |
+| PUT | `/students/{id}` | SUPER_ADMIN, INSTITUTION_ADMIN, STUDENT (propio perfil) | Actualizar |
+| POST | `/students/{id}/assign-counselor` | SUPER_ADMIN, INSTITUTION_ADMIN | Asignar orientador |
+| PATCH | `/students/{id}/status` | SUPER_ADMIN, INSTITUTION_ADMIN | Cambiar estado |
 
 ---
 
@@ -122,6 +126,7 @@ Authorization: Bearer <access_token>
 | Método | Ruta | Rol | Descripción |
 |--------|------|-----|-------------|
 | GET | `/questions` | Autenticado | Listar preguntas activas |
+| GET | `/questions/{id}` | Autenticado (inactivas solo SUPER_ADMIN) | Detalle pregunta |
 | POST | `/questions` | SUPER_ADMIN | Crear pregunta |
 | PUT | `/questions/{id}` | SUPER_ADMIN | Actualizar |
 | PATCH | `/questions/{id}/status` | SUPER_ADMIN | Activar/inactivar |
@@ -137,7 +142,8 @@ Authorization: Bearer <access_token>
 | GET | `/tests/{session_id}/questions` | STUDENT (owner) | Preguntas de la sesión |
 | POST | `/tests/{session_id}/answers` | STUDENT (owner) | Guardar respuesta (1-5) |
 | POST | `/tests/{session_id}/finish` | STUDENT (owner) | Finalizar y calcular RIASEC |
-| GET | `/tests/{session_id}/result` | STUDENT, COUNSELOR, Admin | Resultado RIASEC |
+| GET | `/tests/{session_id}/result` | STUDENT, COUNSELOR, INSTITUTION_ADMIN, SUPER_ADMIN | Resultado RIASEC |
+| POST | `/tests/{session_id}/observations` | COUNSELOR | Observación por sesión de test |
 
 ---
 
@@ -221,7 +227,7 @@ Authorization: Bearer <access_token>
 
 | Método | Ruta | Rol | Descripción |
 |--------|------|-----|-------------|
-| GET | `/media/{path}` | Público/Autenticado | Servir archivos de medios (logos, avatares) |
+| GET | `/media/logos/{filename}` | Público | Servir logos institucionales |
 
 ---
 
@@ -238,17 +244,17 @@ Authorization: Bearer <access_token>
 
 | Grupo | Endpoints |
 |-------|-----------|
-| Sistema | 4 |
+| Sistema | 5 |
 | Auth | 7 |
-| Instituciones | 5 |
+| Instituciones | 6 |
 | Usuarios | 5 |
-| Estudiantes | 5 |
+| Estudiantes | 6 |
 | Carreras | 5 |
 | Preguntas | 6 |
 | Configuración | 3 |
 | RIASEC | 1 |
 | Media | 1 |
-| Test | 5 |
+| Test | 6 |
 | Vector | 2 |
 | Asistente | 3 |
 | Recomendaciones | 3 |
@@ -256,4 +262,4 @@ Authorization: Bearer <access_token>
 | Dashboard | 4 |
 | Auditoría | 2 |
 | Exportaciones | 2 |
-| **Total** | **56** |
+| **Total bajo `/api/v1`** | **60** |

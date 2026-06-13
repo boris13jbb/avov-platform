@@ -1,0 +1,39 @@
+﻿AVOV - Smoke Prod Local (Fase 40)
+Fecha: 2026-06-12 17:38:07
+BaseUrl: http://localhost:8090/api/v1
+OK: 17 | SKIP: 0 | FALLO: 0
+
+[OK] Infra - Health live
+    success=true
+[OK] Infra - Health completo
+    app=AVOV, environment=production, services=@{api=True; mysql=True; redis=True; qdrant=True}
+[OK] Infra - API root /api/v1/
+    AVOV
+[OK] Infra - Cabeceras OWASP
+    X-Content-Type-Options=nosniff
+[OK] Auth - Settings publicas
+    AVOV
+[OK] Auth - Login invalido
+    401 credenciales incorrectas
+[OK] Auth - Login super admin
+    access_token recibido
+[OK] Auth - GET /auth/me
+    rol SUPER_ADMIN
+[OK] Auth - Refresh token
+    nuevo access_token
+[OK] Roles - Login estudiante seed
+    estudiante.test.fase11@instituto.edu.co
+[OK] Roles - Estudiante sin listado global
+    403 Forbidden
+[OK] Roles - Estudiante sin settings admin
+    403 Forbidden
+[OK] Dashboard - Super admin
+    instituciones=1
+[OK] Dashboard - Estudiante
+    test=
+[OK] Test RIASEC - Preguntas activas (>=60)
+    60 preguntas listadas
+[OK] Test RIASEC - Sesion de test (>=60 preguntas)
+    session_id=1 preguntas=60
+[OK] CRUD - Listar instituciones
+    total=1

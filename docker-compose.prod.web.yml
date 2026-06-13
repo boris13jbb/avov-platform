@@ -1,0 +1,11 @@
+# AVOV - Override Nginx sirviendo Flutter Web (Fase 42)
+# Requiere: .\scripts\build-flutter-web.ps1 antes de levantar.
+# Uso: docker compose -f docker-compose.prod.yml -f docker-compose.prod.web.yml up -d
+
+services:
+  nginx:
+    volumes:
+      - ./frontend/build/web:/usr/share/nginx/html:ro
+      - ./nginx/nginx.prod.web.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/snippets:/etc/nginx/snippets:ro
+      - nginx_logs:/var/log/nginx

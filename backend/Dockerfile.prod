@@ -17,7 +17,8 @@ RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN chmod +x /app/docker-entrypoint.prod.sh \
+RUN sed -i 's/\r$//' /app/docker-entrypoint.prod.sh \
+    && chmod +x /app/docker-entrypoint.prod.sh \
     && mkdir -p /app/storage/reports /app/storage/logos
 
 EXPOSE 8000

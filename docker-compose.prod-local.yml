@@ -1,0 +1,7 @@
+# AVOV — Override prod local (Fase 40)
+# Uso: docker compose -f docker-compose.prod.yml -f docker-compose.prod-local.yml --env-file .env.prod-local -p avov-prod-local up -d
+
+services:
+  backend:
+    env_file:
+      - .env.prod-local

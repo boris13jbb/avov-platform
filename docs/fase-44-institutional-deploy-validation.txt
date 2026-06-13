@@ -1,0 +1,21 @@
+﻿AVOV - Validacion Despliegue Institucional (Fase 44)
+Fecha: 2026-06-12 18:28:21
+ApiUrl probada: https://localhost:8443/api/v1
+OK: 8 | SKIP: 0 | FALLO: 0
+
+[OK] Estructura - Archivos despliegue institucional
+    10 presentes
+[OK] Config - compose institutional-local
+    prod+web+institutional-local
+[OK] Preflight - Plantilla servidor real
+    AllowLocalhost
+[OK] Entorno - Stack institutional-local
+    detectado en :8443
+[OK] Smoke - Public release API+Web
+    https://localhost:8443/api/v1
+[OK] Manual - Plantilla checklist UI
+    fase-44-ui-checklist-report.template.md
+[OK] Manual - Checklist UI Flutter
+    docs/fase-41-flutter-ui-manual.md (ejecucion humana)
+[OK] Deploy - Flujo VPS deploy-institutional.sh
+    6 pasos documentados

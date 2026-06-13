@@ -1,9 +1,9 @@
 ﻿AVOV - Reporte validacion Fase 32
-Fecha: 2026-06-10 11:34:04
-AUTO OK:  | ESTATICO OK: 14 | FALLO: 0
+Fecha: 2026-06-12 17:22:58
+AUTO OK: 0 | ESTATICO OK: 15 | FALLO: 0
 
 [#1] ESTATICO OK - Ejecucion local con Docker
-    docker-compose.yml y Dockerfile presentes; Docker no disponible, validacion runtime pendiente
+    docker-compose.yml y Dockerfile presentes
 [#2] ESTATICO OK - phpMyAdmin en desarrollo
     Servicio phpmyadmin en docker-compose.yml
 [#3] ESTATICO OK - Login funcional con roles
@@ -24,11 +24,11 @@ AUTO OK:  | ESTATICO OK: 14 | FALLO: 0
     Permisos BE + guards FE
 [#11] ESTATICO OK - Validaciones frontend y backend
     Validadores y tests
-[#12] AUTO OK - Pruebas automatizadas
-    20 archivos test_*.py; flutter analyze OK; flutter test OK
+[#12] ESTATICO OK - Pruebas automatizadas
+    21 archivos test_*.py
 [#13] ESTATICO OK - Documentacion completa
     Manuales, API y arquitectura
 [#14] ESTATICO OK - Guia de produccion lista
-    Manual prod y stack prod; docker compose prod config OK
+    Manual prod y stack prod
 [#15] ESTATICO OK - Checklist QA aprobado
     checklist-qa y pantallas-flutter

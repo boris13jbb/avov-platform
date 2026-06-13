@@ -1,0 +1,7 @@
+# AVOV — Override staging local (Fase 36)
+# Uso: docker compose -f docker-compose.prod.yml -f docker-compose.staging.yml --env-file .env.staging -p avov-staging up -d
+
+services:
+  backend:
+    env_file:
+      - .env.staging
