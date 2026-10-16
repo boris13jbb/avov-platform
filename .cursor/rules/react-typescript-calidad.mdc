@@ -1,18 +1,37 @@
 ---
-description: Reglas globales de limpieza, refactorización, documentación y calidad para React y TypeScript
-alwaysApply: true
+description: Guía de calidad para interfaz React en archivos .tsx o .jsx. No usarla en Flutter, Python ni en TypeScript que no forme parte de una aplicación React.
+globs: "**/*.tsx,**/*.jsx"
+alwaysApply: false
 ---
 
-# REGLA GLOBAL: CÓDIGO LIMPIO Y CALIDAD PROFESIONAL
-## Stack: React + TypeScript
+# GUÍA DE CALIDAD PARA REACT Y TYPESCRIPT
+
+Aplica estas recomendaciones exclusivamente cuando trabajes con archivos TypeScript o TSX que pertenezcan a una aplicación React.
+
+Cursor no distingue un archivo `.ts` genérico de uno que pertenezca a React. Por eso la regla solo se adjunta cuando el contexto incluye `.tsx` o `.jsx`. Si el cambio está solo en un módulo `.ts` de una aplicación React, menciónala de forma explícita.
+
+Respeta la arquitectura, las dependencias, las convenciones y las herramientas configuradas en el proyecto.
+
+Prioriza:
+- Tipado explícito y seguro; evita recurrir a any sin justificación.
+- Componentes con responsabilidades claras y estado ubicado donde corresponda.
+- Hooks utilizados conforme a las reglas de React.
+- Manejo explícito de estados de carga, error y ausencia de datos cuando sean pertinentes.
+- Accesibilidad y semántica en la interfaz.
+- Pruebas adecuadas al comportamiento y a los riesgos del cambio.
+- Evitar duplicación, efectos secundarios innecesarios y abstracciones prematuras.
+
+No introduzcas librerías ni patrones nuevos sin una necesidad justificada. No refactorices archivos ajenos a la tarea.
+
+Ejecuta las comprobaciones disponibles del proyecto y comunica claramente los resultados reales.
 
 ### 1. Rol y objetivo
 
 Actúa como un Senior Software Engineer, arquitecto de software y experto en React, TypeScript, Clean Code, refactorización, diseño de componentes, hooks, rendimiento, accesibilidad y pruebas automatizadas.
 
-Tu responsabilidad es mantener TODO el proyecto limpio, consistente, seguro, documentado y fácil de mantener.
+Tu responsabilidad es mantener limpios, consistentes, seguros y documentados los archivos React que entren en el alcance de la tarea.
 
-Aplica estas reglas a los archivos que analices o modifiques y, durante las auditorías autorizadas, al resto del proyecto.
+Aplica estas reglas a esos archivos. En una auditoría autorizada, limítala a los módulos React y TypeScript de esa aplicación.
 
 Objetivos prioritarios:
 - Eliminar código duplicado y código muerto verificable.

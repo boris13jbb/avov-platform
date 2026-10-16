@@ -1,27 +1,43 @@
 ---
-description: Cumplimiento permanente de la política de calidad en cualquier tarea de programación
+description: Política universal de calidad, seguridad, mantenibilidad y validación para cualquier lenguaje y proyecto.
 alwaysApply: true
 ---
 
-## CUMPLIMIENTO PERMANENTE DE LA POLÍTICA DE CALIDAD
+# CUMPLIMIENTO PERMANENTE DE LA POLÍTICA DE CALIDAD
 
-Esta política es obligatoria en todas las tareas de programación, independientemente del lenguaje, framework, repositorio o tipo de proyecto.
+## Objetivo
+Producir software correcto, seguro, mantenible, comprensible y preparado para evolucionar. Estas instrucciones se aplican a todos los lenguajes, frameworks, repositorios y tareas de desarrollo.
 
-Antes de escribir, modificar, corregir o refactorizar código:
+## Reglas obligatorias
+1. Comprende el contexto, la arquitectura y las convenciones existentes antes de modificar código.
+2. Prioriza soluciones simples, legibles, explícitas y mantenibles. Evita duplicación, complejidad accidental, abstracciones innecesarias y código muerto.
+3. Respeta la arquitectura, las dependencias, las convenciones y el alcance de la tarea. No introduzcas tecnologías nuevas sin una razón justificada.
+4. Corrige la causa raíz de los defectos; no ocultes errores mediante excepciones genéricas, silenciamiento de fallos o validaciones ficticias.
+5. Valida las entradas y los límites de confianza. Protege secretos, credenciales, datos personales y operaciones sensibles. Aplica el principio de mínimo privilegio.
+6. Maneja errores de forma explícita y útil. No registres contraseñas, tokens ni información sensible.
+7. Mantén la compatibilidad con las interfaces, contratos, datos y comportamientos existentes, salvo que el cambio solicitado requiera modificarlos.
+8. Actualiza pruebas y documentación cuando el cambio lo amerite. Escribe la documentación del proyecto en español, salvo que sus convenciones indiquen otra cosa.
+9. Usa las herramientas de validación disponibles y pertinentes: pruebas, análisis estático, linters, formateadores, compilación o comprobaciones equivalentes.
+10. No afirmes que una prueba, compilación, revisión o modificación se completó correctamente si no se ejecutó o verificó.
+11. No amplíes el alcance innecesariamente. Evita refactorizaciones ajenas a la tarea y conserva los cambios existentes del usuario.
+12. Si falta información importante, inspecciona primero el contexto disponible. Pregunta antes de tomar decisiones que puedan causar incompatibilidades o consecuencias importantes.
 
-1. Identifica las tecnologías y convenciones del proyecto.
-2. Aplica las reglas de calidad pertinentes al lenguaje detectado.
-3. Comprueba si los cambios introducen duplicaciones, código innecesario o problemas de mantenibilidad.
-4. Mantén la documentación profesional en español, respetando las convenciones existentes.
-5. Conserva el comportamiento, la seguridad y los contratos existentes.
-6. Ejecuta las validaciones disponibles y comunica los resultados reales.
+## Cambios seguros
+- No elimines datos, archivos, funcionalidades, migraciones, configuraciones o historial sin justificación y autorización cuando corresponda.
+- No ejecutes operaciones destructivas ni cambios irreversibles sin autorización explícita.
+- No sobrescribas cambios del usuario ni uses comandos destructivos de Git para resolver conflictos.
+- Antes de modificar autenticación, permisos, esquemas de datos, contratos públicos, infraestructura o dependencias críticas, evalúa el impacto y explica los riesgos relevantes.
+- Si no puedes verificar una condición necesaria, indícalo claramente y ofrece una alternativa segura.
 
-No esperes a que el usuario mencione expresamente limpieza, documentación, refactorización o calidad cuando estas mejoras sean pertinentes a la tarea solicitada.
+## Flujo de trabajo
+1. Identifica el objetivo y el alcance.
+2. Inspecciona el código y las convenciones relevantes.
+3. Propón o implementa el cambio mínimo que resuelva correctamente el problema.
+4. Comprueba los casos relevantes y los posibles efectos secundarios.
+5. Ejecuta las validaciones disponibles, sin ocultar fallos.
+6. Resume los archivos modificados, las decisiones importantes, las pruebas realizadas y las limitaciones pendientes.
 
-Realiza automáticamente las mejoras pequeñas y seguras que estén relacionadas con el trabajo actual. Solicita autorización para operaciones destructivas, cambios de alto riesgo o modificaciones funcionales importantes.
+## Criterio de finalización
+Una tarea no está verificada solo porque el código haya sido escrito. Distingue entre implementación realizada, validaciones ejecutadas, resultados comprobados y trabajo pendiente.
 
-Al comenzar una tarea, comprueba las instrucciones disponibles y las reglas específicas del repositorio. Respeta sus restricciones particulares sin abandonar los principios universales de calidad.
-
-No afirmes que esta política está cargada, aplicada o verificada si no puedes comprobarlo.
-
-**Objetivo permanente:** todo código nuevo o modificado debe cumplir los estándares profesionales de limpieza, claridad, documentación, seguridad, mantenibilidad y validación adecuados a su tecnología.
+Adapta estas reglas al lenguaje y al proyecto. No impongas convenciones específicas de React, Flutter, Python, TypeScript u otra tecnología cuando no sean pertinentes.

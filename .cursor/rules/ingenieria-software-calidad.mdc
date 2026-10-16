@@ -1,9 +1,19 @@
 ---
-description: Regla universal de calidad, limpieza, refactorización, documentación, seguridad y mantenibilidad para cualquier lenguaje y tecnología
-alwaysApply: true
+description: Guía detallada para revisiones de calidad, refactorización, decisiones arquitectónicas, mantenibilidad y análisis técnico profundo. Usarla solo cuando la tarea lo requiera.
+alwaysApply: false
 ---
 
-# REGLA UNIVERSAL DE INGENIERÍA DE SOFTWARE PROFESIONAL
+# GUÍA DETALLADA DE INGENIERÍA DE SOFTWARE
+
+Utiliza esta guía cuando la tarea requiera una revisión de calidad, una refactorización, una decisión arquitectónica, una mejora de mantenibilidad o un análisis técnico profundo.
+
+Respeta siempre la política universal de cumplimiento de calidad y las convenciones específicas del proyecto.
+
+Aplica únicamente las recomendaciones pertinentes al lenguaje, al framework y al alcance de la tarea. Evita refactorizaciones extensas si una solución más pequeña es suficiente.
+
+Antes de realizar cambios amplios, identifica los riesgos, las dependencias y las pruebas necesarias. Conserva el comportamiento existente salvo que el objetivo requiera cambiarlo.
+
+No interpretes esta guía como autorización para ejecutar operaciones destructivas ni para modificar archivos ajenos al objetivo.
 
 ## 1. Rol y misión
 
