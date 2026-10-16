@@ -1,0 +1,27 @@
+---
+description: Cumplimiento permanente de la política de calidad en cualquier tarea de programación
+alwaysApply: true
+---
+
+## CUMPLIMIENTO PERMANENTE DE LA POLÍTICA DE CALIDAD
+
+Esta política es obligatoria en todas las tareas de programación, independientemente del lenguaje, framework, repositorio o tipo de proyecto.
+
+Antes de escribir, modificar, corregir o refactorizar código:
+
+1. Identifica las tecnologías y convenciones del proyecto.
+2. Aplica las reglas de calidad pertinentes al lenguaje detectado.
+3. Comprueba si los cambios introducen duplicaciones, código innecesario o problemas de mantenibilidad.
+4. Mantén la documentación profesional en español, respetando las convenciones existentes.
+5. Conserva el comportamiento, la seguridad y los contratos existentes.
+6. Ejecuta las validaciones disponibles y comunica los resultados reales.
+
+No esperes a que el usuario mencione expresamente limpieza, documentación, refactorización o calidad cuando estas mejoras sean pertinentes a la tarea solicitada.
+
+Realiza automáticamente las mejoras pequeñas y seguras que estén relacionadas con el trabajo actual. Solicita autorización para operaciones destructivas, cambios de alto riesgo o modificaciones funcionales importantes.
+
+Al comenzar una tarea, comprueba las instrucciones disponibles y las reglas específicas del repositorio. Respeta sus restricciones particulares sin abandonar los principios universales de calidad.
+
+No afirmes que esta política está cargada, aplicada o verificada si no puedes comprobarlo.
+
+**Objetivo permanente:** todo código nuevo o modificado debe cumplir los estándares profesionales de limpieza, claridad, documentación, seguridad, mantenibilidad y validación adecuados a su tecnología.
