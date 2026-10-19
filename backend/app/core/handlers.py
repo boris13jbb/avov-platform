@@ -5,7 +5,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.core.config import get_settings
+from app.core.config import get_settings, is_production_environment
 from app.core.exceptions import AppException
 from app.core.responses import error_response
 
@@ -20,6 +20,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(
             status_code=exc.status_code,
             content=error_response(message=exc.message, errors=exc.errors),
+            headers=exc.headers,
         )
 
     @app.exception_handler(RequestValidationError)
@@ -57,11 +58,10 @@ def register_exception_handlers(app: FastAPI) -> None:
         request: Request, exc: Exception
     ) -> JSONResponse:
         logger.exception("Error no controlado en %s", request.url.path)
-        message = (
-            "Error interno del servidor"
-            if not settings.app_debug
-            else f"Error interno: {exc}"
+        expose_details = settings.app_debug and not is_production_environment(
+            settings.app_env
         )
+        message = f"Error interno: {exc}" if expose_details else "Error interno del servidor"
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=error_response(message=message),

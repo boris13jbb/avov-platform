@@ -21,6 +21,15 @@ class AppValidators {
     return null;
   }
 
+  /// La política fuerte aplica al crear o cambiar una contraseña.
+  /// En el login solo se exige que el campo no esté vacío.
+  static String? loginPassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'La contraseña es obligatoria';
+    }
+    return null;
+  }
+
   static String? password(String? value) {
     if (value == null || value.isEmpty) {
       return 'La contraseña es obligatoria';

@@ -14,16 +14,17 @@ void main() {
   );
 }
 
-class AvovApp extends StatelessWidget {
+class AvovApp extends ConsumerWidget {
   const AvovApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(goRouterProvider);
     return MaterialApp.router(
       title: AppConfig.development.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      routerConfig: AppRouter.router,
+      routerConfig: router,
     );
   }
 }

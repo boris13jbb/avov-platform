@@ -6,7 +6,7 @@
 |-------------|-------------------|-------|
 | Python 3.12+ | Requerido | Backend local |
 | Git | Instalado vía winget | Clonar y versionar |
-| Flutter SDK | `C:\Users\BRS\develop\flutter` | Agregado al PATH del usuario |
+| Flutter SDK | En PATH (`flutter`). En este equipo: `C:\Users\BRS\flutter` | El script también busca `C:\Users\BRS\develop\flutter` si existe |
 | Docker Desktop | Requiere WSL2 + reinicio | Ver sección Docker abajo |
 | Chrome | Disponible | Para `flutter run -d chrome` |
 
@@ -15,7 +15,7 @@
 ### 1. Dependencias del proyecto (sin admin)
 
 ```powershell
-cd c:\Users\BRS\Documents\aplicstibi
+cd $env:USERPROFILE\source\avov-platform
 .\scripts\install-project-deps.ps1
 ```
 
@@ -76,7 +76,7 @@ cd ..\frontend; flutter test
 
 ## Solución de problemas
 
-- **MySQL no inicia**: verificar que el puerto 3306 no esté ocupado.
+- **MySQL de AVOV no inicia**: el contenedor se publica en `3307` y por dentro sigue en `3306`. El puerto 3306 de Windows pertenece a XAMPP; no hay que detenerlo. Desde Windows la URL es `127.0.0.1:3307`. phpMyAdmin se abre en `http://localhost:8081`.
 - **Backend degraded**: normal si MySQL/Redis/Qdrant aún están iniciando; esperar 30–60 segundos.
 - **Docker falla al instalar**: instalar WSL2 primero (`wsl --install`) y reiniciar Windows.
 - **Flutter no encontrado**: cerrar y reabrir la terminal tras `install-flutter.ps1`.

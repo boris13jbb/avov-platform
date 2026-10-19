@@ -9,7 +9,7 @@ alwaysApply: true
 **Tipo:** Aplicación multiplataforma profesional  
 **Stack obligatorio:** Flutter + FastAPI + MySQL + phpMyAdmin + Qdrant + Redis + Docker + DeepSeek API
 
-> **Lee estas reglas antes de tocar cualquier archivo. Debes cumplirlas durante todo el proyecto y no puedes avanzar de fase sin mi confirmación.**
+> **Lee estas reglas antes de tocar cualquier archivo. Debes cumplirlas durante todo el proyecto. El avance a la siguiente fase del plan de trabajo solo ocurre cuando el usuario escribe exactamente: `Continúa con la siguiente fase`.**
 
 ---
 
@@ -22,7 +22,7 @@ Desarrolla este proyecto como un sistema real de producción, no como ejemplo ac
 - No dejes comentarios como: `TODO`, `implementar después`, `aquí va la lógica`, `pendiente`, `ejemplo básico`.
 - Cada archivo que crees debe ser funcional, coherente y compatible con el resto del proyecto.
 - Trabaja siempre fase por fase.
-- No avances a la siguiente fase hasta que la fase actual esté validada.
+- No avances a la siguiente fase del plan de trabajo hasta que la fase actual esté validada y el usuario escriba exactamente `Continúa con la siguiente fase`.
 
 Al terminar cada fase debes entregar:
 
@@ -35,7 +35,16 @@ Al terminar cada fase debes entregar:
 7. Estado final de la fase.
 8. Siguiente fase sugerida.
 
-**Solo puedes avanzar cuando el usuario escriba:** `Continúa con la siguiente fase`.
+**Solo puedes avanzar a la siguiente fase cuando el usuario escriba exactamente:** `Continúa con la siguiente fase`.
+
+Esa frase controla únicamente el avance a la siguiente fase del plan de trabajo. No impide, dentro de la fase actual y del alcance autorizado:
+
+- ejecutar una tarea concreta solicitada de forma explícita;
+- corregir un error dentro de ese alcance;
+- ejecutar las verificaciones pertinentes a esa tarea;
+- informar de resultados, limitaciones o bloqueos.
+
+No permite avanzar automáticamente a otra fase si no se ha autorizado ese avance con esa frase.
 
 ---
 
@@ -274,7 +283,7 @@ Código claro, modular, escalable, seguro, probable y documentado. Sin duplicaci
 ## 8. Próximo paso
 ```
 
-No avances automáticamente. Espera confirmación del usuario.
+No avances automáticamente a la siguiente fase. Entregar este informe no autoriza ese avance: sigue haciendo falta la frase exacta `Continúa con la siguiente fase`.
 
 ---
 

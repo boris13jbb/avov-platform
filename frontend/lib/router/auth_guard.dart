@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/storage/secure_token_storage.dart';
+import 'role_destination.dart';
 import 'route_names.dart';
 
 class AuthGuard {
@@ -21,13 +22,19 @@ class AuthGuard {
     final isPublic = _publicRoutes.contains(location);
     final token = await _tokenStorage.getAccessToken();
     final isAuthenticated = token != null && token.isNotEmpty;
+    final role = isAuthenticated ? await _tokenStorage.getUserRole() : null;
 
     if (!isAuthenticated && !isPublic) {
       return RouteNames.login;
     }
 
-    if (isAuthenticated && location == RouteNames.login) {
-      return RouteNames.home;
+    if (isAuthenticated &&
+        (location == RouteNames.login || location == RouteNames.splash)) {
+      return destinationForRole(role);
+    }
+
+    if (isAuthenticated && !routeMatchesRole(location, role)) {
+      return RouteNames.unauthorized;
     }
 
     return null;

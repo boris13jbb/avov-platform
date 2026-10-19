@@ -26,7 +26,8 @@ Producir software correcto, seguro, mantenible, comprensible y preparado para ev
 - No elimines datos, archivos, funcionalidades, migraciones, configuraciones o historial sin justificación y autorización cuando corresponda.
 - No ejecutes operaciones destructivas ni cambios irreversibles sin autorización explícita.
 - No sobrescribas cambios del usuario ni uses comandos destructivos de Git para resolver conflictos.
-- Antes de modificar autenticación, permisos, esquemas de datos, contratos públicos, infraestructura o dependencias críticas, evalúa el impacto y explica los riesgos relevantes.
+- Antes de modificar autenticación, permisos, esquemas de datos, contratos públicos, infraestructura o dependencias críticas, evalúa el impacto y explica los riesgos relevantes. Evaluar y explicar no equivale a tener autorización para implementar el cambio.
+- Esos cambios sensibles exigen autorización explícita para la acción concreta antes de modificar el sistema. Inspeccionar, diagnosticar y proponer sin modificar el sistema sigue permitido.
 - Si no puedes verificar una condición necesaria, indícalo claramente y ofrece una alternativa segura.
 
 ## Flujo de trabajo

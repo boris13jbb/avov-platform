@@ -38,6 +38,23 @@ def test_login_invalid_credentials_same_message(client: TestClient, test_user):
     assert wrong_password.json()["message"] == "Credenciales incorrectas"
 
 
+def test_login_hash_corrupto_responde_como_credencial_invalida(
+    client: TestClient, db: Session, test_user
+):
+    hash_corrupto = "hash-sin-formato"
+    test_user.password_hash = hash_corrupto
+    db.commit()
+
+    response = _login(client, test_user.email, "Test1234!")
+    body = response.json()
+
+    assert response.status_code == 401
+    assert body["success"] is False
+    assert body["message"] == "Credenciales incorrectas"
+    assert hash_corrupto not in response.text
+    assert "Test1234!" not in response.text
+
+
 def test_login_inactive_user(client: TestClient, db: Session):
     repo = UserRepository(db)
     email = f"inactive_{uuid.uuid4().hex[:8]}@instituto.edu.co"
