@@ -6,7 +6,10 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
 import '../../../../router/route_names.dart';
 import '../../../auth/presentation/widgets/session_menu_button.dart';
+import '../../../students/domain/managed_student.dart';
+import '../../../students/presentation/providers/students_provider.dart';
 import '../../../users/presentation/providers/users_provider.dart';
+import '../../../vocational/domain/vocational_test.dart';
 import '../../../vocational/presentation/providers/vocational_provider.dart';
 
 class StudentDashboardScreen extends ConsumerStatefulWidget {
@@ -47,28 +50,32 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
                 const SizedBox(height: 4),
                 Text(data.email),
                 const SizedBox(height: 16),
-                const Text(
-                  'Tu ficha académica no está disponible desde este panel. '
-                  'La sesión no incluye el identificador del estudiante y '
-                  'el listado de estudiantes no está permitido para este rol.',
+                Text(
+                  'Ficha académica',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                _RecordSection(
+                  record: ref.watch(ownStudentProvider),
+                  onRetry: () => ref.invalidate(ownStudentProvider),
                 ),
                 const SizedBox(height: 12),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: OutlinedButton(
                     onPressed: () => context.go(RouteNames.studentProfile),
-                    child: const Text('Ver mis datos de sesión'),
+                    child: const Text('Ver mi ficha'),
                   ),
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Evaluación vocacional',
+                  'Evaluaciones vocacionales',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'El progreso aparece dentro de la evaluación, después de iniciarla. '
-                  'No hay un listado de sesiones anteriores.',
+                _HistorySection(
+                  history: ref.watch(vocationalHistoryProvider),
+                  onRetry: () => ref.invalidate(vocationalHistoryProvider),
                 ),
                 const SizedBox(height: 12),
                 if (_startError != null) ...[
@@ -126,6 +133,119 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
         setState(() => _starting = false);
       }
     }
+  }
+}
+
+class _RecordSection extends StatelessWidget {
+  const _RecordSection({required this.record, required this.onRetry});
+
+  final AsyncValue<ManagedStudent> record;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return record.when(
+      loading: () => const LinearProgressIndicator(),
+      error: (error, _) => _Notice(
+        message: error is AppException
+            ? error.message
+            : FailureMapper.unexpectedMessage,
+        onRetry: onRetry,
+      ),
+      data: (data) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Identificación: ${data.identification}'),
+          Text('Curso: ${data.grade}'),
+          if (data.parallel != null && data.parallel!.isNotEmpty)
+            Text('Paralelo: ${data.parallel}'),
+          Text('Fecha de nacimiento: ${data.birthDate}'),
+          Text('Género: ${data.genderLabel}'),
+          Text(
+            'Institución: identificador ${data.institutionId}. '
+            'El nombre no está incluido en la ficha.',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HistorySection extends StatelessWidget {
+  const _HistorySection({required this.history, required this.onRetry});
+
+  final AsyncValue<VocationalSessionPage> history;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return history.when(
+      loading: () => const LinearProgressIndicator(),
+      error: (error, _) => _Notice(
+        message: error is AppException
+            ? error.message
+            : FailureMapper.unexpectedMessage,
+        onRetry: onRetry,
+      ),
+      data: (data) {
+        if (data.items.isEmpty) {
+          return const Text('No tienes evaluaciones registradas.');
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final session in data.items) _SessionTile(session: session),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _SessionTile extends StatelessWidget {
+  const _SessionTile({required this.session});
+
+  final VocationalSession session;
+
+  @override
+  Widget build(BuildContext context) {
+    final saved = session.answeredCount;
+    final total = session.totalQuestions;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Evaluación ${session.id}: ${_statusLabel(session.status)}'),
+          Text('Respuestas guardadas: $saved de $total'),
+          if (session.isOpen)
+            OutlinedButton(
+              onPressed: () => context.go(RouteNames.studentTest(session.id)),
+              child: const Text('Continuar'),
+            ),
+          if (session.isCompleted)
+            OutlinedButton(
+              onPressed: () => context.go(RouteNames.studentTestResult(session.id)),
+              child: const Text('Ver resultado'),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+String _statusLabel(String status) {
+  switch (status) {
+    case 'STARTED':
+      return 'Iniciada';
+    case 'IN_PROGRESS':
+      return 'En progreso';
+    case 'COMPLETED':
+      return 'Completada';
+    case 'CANCELLED':
+      return 'Cancelada';
+    default:
+      return status;
   }
 }
 

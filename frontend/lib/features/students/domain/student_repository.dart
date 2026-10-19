@@ -11,6 +11,9 @@ abstract class StudentRepository {
 
   Future<ManagedStudent> getById(int id);
 
+  /// Ficha del estudiante autenticado. No acepta un identificador.
+  Future<ManagedStudent> getOwn();
+
   Future<ManagedStudent> create(StudentDraft draft);
 
   Future<ManagedStudent> update(int id, StudentDraft draft);

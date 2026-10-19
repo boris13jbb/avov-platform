@@ -4,51 +4,56 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
 import '../../../auth/presentation/widgets/session_menu_button.dart';
-import '../../../users/presentation/providers/users_provider.dart';
+import '../../../students/presentation/providers/students_provider.dart';
 
 class StudentProfileScreen extends ConsumerWidget {
   const StudentProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profile = ref.watch(currentOperatorProvider);
+    final record = ref.watch(ownStudentProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mis datos'),
+        title: const Text('Mi ficha'),
         actions: const [SessionMenuButton()],
       ),
       body: SafeArea(
-        child: profile.when(
+        child: record.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => _Notice(
             message: error is AppException
                 ? error.message
                 : FailureMapper.unexpectedMessage,
-            onRetry: () => ref.invalidate(currentOperatorProvider),
+            onRetry: () => ref.invalidate(ownStudentProvider),
           ),
           data: (data) => ListView(
             padding: const EdgeInsets.all(24),
             children: [
-              Text(
-                '${data.firstName} ${data.lastName}'.trim(),
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
+              Text(data.fullName, style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(height: 8),
               Text(data.email),
               const SizedBox(height: 8),
-              const Text('Rol: estudiante'),
+              Text('Estado: ${data.statusLabel}'),
               const SizedBox(height: 16),
+              Text('Identificación: ${data.identification}'),
+              Text('Fecha de nacimiento: ${data.birthDate}'),
+              Text('Género: ${data.genderLabel}'),
+              Text('Curso: ${data.grade}'),
+              if (data.parallel != null && data.parallel!.isNotEmpty)
+                Text('Paralelo: ${data.parallel}'),
               Text(
-                data.institutionId == null
-                    ? 'Tu sesión no tiene una institución asignada.'
-                    : 'Institución asignada: identificador ${data.institutionId}. '
-                        'El nombre no está disponible para este rol.',
+                'Institución: identificador ${data.institutionId}. '
+                'El nombre no está incluido en la ficha.',
               ),
+              if (data.representativeName != null)
+                Text('Representante: ${data.representativeName}'),
+              if (data.representativePhone != null)
+                Text('Teléfono del representante: ${data.representativePhone}'),
+              if (data.representativeEmail != null)
+                Text('Correo del representante: ${data.representativeEmail}'),
               const SizedBox(height: 16),
               const Text(
-                'La ficha académica no se puede consultar. '
-                'No existe una operación que devuelva el perfil del estudiante autenticado '
-                'sin un identificador, y este rol no puede listar estudiantes.',
+                'Esta ficha es de consulta. El estudiante no puede modificarla.',
               ),
             ],
           ),

@@ -10,6 +10,10 @@ final studentRepositoryProvider = Provider<StudentRepository>((ref) {
   return ApiStudentRepository(ref.watch(dioClientProvider).dio);
 });
 
+final ownStudentProvider = FutureProvider.autoDispose<ManagedStudent>((ref) {
+  return ref.watch(studentRepositoryProvider).getOwn();
+});
+
 final studentPageProvider = StateProvider<int>((ref) => 1);
 final studentSearchProvider = StateProvider<String>((ref) => '');
 final studentInstitutionFilterProvider = StateProvider<int?>((ref) => null);

@@ -12,6 +12,20 @@ class ApiVocationalRepository implements VocationalRepository {
   final Dio _dio;
 
   @override
+  Future<VocationalSessionPage> listSessions({int page = 1, int pageSize = 20}) {
+    return _send(() async {
+      final response = await _dio.get<dynamic>(
+        '/tests',
+        queryParameters: <String, dynamic>{
+          'page': page,
+          'page_size': pageSize,
+        },
+      );
+      return VocationalSessionPage.fromJson(readSuccessData(response.data));
+    });
+  }
+
+  @override
   Future<VocationalSession> start() {
     return _send(() async {
       final response = await _dio.post<dynamic>('/tests/start');

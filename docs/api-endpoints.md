@@ -98,6 +98,7 @@ Authorization: Bearer <access_token>
 | Método | Ruta | Rol | Descripción |
 |--------|------|-----|-------------|
 | GET | `/students` | Admin, Counselor (filtrado) | Listar estudiantes |
+| GET | `/students/me` | STUDENT | Ficha del estudiante autenticado |
 | GET | `/students/{id}` | Según permiso | Detalle estudiante |
 | POST | `/students` | SUPER_ADMIN, INSTITUTION_ADMIN | Crear estudiante + usuario |
 | PUT | `/students/{id}` | Según permiso | Actualizar |
@@ -132,7 +133,8 @@ Authorization: Bearer <access_token>
 
 | Método | Ruta | Rol | Descripción |
 |--------|------|-----|-------------|
-| POST | `/tests/start` | STUDENT | Iniciar o continuar test |
+| GET | `/tests` | STUDENT | Historial de sus evaluaciones, sin crear sesiones |
+| POST | `/tests/start` | STUDENT | Continuar la única sesión abierta o iniciar una nueva |
 | GET | `/tests/{session_id}/questions` | STUDENT (owner) | Preguntas de la sesión |
 | POST | `/tests/{session_id}/answers` | STUDENT (owner) | Guardar respuesta (1-5) |
 | POST | `/tests/{session_id}/finish` | STUDENT (owner) | Finalizar y calcular RIASEC |

@@ -9,6 +9,10 @@ final vocationalRepositoryProvider = Provider<VocationalRepository>((ref) {
   return ApiVocationalRepository(ref.watch(dioClientProvider).dio);
 });
 
+final vocationalHistoryProvider = FutureProvider.autoDispose<VocationalSessionPage>((ref) {
+  return ref.watch(vocationalRepositoryProvider).listSessions();
+});
+
 final vocationalQuestionsProvider = FutureProvider.autoDispose
     .family<VocationalQuestionnaire, int>((ref, sessionId) {
   return ref.watch(vocationalRepositoryProvider).questions(sessionId);

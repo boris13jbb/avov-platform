@@ -72,6 +72,16 @@ class StudentService:
         self._ensure_can_view(student, current_user)
         return StudentResponse.model_validate(student)
 
+    def get_own_student(self, current_user: User) -> StudentResponse:
+        """Ficha del usuario autenticado. No acepta un identificador del cliente."""
+        if current_user.role != UserRole.STUDENT:
+            raise ForbiddenException("Solo un estudiante puede consultar su propia ficha")
+
+        student = self.repo.get_by_user_id(current_user.id)
+        if student is None:
+            raise NotFoundException("No tienes una ficha de estudiante registrada")
+        return StudentResponse.model_validate(student)
+
     def create_student(self, payload: StudentCreate, current_user: User) -> StudentResponse:
         if current_user.role not in self.CREATE_ROLES:
             raise ForbiddenException("No tienes permisos para crear estudiantes")

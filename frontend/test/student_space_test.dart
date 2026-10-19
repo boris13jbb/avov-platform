@@ -72,9 +72,11 @@ void main() {
     await _pumpApp(tester, role: 'STUDENT', profile: profile);
 
     expect(find.text('Panel del estudiante'), findsOneWidget);
-    expect(find.text('Lucía Vega'), findsOneWidget);
+    expect(find.text('Lucía Vega'), findsWidgets);
     expect(find.text('lucia@escuela.test'), findsOneWidget);
-    expect(find.textContaining('no está disponible'), findsWidgets);
+    expect(find.text('Identificación: ID-PROPIA'), findsOneWidget);
+    expect(find.text('Curso: 10'), findsOneWidget);
+    expect(find.text('No tienes evaluaciones registradas.'), findsOneWidget);
     expect(find.textContaining('recomendaciones de carreras no están disponibles'), findsOneWidget);
     expect(find.textContaining('%'), findsNothing);
     expect(find.text('Iniciar o continuar el test'), findsOneWidget);
@@ -120,16 +122,22 @@ void main() {
     await tester.pump();
 
     expect(find.text('lucia@escuela.test'), findsOneWidget);
-    expect(find.textContaining('no se puede consultar'), findsOneWidget);
+    expect(find.text('Identificación: ID-PROPIA'), findsOneWidget);
+    expect(find.textContaining('no puede modificarla'), findsOneWidget);
     expect(find.byType(TextField), findsNothing);
     expect(students.getCalls, 0);
+    expect(students.ownCalls, 1);
   });
 
   testWidgets('el panel muestra carga, error y reintento', (tester) async {
     final auth = _PendingAuth(profile);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [authRepositoryProvider.overrideWithValue(auth)],
+        overrides: [
+          authRepositoryProvider.overrideWithValue(auth),
+          studentRepositoryProvider.overrideWithValue(_Students()),
+          vocationalRepositoryProvider.overrideWithValue(_Vocational()),
+        ],
         child: const MaterialApp(home: StudentDashboardScreen()),
       ),
     );
@@ -148,6 +156,8 @@ void main() {
           authRepositoryProvider.overrideWithValue(
             _Auth(profile, error: UnauthorizedException()),
           ),
+          studentRepositoryProvider.overrideWithValue(_Students()),
+          vocationalRepositoryProvider.overrideWithValue(_Vocational()),
         ],
         child: const MaterialApp(home: StudentDashboardScreen()),
       ),
@@ -179,6 +189,7 @@ void main() {
       ProviderScope(
         overrides: [
           authRepositoryProvider.overrideWithValue(_Auth(profile)),
+          studentRepositoryProvider.overrideWithValue(_Students()),
           vocationalRepositoryProvider.overrideWithValue(vocational),
         ],
         child: MaterialApp.router(routerConfig: router),
@@ -396,6 +407,27 @@ class _Students implements StudentRepository {
     throw UnimplementedError();
   }
 
+  int ownCalls = 0;
+
+  @override
+  Future<ManagedStudent> getOwn() async {
+    ownCalls += 1;
+    return const ManagedStudent(
+      id: 4,
+      userId: 9,
+      institutionId: 7,
+      identification: 'ID-PROPIA',
+      birthDate: '2008-05-15',
+      gender: 'FEMALE',
+      grade: '10',
+      email: 'lucia@escuela.test',
+      firstName: 'Lucía',
+      lastName: 'Vega',
+      status: 'ACTIVE',
+      parallel: 'A',
+    );
+  }
+
   @override
   Future<ManagedStudent> getById(int id) async {
     getCalls += 1;
@@ -428,6 +460,12 @@ class _Vocational implements VocationalRepository {
   int finishCalls = 0;
   int saved = 0;
   final Map<int, int> answers = {};
+
+  @override
+  @override
+  Future<VocationalSessionPage> listSessions({int page = 1, int pageSize = 20}) async {
+    return const VocationalSessionPage(items: [], total: 0, page: 1, pages: 0);
+  }
 
   @override
   Future<VocationalSession> start() async {

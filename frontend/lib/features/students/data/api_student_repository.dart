@@ -35,6 +35,14 @@ class ApiStudentRepository implements StudentRepository {
   }
 
   @override
+  Future<ManagedStudent> getOwn() {
+    return _send(() async {
+      final response = await _dio.get<dynamic>('/students/me');
+      return ManagedStudent.fromJson(readSuccessData(response.data));
+    });
+  }
+
+  @override
   Future<ManagedStudent> getById(int id) {
     return _send(() async {
       final response = await _dio.get<dynamic>('/students/$id');

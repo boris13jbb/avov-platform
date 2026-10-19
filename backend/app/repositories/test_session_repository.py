@@ -22,16 +22,62 @@ class TestSessionRepository:
         )
         return self.db.scalar(stmt)
 
-    def get_open_session_for_student(self, student_id: int) -> TestSession | None:
+    def lock_student(self, student_id: int) -> None:
+        """Serializa el inicio de evaluaciones del mismo estudiante."""
+        stmt = select(Student.id).where(Student.id == student_id).with_for_update()
+        self.db.execute(stmt)
+
+    def list_open_sessions(self, student_id: int) -> list[TestSession]:
         stmt = (
             select(TestSession)
             .where(
                 TestSession.student_id == student_id,
                 TestSession.status.in_(self.OPEN_STATUSES),
             )
-            .order_by(TestSession.started_at.desc())
+            .order_by(TestSession.id.asc())
+            .with_for_update()
         )
-        return self.db.scalar(stmt)
+        return list(self.db.scalars(stmt).all())
+
+    def get_open_session_for_student(self, student_id: int) -> TestSession | None:
+        sessions = self.list_open_sessions(student_id)
+        if not sessions:
+            return None
+        return sessions[-1]
+
+    def list_for_student(
+        self,
+        student_id: int,
+        *,
+        page: int,
+        page_size: int,
+    ) -> tuple[list[TestSession], int]:
+        filters = TestSession.student_id == student_id
+        total = (
+            self.db.scalar(
+                select(func.count()).select_from(TestSession).where(filters)
+            )
+            or 0
+        )
+        offset = (page - 1) * page_size
+        stmt = (
+            select(TestSession)
+            .where(filters)
+            .order_by(TestSession.started_at.desc(), TestSession.id.desc())
+            .offset(offset)
+            .limit(page_size)
+        )
+        return list(self.db.scalars(stmt).all()), total
+
+    def count_answers_by_session(self, session_ids: list[int]) -> dict[int, int]:
+        if not session_ids:
+            return {}
+        stmt = (
+            select(TestAnswer.test_session_id, func.count())
+            .where(TestAnswer.test_session_id.in_(session_ids))
+            .group_by(TestAnswer.test_session_id)
+        )
+        return {session_id: count for session_id, count in self.db.execute(stmt).all()}
 
     def create_session(self, student_id: int, total_questions: int) -> TestSession:
         session = TestSession(

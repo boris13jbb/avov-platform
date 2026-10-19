@@ -46,6 +46,18 @@ def list_students(
     )
 
 
+@router.get("/me", dependencies=[Depends(security)])
+def get_own_student(
+    current_user: User = Depends(require_roles(UserRole.STUDENT)),
+    db: Session = Depends(get_db),
+):
+    student = StudentService(db).get_own_student(current_user)
+    return success_response(
+        data=student.model_dump(mode="json"),
+        message="Ficha obtenida correctamente",
+    )
+
+
 @router.get("/{student_id}", dependencies=[Depends(security)])
 def get_student(
     student_id: int,

@@ -510,6 +510,9 @@ class _Students implements StudentRepository {
   }
 
   @override
+  Future<ManagedStudent> getOwn() => throw UnimplementedError();
+
+  @override
   Future<ManagedStudent> getById(int id) async {
     if (missing) {
       throw AppException('Estudiante no encontrado', statusCode: 404);

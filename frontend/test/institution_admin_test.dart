@@ -492,6 +492,9 @@ class _Students implements StudentRepository {
   }
 
   @override
+  Future<ManagedStudent> getOwn() => throw UnimplementedError();
+
+  @override
   Future<ManagedStudent> getById(int id) {
     throw UnimplementedError();
   }

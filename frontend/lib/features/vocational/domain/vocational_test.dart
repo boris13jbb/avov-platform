@@ -17,6 +17,8 @@ class VocationalSession {
 
   bool get isCompleted => status == 'COMPLETED';
 
+  bool get isOpen => status == 'STARTED' || status == 'IN_PROGRESS';
+
   factory VocationalSession.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
     final studentId = json['student_id'];
@@ -88,6 +90,42 @@ class VocationalQuestion {
       categoryCode: code,
       categoryName: name,
       answerValue: answer is int ? answer : null,
+    );
+  }
+}
+
+class VocationalSessionPage {
+  const VocationalSessionPage({
+    required this.items,
+    required this.total,
+    required this.page,
+    required this.pages,
+  });
+
+  final List<VocationalSession> items;
+  final int total;
+  final int page;
+  final int pages;
+
+  factory VocationalSessionPage.fromJson(Map<String, dynamic> json) {
+    final items = json['items'];
+    final total = json['total'];
+    final page = json['page'];
+    final pages = json['pages'];
+    if (items is! List || total is! int || page is! int || pages is! int) {
+      throw const FormatException('Historial de evaluaciones incompleto');
+    }
+    return VocationalSessionPage(
+      items: [
+        for (final item in items)
+          if (item is Map)
+            VocationalSession.fromJson(Map<String, dynamic>.from(item))
+          else
+            throw const FormatException('Sesión de test incompleta'),
+      ],
+      total: total,
+      page: page,
+      pages: pages,
     );
   }
 }

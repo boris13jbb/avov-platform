@@ -1,4 +1,5 @@
 from datetime import datetime
+from math import ceil
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -20,6 +21,31 @@ class TestSessionResponse(BaseModel):
     progress_percent: float = 0.0
     created_at: datetime
     updated_at: datetime
+
+
+class PaginatedTestSessions(BaseModel):
+    items: list[TestSessionResponse]
+    total: int
+    page: int
+    page_size: int
+    pages: int
+
+    @classmethod
+    def build(
+        cls,
+        items: list[TestSessionResponse],
+        total: int,
+        page: int,
+        page_size: int,
+    ) -> "PaginatedTestSessions":
+        pages = ceil(total / page_size) if total > 0 else 0
+        return cls(
+            items=items,
+            total=total,
+            page=page,
+            page_size=page_size,
+            pages=pages,
+        )
 
 
 class TestAnswerCreate(BaseModel):

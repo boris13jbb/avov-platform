@@ -2,10 +2,11 @@ import 'vocational_test.dart';
 
 /// Contrato de `/tests`.
 ///
-/// No hay listado de sesiones ni de recomendaciones. El estudiante solo
-/// puede operar la sesión cuyo identificador devolvió el backend y que
-/// le pertenece. La escala de respuesta es 1 a 5.
+/// El historial solo incluye las sesiones del estudiante autenticado.
+/// La escala de respuesta es 1 a 5. No hay recomendaciones de carreras.
 abstract class VocationalRepository {
+  Future<VocationalSessionPage> listSessions({int page = 1, int pageSize = 20});
+
   Future<VocationalSession> start();
 
   Future<VocationalQuestionnaire> questions(int sessionId);
