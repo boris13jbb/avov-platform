@@ -1,25 +1,60 @@
+"""Fixtures de pytest. Las rutas destructivas exigen DATABASE_URL → avov_test."""
+
+from __future__ import annotations
+
 import uuid
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 
+from app.core.config import get_settings
 from app.core.enums import InstitutionStatus, UserRole, UserStatus
-from app.db.session import SessionLocal
-from app.main import app
 from app.repositories.institution_repository import InstitutionRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.institution import InstitutionCreate
+from tests.db_isolation import assert_authorized_test_database
+
+_SessionLocal: sessionmaker | None = None
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    """Fail-fast antes de importar módulos de test que cargan el engine.
+
+    Debe ejecutarse en ``pytest_configure`` (no en ``collection_finish``): la
+    colección importa archivos que hacen ``from app.db.session import SessionLocal``
+    y eso crea el engine. La excepción para ``test_db_isolation.py`` se eliminó;
+    esos tests unitarios usan URLs literales y, al lanzar pytest, requieren
+    ``DATABASE_URL`` con schema ``avov_test`` (sin necesidad de conectar).
+    """
+    assert_authorized_test_database(get_settings().database_url)
+
+
+def _session_factory() -> sessionmaker:
+    """Obtiene SessionLocal solo tras la guardia de pytest_configure."""
+    global _SessionLocal
+    if _SessionLocal is None:
+        assert_authorized_test_database(get_settings().database_url)
+        from app.db.session import SessionLocal as factory
+
+        _SessionLocal = factory
+    return _SessionLocal
+
+
+def _app():
+    from app.main import app
+
+    return app
 
 
 @pytest.fixture
 def client() -> TestClient:
-    return TestClient(app)
+    return TestClient(_app())
 
 
 @pytest.fixture
 def db() -> Session:
-    session = SessionLocal()
+    session = _session_factory()()
     try:
         yield session
     finally:
