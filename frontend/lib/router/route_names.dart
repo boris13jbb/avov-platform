@@ -4,7 +4,6 @@ class RouteNames {
   static const splash = '/';
   static const login = '/login';
   static const home = '/inicio';
-  static const changePassword = '/change-password';
   static const profile = '/profile';
   static const unauthorized = '/unauthorized';
   static const notFound = '/not-found';
@@ -47,6 +46,8 @@ class RouteNames {
   static const studentPrefix = '/student';
   static const studentDashboard = '/student/dashboard';
   static const studentProfile = '/student/profile';
+  static const studentTestHome = '/student/test';
+  static const studentResults = '/student/results';
 
   static String studentTest(int sessionId) => '/student/test/$sessionId';
 

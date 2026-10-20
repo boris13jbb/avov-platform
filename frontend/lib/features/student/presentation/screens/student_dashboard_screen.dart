@@ -5,32 +5,25 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
 import '../../../../router/route_names.dart';
-import '../../../auth/presentation/widgets/session_menu_button.dart';
+import '../../../../shared/widgets/student_scaffold.dart';
 import '../../../students/domain/managed_student.dart';
 import '../../../students/presentation/providers/students_provider.dart';
 import '../../../users/presentation/providers/users_provider.dart';
 import '../../../vocational/domain/vocational_test.dart';
 import '../../../vocational/presentation/providers/vocational_provider.dart';
+import '../widgets/open_vocational_session_tile.dart';
+import '../widgets/student_test_launcher.dart';
+import '../widgets/vocational_history_load_more.dart';
 
-class StudentDashboardScreen extends ConsumerStatefulWidget {
+class StudentDashboardScreen extends ConsumerWidget {
   const StudentDashboardScreen({super.key});
 
   @override
-  ConsumerState<StudentDashboardScreen> createState() => _StudentDashboardScreenState();
-}
-
-class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen> {
-  bool _starting = false;
-  String? _startError;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(currentOperatorProvider);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Panel del estudiante'),
-        actions: const [SessionMenuButton()],
-      ),
+    return StudentScaffold(
+      title: 'Panel del estudiante',
+      section: StudentSection.home,
       body: SafeArea(
         child: profile.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -75,28 +68,8 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
                 const SizedBox(height: 8),
                 _HistorySection(
                   history: ref.watch(vocationalHistoryProvider),
-                  onRetry: () => ref.invalidate(vocationalHistoryProvider),
-                ),
-                const SizedBox(height: 12),
-                if (_startError != null) ...[
-                  Text(
-                    _startError!,
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
-                  ),
-                  const SizedBox(height: 12),
-                ],
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: FilledButton(
-                    onPressed: _starting ? null : _start,
-                    child: _starting
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Iniciar o continuar el test'),
-                  ),
+                  onRetry: () =>
+                      ref.read(vocationalHistoryProvider.notifier).refresh(),
                 ),
                 const SizedBox(height: 24),
                 const Text(
@@ -108,31 +81,6 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
         ),
       ),
     );
-  }
-
-  Future<void> _start() async {
-    if (_starting) {
-      return;
-    }
-    setState(() {
-      _starting = true;
-      _startError = null;
-    });
-    try {
-      final session = await ref.read(vocationalRepositoryProvider).start();
-      if (!mounted) {
-        return;
-      }
-      context.go(RouteNames.studentTest(session.id));
-    } on AppException catch (error) {
-      setState(() => _startError = error.message);
-    } catch (_) {
-      setState(() => _startError = FailureMapper.unexpectedMessage);
-    } finally {
-      if (mounted) {
-        setState(() => _starting = false);
-      }
-    }
   }
 }
 
@@ -174,12 +122,14 @@ class _RecordSection extends StatelessWidget {
 class _HistorySection extends StatelessWidget {
   const _HistorySection({required this.history, required this.onRetry});
 
-  final AsyncValue<VocationalSessionPage> history;
+  final AsyncValue<VocationalHistoryState> history;
   final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
     return history.when(
+      skipLoadingOnReload: true,
+      skipLoadingOnRefresh: true,
       loading: () => const LinearProgressIndicator(),
       error: (error, _) => _Notice(
         message: error is AppException
@@ -188,13 +138,25 @@ class _HistorySection extends StatelessWidget {
         onRetry: onRetry,
       ),
       data: (data) {
-        if (data.items.isEmpty) {
-          return const Text('No tienes evaluaciones registradas.');
+        final open = data.items.where((session) => session.isOpen).toList();
+        if (data.items.isEmpty && !data.hasMore) {
+          return const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('No tienes evaluaciones registradas.'),
+              SizedBox(height: 12),
+              StudentTestLauncher(openCount: 0),
+            ],
+          );
         }
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (open.length > 1) const MultipleOpenSessionsNotice(),
             for (final session in data.items) _SessionTile(session: session),
+            VocationalHistoryLoadMore(history: data),
+            const SizedBox(height: 8),
+            StudentTestLauncher(openCount: open.length),
           ],
         );
       },
@@ -209,43 +171,34 @@ class _SessionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final saved = session.answeredCount;
-    final total = session.totalQuestions;
+    if (session.isOpen) {
+      return OpenVocationalSessionTile(
+        session: session,
+        continueKey: ValueKey('dash-continue-${session.id}'),
+      );
+    }
+    final when = formatVocationalStartedAt(session.startedAt);
+    final title = when == null
+        ? 'Evaluación ${session.statusLabel}'
+        : 'Evaluación ${session.statusLabel} · $when';
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Evaluación ${session.id}: ${_statusLabel(session.status)}'),
-          Text('Respuestas guardadas: $saved de $total'),
-          if (session.isOpen)
-            OutlinedButton(
-              onPressed: () => context.go(RouteNames.studentTest(session.id)),
-              child: const Text('Continuar'),
-            ),
+          Text(title),
+          Text(
+            'Respuestas guardadas: ${session.answeredCount} de ${session.totalQuestions}',
+          ),
           if (session.isCompleted)
             OutlinedButton(
-              onPressed: () => context.go(RouteNames.studentTestResult(session.id)),
+              onPressed: () =>
+                  context.push(RouteNames.studentTestResult(session.id)),
               child: const Text('Ver resultado'),
             ),
         ],
       ),
     );
-  }
-}
-
-String _statusLabel(String status) {
-  switch (status) {
-    case 'STARTED':
-      return 'Iniciada';
-    case 'IN_PROGRESS':
-      return 'En progreso';
-    case 'COMPLETED':
-      return 'Completada';
-    case 'CANCELLED':
-      return 'Cancelada';
-    default:
-      return status;
   }
 }
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
+import '../../../../shared/widgets/student_scaffold.dart';
 import '../providers/vocational_provider.dart';
 
 class VocationalResultScreen extends ConsumerWidget {
@@ -13,8 +14,9 @@ class VocationalResultScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final result = ref.watch(vocationalResultProvider(sessionId));
-    return Scaffold(
-      appBar: AppBar(title: const Text('Resultado vocacional')),
+    return StudentScaffold(
+      title: 'Resultado vocacional',
+      section: StudentSection.results,
       body: SafeArea(
         child: result.when(
           loading: () => const Center(child: CircularProgressIndicator()),

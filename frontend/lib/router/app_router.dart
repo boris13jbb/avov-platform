@@ -18,8 +18,11 @@ import '../features/institutions/presentation/screens/institution_list_screen.da
 import '../features/splash/presentation/screens/splash_screen.dart';
 import '../features/student/presentation/screens/student_dashboard_screen.dart';
 import '../features/student/presentation/screens/student_profile_screen.dart';
+import '../features/student/presentation/screens/student_results_screen.dart';
+import '../features/student/presentation/screens/student_test_home_screen.dart';
 import '../features/vocational/presentation/screens/vocational_result_screen.dart';
 import '../features/vocational/presentation/screens/vocational_test_screen.dart';
+import '../features/vocational/presentation/vocational_test_leave_guard.dart';
 import '../features/students/presentation/screens/student_create_screen.dart';
 import '../features/students/presentation/screens/student_detail_screen.dart';
 import '../features/students/presentation/screens/student_edit_screen.dart';
@@ -244,6 +247,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const StudentProfileScreen(),
       ),
       GoRoute(
+        path: RouteNames.studentTestHome,
+        name: 'student-test-home',
+        builder: (context, state) => const StudentTestHomeScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.studentResults,
+        name: 'student-results',
+        builder: (context, state) => const StudentResultsScreen(),
+      ),
+      GoRoute(
         path: '/student/test/:sessionId/result',
         name: 'student-test-result',
         builder: (context, state) {
@@ -259,6 +272,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/student/test/:sessionId',
         name: 'student-test',
+        onExit: (context, state) async {
+          final id = int.tryParse(state.pathParameters['sessionId'] ?? '');
+          if (id == null) {
+            return true;
+          }
+          return VocationalTestLeaveGuard.allowLeave(id);
+        },
         builder: (context, state) {
           final id = int.tryParse(state.pathParameters['sessionId'] ?? '');
           if (id == null) {

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
-import '../../../auth/presentation/widgets/session_menu_button.dart';
+import '../../../../shared/widgets/student_scaffold.dart';
 import '../../../students/presentation/providers/students_provider.dart';
 
 class StudentProfileScreen extends ConsumerWidget {
@@ -12,11 +12,9 @@ class StudentProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final record = ref.watch(ownStudentProvider);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mi ficha'),
-        actions: const [SessionMenuButton()],
-      ),
+    return StudentScaffold(
+      title: 'Mi ficha',
+      section: StudentSection.profile,
       body: SafeArea(
         child: record.when(
           loading: () => const Center(child: CircularProgressIndicator()),

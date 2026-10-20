@@ -6,6 +6,7 @@ class VocationalSession {
     required this.totalQuestions,
     required this.answeredCount,
     required this.progressPercent,
+    this.startedAt,
   });
 
   final int id;
@@ -14,10 +15,35 @@ class VocationalSession {
   final int totalQuestions;
   final int answeredCount;
   final double progressPercent;
+  final DateTime? startedAt;
 
   bool get isCompleted => status == 'COMPLETED';
 
   bool get isOpen => status == 'STARTED' || status == 'IN_PROGRESS';
+
+  String get statusLabel {
+    switch (status) {
+      case 'STARTED':
+        return 'Iniciada';
+      case 'IN_PROGRESS':
+        return 'En progreso';
+      case 'COMPLETED':
+        return 'Completada';
+      case 'CANCELLED':
+        return 'Cancelada';
+      default:
+        return status;
+    }
+  }
+
+  /// Etiqueta legible con fecha real del servidor; no usa el id como título.
+  String get openSummaryLabel {
+    final when = formatVocationalStartedAt(startedAt);
+    if (when == null) {
+      return 'Evaluación $statusLabel';
+    }
+    return 'Evaluación $statusLabel · $when';
+  }
 
   factory VocationalSession.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
@@ -36,8 +62,30 @@ class VocationalSession {
       totalQuestions: total,
       answeredCount: answered is int ? answered : 0,
       progressPercent: progress is num ? progress.toDouble() : 0,
+      startedAt: parseVocationalDateTime(json['started_at']),
     );
   }
+}
+
+DateTime? parseVocationalDateTime(Object? raw) {
+  if (raw is! String || raw.trim().isEmpty) {
+    return null;
+  }
+  return DateTime.tryParse(raw.trim());
+}
+
+/// Fecha local legible para distinguir evaluaciones abiertas.
+String? formatVocationalStartedAt(DateTime? value) {
+  if (value == null) {
+    return null;
+  }
+  final local = value.toLocal();
+  final day = local.day.toString().padLeft(2, '0');
+  final month = local.month.toString().padLeft(2, '0');
+  final year = local.year.toString();
+  final hour = local.hour.toString().padLeft(2, '0');
+  final minute = local.minute.toString().padLeft(2, '0');
+  return '$day/$month/$year $hour:$minute';
 }
 
 class VocationalQuestion {
