@@ -44,6 +44,18 @@ class AuthRemoteDatasource {
     }
   }
 
+  /// Renueva access y refresh. El backend revoca el refresh anterior.
+  Future<AuthTokens> refresh({required String refreshToken}) {
+    return _send(
+      () => _dio.post<dynamic>(
+        '/auth/refresh',
+        data: <String, String>{'refresh_token': refreshToken},
+      ),
+      duringLogin: false,
+      parse: AuthTokens.fromResponseData,
+    );
+  }
+
   Future<UserProfile> currentUser() {
     return _send(
       () => _dio.get<dynamic>('/auth/me'),

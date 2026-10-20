@@ -64,9 +64,16 @@ class AuthSessionNotifier extends Notifier<AuthSessionState> {
     }
   }
 
+  /// Cierra la sesión una sola vez. Un fallo de red no conserva el estado.
   Future<void> logout() async {
+    if (state.isSubmitting) {
+      return;
+    }
+    state = state.copyWith(isSubmitting: true, clearError: true);
     try {
       await ref.read(authRepositoryProvider).logout();
+    } catch (_) {
+      // El repositorio ya borra los tokens locales antes de propagar el fallo.
     } finally {
       ref.read(sessionListenableProvider).notifyAuthChanged();
       state = const AuthSessionState();

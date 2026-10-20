@@ -19,7 +19,10 @@ class DioClient {
             },
           ),
         ) {
-    _dio.interceptors.add(authInterceptor ?? AuthInterceptor());
+    final interceptor = authInterceptor ??
+        AuthInterceptor(apiBaseUrl: _config.apiBaseUrl);
+    _dio.interceptors.add(interceptor);
+    interceptor.bindClient(_dio);
   }
 
   final AppConfig _config;
