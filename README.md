@@ -1,6 +1,6 @@
 # AVOV — Asistente Virtual de Orientación Vocacional con IA
 
-Aplicación multiplataforma profesional para orientación vocacional basada en el modelo RIASEC, con recomendaciones inteligentes, reportes PDF y panel institucional.
+Aplicación multiplataforma profesional para orientación vocacional basada en el modelo RIASEC, con resultados RIASEC, panel institucional y recomendaciones de carreras planificadas (API de recomendaciones aún no registrada; ver `docs/api-endpoints.md` §11).
 
 ## Stack tecnológico
 

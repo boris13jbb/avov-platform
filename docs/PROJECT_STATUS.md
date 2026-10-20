@@ -19,7 +19,7 @@ Este documento distingue lo que se comprobó en el clon de lo que la documentaci
 Comprobado por inspección de archivos, sin ejecutar la aplicación:
 
 - Monorepo con `backend/` (FastAPI), `frontend/` (Flutter), `database/`, `docker-compose.yml`, `nginx/`, `qdrant/` y `docs/`.
-- Backend: rutas en `backend/app/api/routes/` para health, auth, institutions, users, students, careers, questions, tests, vector, recommendations, reports, assistant, audit, dashboard y status.
+- Backend: routers **registrados** en `main.py`: health, status, auth, institutions, users, students, careers, questions, tests, vector y assistant. Existen archivos stub o planificados (`recommendations.py` vacío sin handlers, y menciones a reports/audit/dashboard) que **no** están incluidos en la aplicación ni aparecen en OpenAPI.
 - Migraciones Alembic: esquema inicial y seeds de categorías RIASEC, super admin y preguntas.
 - Pruebas pytest presentes en `backend/tests/`. No se ejecutaron en esta preparación porque el MySQL de XAMPP ya escucha en el puerto 3306.
 - Frontend: pantallas localizadas de splash, home y login. No se encontró el resto de módulos de interfaz descritos en el plan de 32 fases.

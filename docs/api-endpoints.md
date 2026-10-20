@@ -161,15 +161,25 @@ Authorization: Bearer <access_token>
 
 ---
 
-## 11. Recomendaciones (Fase 14)
+## 11. Recomendaciones (Fase 14) — No implementado / no disponible
 
-| Método | Ruta | Rol | Descripción |
-|--------|------|-----|-------------|
-| POST | `/recommendations/generate` | STUDENT | Generar recomendaciones post-test |
-| GET | `/recommendations/student/{student_id}` | Según permiso | Listar recomendaciones |
-| POST | `/recommendations/{id}/observations` | COUNSELOR | Agregar observación profesional |
+**Estado verificado en el código actual:**
+
+- Existe el stub `backend/app/api/routes/recommendations.py`: solo declara `APIRouter(prefix="/recommendations")` **sin handlers**.
+- Ese router **no** está incluido en `backend/app/main.py` (`include_router`).
+- OpenAPI no expone ninguna ruta `/api/v1/recommendations*`.
+- No existe `recommendation_service.py`.
+- La eventual tabla MySQL `recommendations` (esquema) **no** implica API disponible.
+
+**Separación con el comportamiento actual del test vocacional:**
+
+- Los puntajes y el perfil RIASEC calculados tras finalizar un test están disponibles con `GET /tests/{session_id}/result` (sección 8).
+- Las **recomendaciones de carreras** (generación, listado u observaciones de orientador) son funcionalidad planificada de la Fase 14 y **no están disponibles** hasta que se implementen handlers y se registre el router.
+
+No se documentan aquí rutas, parámetros ni códigos de respuesta futuros: el contrato se publicará solo cuando exista implementación registrada.
 
 ---
+
 
 ## 12. Reportes PDF (Fase 15)
 
@@ -211,6 +221,8 @@ Authorization: Bearer <access_token>
 
 ## Resumen
 
+Fuente de verdad de rutas activas: routers registrados en `backend/app/main.py` y el esquema OpenAPI de la aplicación. Este documento aún describe grupos planificados; no asumir disponibilidad solo por aparecer en una tabla.
+
 | Grupo | Endpoints |
 |-------|-----------|
 | Sistema | 4 |
@@ -223,9 +235,9 @@ Authorization: Bearer <access_token>
 | Test | 5 |
 | Vector | 2 |
 | Asistente | 3 |
-| Recomendaciones | 3 |
+| Recomendaciones | 0 (no implementadas ni registradas; ver §11) |
 | Reportes | 2 |
 | Dashboard | 4 |
 | Auditoría | 2 |
 | Exportaciones | 2 |
-| **Total** | **56** |
+| **Total documentado (excl. recomendaciones inexistentes)** | **53** |
