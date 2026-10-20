@@ -220,19 +220,24 @@ void main() {
     expect(await storage.getUserRole(), isNull);
   });
 
-  test('un 401 fuera del login limpia la sesión y avisa al enrutador', () async {
+  test('un 401 con refresh inválido limpia la sesión y avisa al enrutador',
+      () async {
     await storage.saveAccessToken('access-de-prueba');
     await storage.saveRefreshToken('refresh-de-prueba');
     await storage.saveUserRole('STUDENT');
     var notified = false;
+    final adapter = _StatusAdapter(401);
+    final refreshDio = Dio(BaseOptions(baseUrl: 'http://127.0.0.1:8000/api/v1'));
+    refreshDio.httpClientAdapter = adapter;
     final dio = Dio(BaseOptions(baseUrl: 'http://127.0.0.1:8000/api/v1'));
-    dio.httpClientAdapter = _StatusAdapter(401);
-    dio.interceptors.add(
-      AuthInterceptor(
-        tokenStorage: storage,
-        onSessionInvalidated: () => notified = true,
-      ),
+    dio.httpClientAdapter = adapter;
+    final interceptor = AuthInterceptor(
+      tokenStorage: storage,
+      refreshDio: refreshDio,
+      onSessionInvalidated: () => notified = true,
     );
+    dio.interceptors.add(interceptor);
+    interceptor.bindClient(dio);
 
     await expectLater(
       dio.get<dynamic>('/auth/me'),
@@ -249,7 +254,9 @@ void main() {
     await storage.saveAccessToken('sesion-previa');
     final dio = Dio(BaseOptions(baseUrl: 'http://127.0.0.1:8000/api/v1'));
     dio.httpClientAdapter = _StatusAdapter(401);
-    dio.interceptors.add(AuthInterceptor(tokenStorage: storage));
+    final interceptor = AuthInterceptor(tokenStorage: storage);
+    dio.interceptors.add(interceptor);
+    interceptor.bindClient(dio);
 
     await expectLater(
       dio.post<dynamic>('/auth/login'),

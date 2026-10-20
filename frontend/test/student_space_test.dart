@@ -79,7 +79,8 @@ void main() {
     expect(find.text('No tienes evaluaciones registradas.'), findsOneWidget);
     expect(find.textContaining('recomendaciones de carreras no están disponibles'), findsOneWidget);
     expect(find.textContaining('%'), findsNothing);
-    expect(find.text('Iniciar o continuar el test'), findsOneWidget);
+    expect(find.text('Iniciar evaluación'), findsOneWidget);
+    expect(find.widgetWithText(TextButton, 'Cerrar sesión'), findsOneWidget);
   });
 
   testWidgets('otro rol no entra al espacio del estudiante', (tester) async {
@@ -198,7 +199,7 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    await tester.tap(find.text('Iniciar o continuar el test'));
+    await tester.tap(find.text('Iniciar evaluación'));
     await tester.pump();
     await tester.tap(find.byType(FilledButton));
     await tester.pump();
@@ -238,7 +239,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('Faltan 1 respuestas para completar el test'), findsOneWidget);
-    expect(find.textContaining('Perfil'), findsNothing);
+    expect(find.textContaining('Perfil', skipOffstage: true), findsNothing);
     expect(vocational.saved, 1);
     expect(vocational.finishCalls, 1);
   });
@@ -260,7 +261,7 @@ void main() {
     await tester.pump();
 
     expect(find.text(FailureMapper.forbiddenMessage), findsOneWidget);
-    expect(find.textContaining('Perfil'), findsNothing);
+    expect(find.textContaining('Perfil', skipOffstage: true), findsNothing);
 
     await tester.pumpWidget(
       ProviderScope(

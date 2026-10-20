@@ -155,9 +155,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
 
     expect(find.text('Ana Pérez'), findsOneWidget);
-    await tester.tap(find.byTooltip('Menú de usuario'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.widgetWithText(TextButton, 'Cerrar sesión'), findsOneWidget);
     await tester.tap(find.text('Cerrar sesión'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
