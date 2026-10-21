@@ -1,12 +1,34 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db, security
+from app.core.responses import success_response
 from app.models.user import User
 from app.services.report_service import ReportService
 
 router = APIRouter(prefix="/reports", tags=["Reportes"])
+
+
+@router.get("/student/{student_id}", dependencies=[Depends(security)])
+def list_student_reports(
+    student_id: int,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Historial de informes PDF de un estudiante (metadatos, sin rutas)."""
+    result = ReportService(db).list_student_reports(
+        student_id,
+        current_user,
+        page=page,
+        page_size=page_size,
+    )
+    return success_response(
+        data=result.model_dump(mode="json"),
+        message="Historial de informes obtenido correctamente",
+    )
 
 
 @router.get("/{session_id}/pdf", dependencies=[Depends(security)])

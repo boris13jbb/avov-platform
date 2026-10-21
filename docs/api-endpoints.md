@@ -181,12 +181,24 @@ Authorization: Bearer <access_token>
 | Método | Ruta | Rol | Descripción |
 |--------|------|-----|-------------|
 | GET | `/reports/{session_id}/pdf` | Según permiso de resultado | Genera (idempotente) o descarga PDF de evaluación `COMPLETED` |
+| GET | `/reports/student/{student_id}` | Según permiso de ficha del estudiante | Historial paginado de informes PDF (metadatos; sin rutas de archivo) |
 
 Respuesta binaria `application/pdf` con cabeceras `Content-Disposition` y `X-Report-Code`. Errores JSON estándar AVOV (`401`/`403`/`404`/`422`).
 
-| Método | Ruta | Rol | Descripción |
-|--------|------|-----|-------------|
-| GET | `/reports/student/{student_id}` | Según permiso | Historial de reportes — **fase posterior** (no obligatorio en MVP Fase 15; ver `docs/fase-15-pdf.md` y `docs/NEXT_STEPS.md`) |
+### Historial `GET /reports/student/{student_id}` (Fase 16A)
+
+Query: `page` (≥1), `page_size` (1–100, default 20).
+
+`data` paginado: `items`, `total`, `page`, `page_size`, `pages`. Cada ítem: `id`, `student_id`, `test_session_id`, `report_code`, `generated_by`, `created_at`, `updated_at`. Orden: más reciente primero. No incluye `file_path` ni rutas de almacenamiento.
+
+Autorización (alineada a consulta de ficha / descarga PDF del mismo estudiante):
+
+| Rol | Condición |
+|-----|-----------|
+| `STUDENT` | Solo su propio `student_id` |
+| `COUNSELOR` | Asignación ACTIVE al estudiante |
+| `INSTITUTION_ADMIN` | Misma institución |
+| `SUPER_ADMIN` | Todos |
 
 ---
 

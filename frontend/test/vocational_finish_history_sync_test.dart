@@ -2,6 +2,7 @@ import 'package:avov_frontend/core/errors/app_exception.dart';
 import 'package:avov_frontend/core/errors/failure_mapper.dart';
 import 'package:avov_frontend/features/vocational/domain/career_recommendation.dart';
 import 'package:avov_frontend/features/vocational/domain/recommendation_repository.dart';
+import 'package:avov_frontend/features/vocational/domain/report_history.dart';
 import 'package:avov_frontend/features/vocational/domain/report_repository.dart';
 import 'package:avov_frontend/features/vocational/domain/vocational_repository.dart';
 import 'package:avov_frontend/features/vocational/domain/vocational_test.dart';
@@ -37,6 +38,15 @@ class _EmptyRecRepo implements RecommendationRepository {
 class _NoopReportRepo implements ReportRepository {
   @override
   Future<VocationalPdfFile> downloadSessionPdf(int sessionId) async {
+    throw AppException('No usado en esta prueba');
+  }
+
+  @override
+  Future<ReportHistoryPage> listStudentReports(
+    int studentId, {
+    int page = 1,
+    int pageSize = 20,
+  }) async {
     throw AppException('No usado en esta prueba');
   }
 }

@@ -35,7 +35,7 @@ Institución, estudiante (nombre, identificación, curso), fechas de sesión, pe
 
 ### `GET /reports/student/{student_id}`
 
-Documentado en `api-endpoints.md` como **pendiente / no implementado en MVP Fase 15**. `NEXT_STEPS.md` lo deja como trabajo posterior al MVP PDF. **Decisión:** fuera del alcance obligatorio de Fase 15; no se implementa en 15.1.
+Fuera del alcance obligatorio de Fase 15 / 15.1. Implementado en **Fase 16A** (`docs/fase-16a-historial-informes.md`).
 
 ### E2E navegador
 

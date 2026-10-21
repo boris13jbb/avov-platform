@@ -6,6 +6,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
 import '../../../../router/route_names.dart';
 import '../../../users/presentation/providers/users_provider.dart';
+import '../../../vocational/presentation/widgets/student_reports_history_section.dart';
 import '../../domain/managed_student.dart';
 import '../providers/students_provider.dart';
 
@@ -95,6 +96,8 @@ Widget _detailBody(
       if (student.phone != null) Text('Teléfono: ${student.phone}'),
       if (student.representativeName != null)
         Text('Representante: ${student.representativeName}'),
+      const SizedBox(height: 24),
+      StudentReportsHistorySection(studentId: student.id),
       const SizedBox(height: 24),
       if (canManage)
         FilledButton(

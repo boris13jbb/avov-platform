@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 
 import '../../../core/errors/app_exception.dart';
 import '../../../core/errors/failure_mapper.dart';
+import '../../../core/network/api_envelope.dart';
+import '../domain/report_history.dart';
 import '../domain/report_repository.dart';
 
 class ApiReportRepository implements ReportRepository {
@@ -36,6 +38,31 @@ class ApiReportRepository implements ReportRepository {
         filename: filename,
         reportCode: code,
       );
+    } on DioException catch (error) {
+      throw FailureMapper.fromDioException(error);
+    } on AppException {
+      rethrow;
+    } on FormatException {
+      throw AppException(FailureMapper.unexpectedMessage);
+    }
+  }
+
+  @override
+  Future<ReportHistoryPage> listStudentReports(
+    int studentId, {
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    try {
+      final response = await _dio.get<dynamic>(
+        '/reports/student/$studentId',
+        queryParameters: {
+          'page': page,
+          'page_size': pageSize,
+        },
+      );
+      final data = readSuccessData(response.data);
+      return ReportHistoryPage.fromJson(data);
     } on DioException catch (error) {
       throw FailureMapper.fromDioException(error);
     } on AppException {
