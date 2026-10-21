@@ -16,9 +16,12 @@ class CareerRecommendationsSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(sessionRecommendationsProvider(sessionId));
     return async.when(
+      // Icono estático: evita que pumpAndSettle cuelgue por animación infinita.
       loading: () => const Padding(
         padding: EdgeInsets.symmetric(vertical: 16),
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(
+          child: Icon(Icons.hourglass_top, semanticLabel: 'Cargando recomendaciones'),
+        ),
       ),
       error: (error, _) => _RecError(
         message: error is AppException

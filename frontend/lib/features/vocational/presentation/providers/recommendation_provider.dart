@@ -9,13 +9,10 @@ final recommendationRepositoryProvider = Provider<RecommendationRepository>((ref
   return ApiRecommendationRepository(ref.watch(dioClientProvider).dio);
 });
 
-/// Lista persistida; si está vacía, genera vía POST una sola vez.
+/// Lista persistida. No genera automáticamente al abrir el resultado
+/// (evita efectos secundarios al consultar o descargar PDF).
 final sessionRecommendationsProvider = FutureProvider.autoDispose
     .family<CareerRecommendationPage, int>((ref, sessionId) async {
   final repo = ref.watch(recommendationRepositoryProvider);
-  final listed = await repo.listForSession(sessionId);
-  if (listed.total > 0) {
-    return listed;
-  }
-  return repo.generateForSession(sessionId);
+  return repo.listForSession(sessionId);
 });

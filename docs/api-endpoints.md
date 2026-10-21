@@ -180,8 +180,13 @@ Authorization: Bearer <access_token>
 
 | Método | Ruta | Rol | Descripción |
 |--------|------|-----|-------------|
-| GET | `/reports/{test_session_id}/pdf` | Según permiso | Descargar PDF |
-| GET | `/reports/student/{student_id}` | Según permiso | Historial de reportes |
+| GET | `/reports/{session_id}/pdf` | Según permiso de resultado | Genera (idempotente) o descarga PDF de evaluación `COMPLETED` |
+
+Respuesta binaria `application/pdf` con cabeceras `Content-Disposition` y `X-Report-Code`. Errores JSON estándar AVOV (`401`/`403`/`404`/`422`).
+
+| Método | Ruta | Rol | Descripción |
+|--------|------|-----|-------------|
+| GET | `/reports/student/{student_id}` | Según permiso | Historial de reportes — **fase posterior** (no obligatorio en MVP Fase 15; ver `docs/fase-15-pdf.md` y `docs/NEXT_STEPS.md`) |
 
 ---
 

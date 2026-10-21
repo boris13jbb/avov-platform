@@ -1,7 +1,12 @@
 import 'package:avov_frontend/core/errors/app_exception.dart';
 import 'package:avov_frontend/core/errors/failure_mapper.dart';
+import 'package:avov_frontend/features/vocational/domain/career_recommendation.dart';
+import 'package:avov_frontend/features/vocational/domain/recommendation_repository.dart';
+import 'package:avov_frontend/features/vocational/domain/report_repository.dart';
 import 'package:avov_frontend/features/vocational/domain/vocational_repository.dart';
 import 'package:avov_frontend/features/vocational/domain/vocational_test.dart';
+import 'package:avov_frontend/features/vocational/presentation/providers/recommendation_provider.dart';
+import 'package:avov_frontend/features/vocational/presentation/providers/report_provider.dart';
 import 'package:avov_frontend/features/vocational/presentation/providers/vocational_provider.dart';
 import 'package:avov_frontend/features/vocational/presentation/screens/vocational_result_screen.dart';
 import 'package:avov_frontend/features/vocational/presentation/screens/vocational_test_screen.dart';
@@ -9,6 +14,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+
+class _EmptyRecRepo implements RecommendationRepository {
+  @override
+  Future<CareerRecommendationPage> listForSession(int sessionId) async {
+    return CareerRecommendationPage(
+      testSessionId: sessionId,
+      studentId: 4,
+      riasecProfile: 'R',
+      usedFallback: false,
+      total: 0,
+      items: const [],
+    );
+  }
+
+  @override
+  Future<CareerRecommendationPage> generateForSession(int sessionId) async {
+    return listForSession(sessionId);
+  }
+}
+
+class _NoopReportRepo implements ReportRepository {
+  @override
+  Future<VocationalPdfFile> downloadSessionPdf(int sessionId) async {
+    throw AppException('No usado en esta prueba');
+  }
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -219,6 +250,9 @@ Future<ProviderContainer> _pumpFinishFlow(
   final container = ProviderContainer(
     overrides: [
       vocationalRepositoryProvider.overrideWithValue(vocational),
+      // Resultado monta recomendaciones/PDF: evitar Dio real y hangs de carga.
+      recommendationRepositoryProvider.overrideWithValue(_EmptyRecRepo()),
+      reportRepositoryProvider.overrideWithValue(_NoopReportRepo()),
     ],
   );
   addTearDown(container.dispose);
