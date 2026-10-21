@@ -412,3 +412,198 @@ La fase **S-20 permanece abierta**. No se inicia S-21 en este documento.
 ### Veredicto documental
 
 **`S-20 ABIERTA`**. Criterios de cierre no cumplidos: login/selección visual E2E en `:3001` (S-20.29–31 bloqueados por desalineación Chrome), más E2E reales en B2-01/02/05c UI/06(HTTP)/08/09, seed B2-04 sobre cuenta principal si aplica, navegación «Siguiente» E2E fiable, y decisión sobre sesión desechable para finalización. Los 8 widget tests de sesiones abiertas y la API 422 **no** cierran el E2E visual.
+
+### S-20.50 — Reanudación sesión 138 (2026-10-21)
+
+**Veredicto:** `APROBADO`. S-20 permanece **ABIERTA** (faltaba 137 + aislamiento de respuestas).
+
+| Evidencia | Resultado |
+|-----------|-----------|
+| Identificación pre-clic | Flutter inspector: `OutlinedButton-[<'continue-open-138'>]` (ValueKey); orden inspector 138 antes que 137 |
+| Acción | Una pulsación del Continuar mapeado a esa key |
+| Red | `GET /api/v1/tests/138/questions` → HTTP **200** (sin `/start`, `/answers`, `/finish`) |
+| UI | `VocationalTestScreen` montado; pregunta 1/60; 0/60 respuestas |
+| BD `avov_test` | 137/138 STARTED, student 900000; total abiertas 2; respuestas none |
+| Hash | `location.hash` permaneció `#/student/test` (ID confirmado por red, no por URL) |
+
+Entorno: Chrome hijo `dartvm` `:3001` CDP, API `:8001`, schema `avov_test`. Sin tocar `:3000`/`avov_db`.
+
+### S-20.51 — Reanudación sesión 137 (2026-10-21)
+
+**Veredicto:** `APROBADO`. S-20 permanece **ABIERTA** (aislamiento de respuestas pendiente de autorización).
+
+| Evidencia | Resultado |
+|-----------|-----------|
+| Preparación | Salida del cuestionario 138 con «Volver» (sin guardar respuestas) |
+| Identificación pre-clic | Inspector: `continue-open-137` presente; orden 138 primero → índice semantics 1 |
+| Acción | Una pulsación del Continuar de la key 137 |
+| Red | `GET /api/v1/tests/137/questions` → HTTP **200** (×2); sin tráfico a `/tests/138/questions` en ese clic |
+| Prohibidos | Sin `/tests/start`, `/answers`, `/finish` |
+| UI | `VocationalTestScreen`; flags AX pregunta/siguiente/guardar |
+| BD antes/después | 137/138 STARTED; open=2; total=2; answers=none |
+
+### S-20.51-B — Procedimiento de aislamiento (NO EJECUTADO)
+
+Pendiente de **autorización explícita de escritura**. Ver informe de continuación controlada (sesión, endpoint, verificación y limpieza propuestos; sin ejecución).
+
+### S-20.51-C — Hash `#/student/test` (solo lectura)
+
+Hechos: rutas planas `/student/test` y `/student/test/:sessionId`; Continuar usa `context.push(RouteNames.studentTest(id))`; tras push, la red carga `/tests/{id}/questions` pero `location.hash` observado quedó en `#/student/test`. Hipótesis (no demostrada): discrepancia de sincronización hash/GoRouter o lectura de `location` vs ruta interna. Sin cambio de código en esta fase.
+
+### Estado de cierre tras S-20.51 (2026-10-21)
+
+| Criterio | Estado |
+|----------|--------|
+| Reanudación 138 (red) | Cumplido (S-20.50) |
+| Reanudación 137 (red) | Cumplido (S-20.51) |
+| Aislamiento de respuestas (escritura autorizada) | **Pendiente** — no autorizado aún |
+| Sin sesiones extra / sin escrituras no autorizadas | Cumplido |
+| Cierre formal S-20 | **No** — S-20 sigue **ABIERTA** |
+| S-21 | No iniciado |
+
+### S-20.52 — Aislamiento de respuestas (escritura autorizada, 2026-10-21)
+
+**Veredicto:** `APROBADO`. Autorización expresa: una sola escritura en sesión **138**, estudiante **900000**, schema **`avov_test`**, UI E2E `:3001` / API `:8001`. Sin `/tests/start`, sin `/finish`, sin escritura en 137.
+
+| Momento | count_137 | count_138 | open | total | Notas |
+|---------|-----------|-----------|------|-------|-------|
+| Antes | 0 | 0 | 2 | 2 | 137 `STARTED`, 138 `STARTED`/`IN_PROGRESS` |
+| Tras guardar | 0 | **1** | 2 | 2 | `answer id=3794` sess=138 q=1 v=1 |
+| Tras limpieza | 0 | **0** | 2 | 2 | 137 intacta; sin sesión nueva |
+
+| Evidencia HTTP / persistencia | Resultado |
+|-------------------------------|-----------|
+| Solicitud | `POST /api/v1/tests/138/answers` body `{"question_id":1,"answer_value":1}` |
+| Respuesta | HTTP **200**; `success=true`; `data.id=3794`; mensaje «Respuesta guardada correctamente» |
+| Contaminación cruzada | **No**: 137 permaneció con 0 respuestas en todo el ciclo |
+| Sesiones | Solo 137 y 138; `open=2` `total=2` |
+
+### S-20.52-L — Limpieza controlada del registro temporal
+
+| Condición | Cumplida |
+|-----------|----------|
+| Creado por esta ejecución | Sí (`id=3794`, created `2026-10-21 15:52:27`) |
+| Identificación inequívoca | Sí: `id=3794` + `test_session_id=138` + `question_id=1` |
+| Schema `avov_test` + sesión 138 | Sí (comprobado antes de DELETE) |
+| Sin afectar 137 ni otras respuestas | Sí (`DELETE` acotado; `rowcount=1`) |
+| Estado antes/después | Antes: `count_138=1`; Después: `DELETE_OK id=3794 rowcount=1`; snapshot final `count_137=0 count_138=0 answers_detail=none` |
+
+Estado BD al cierre documental (relectura 2026-10-21 post-fix hash): `137:STARTED:900000` (0 answers), `138:IN_PROGRESS:900000` (0 answers), `open=2`, `total=2`.
+
+### S-20.53 — Hash `#/student/test` vs `/student/test/:sessionId`
+
+| Fase | Resultado |
+|------|-----------|
+| Diagnóstico | **Defecto confirmado**: `context.push` + `GoRouter.optionURLReflectsImperativeAPIs=false` (default go_router 14.8.1) deja el hash en `#/student/test` mientras la UI carga `/tests/{id}/questions`. |
+| Corrección | `GoRouter.optionURLReflectsImperativeAPIs = true` en `frontend/lib/main.dart` (rutas deeplink-ables). |
+| Regresión | `frontend/test/router/student_test_imperative_url_test.dart` — **2 passed** (`flutter test`). |
+| E2E URL en Chrome `:3001` | **Pendiente de recarga** del `flutter run` E2E (no reiniciado en esta pasada para no alterar `:3000`). |
+
+### Actualización de checklist B2 (evidencia S-20.50–S-20.53)
+
+| Caso | Estado tras S-20.52/53 |
+|------|------------------------|
+| B2-05c Varias abiertas (UI+red) | **Aprobado (UI+HTTP)** — Continuar 138 y 137 con `GET /tests/{id}/questions` 200 |
+| B2-06 Guardado progresivo (HTTP) | **Aprobado (HTTP+BD)** — `POST /tests/138/answers` 200 + fila `3794` (luego limpiada) |
+| B2-08 / B2-09 Finalización | Siguen **no verificados E2E** (prohibido `/finish` en esta autorización) |
+| B2-01 / B2-02 JWT / logout | Siguen aplazados / solo TEST |
+
+### Cierre formal S-20 (2026-10-21)
+
+Criterios de aceptación del cierre controlado (reanudación dual + aislamiento autorizado + sin contaminación + sin sesiones extra) **cumplidos**.
+
+| Criterio | Estado |
+|----------|--------|
+| Reanudación 138 (red) | Cumplido (S-20.50) |
+| Reanudación 137 (red) | Cumplido (S-20.51) |
+| Aislamiento de respuestas | Cumplido (S-20.52) + limpieza (S-20.52-L) |
+| Sin contaminación 137↔138 | Cumplido |
+| Sin sesiones adicionales | Cumplido |
+| Hash (defecto + fix + test) | Cumplido en código/tests (S-20.53); E2E hash tras recarga pendiente |
+| **Cierre formal S-20** | **`S-20 CERRADA`** |
+| S-21 | **No iniciado** (el expediente indica B2-08/09 y decisión de finalización antes de S-21) |
+
+Pendientes **fuera** del cierre S-20 (expediente post-S-20): B2-08/B2-09 E2E con sesión desechable y autorización de `/finish`; verificación E2E del hash tras recargar Flutter `:3001`; B2-01/02 E2E si se priorizan.
+
+### S-20.54 — Verificación E2E del hash (post-recarga `:3001`, 2026-10-21)
+
+**Veredicto:** `APROBADO`.
+
+| Paso | Resultado |
+|------|-----------|
+| Identificación | `:3001` = `dartvm` distinto de `:3000`; recarga solo árbol E2E + Chrome `flutter_tools` |
+| Entornos protegidos | `:3000` y `:8000` intactos; schema `avov_test`; host UI `localhost:3001` (sin cambiar a `127.0.0.1`) |
+| Acción | Login QA → Test → «Continuar esta evaluación» (idx 0 → sesión 138) |
+| Hash | `#/student/test/138` |
+| Red | `GET http://127.0.0.1:8001/api/v1/tests/138/questions` → HTTP **200** (×2) |
+| Prohibidos | Sin `/start`, `/answers`, `/finish` |
+| BD pre/post | 137 `STARTED` 0 resp.; 138 `IN_PROGRESS` 0 resp.; sin cambios de conteo en esa prueba |
+
+### B2-08 — Preparación (sin `/finish`, 2026-10-21)
+
+| Ítem | Detalle |
+|------|---------|
+| Semántica `/finish` | `POST /tests/{id}/finish`: exige sesión abierta del STUDENT dueño; **todas** las preguntas activas respondidas (60); crea `riasec_results`; marca sesión `COMPLETED` + `finished_at` |
+| Mecanismo de creación | `backend/scripts/create_e2e_disposable_finish_session.py` vía `TestSessionRepository.create_session` en `avov_test` (no usa `POST /start`) |
+| Sesión desechable | **`id=139`**, student `900000`, status `STARTED`, 60 preguntas, **0 respuestas**, marker `E2E-B2-08-DISPOSABLE` |
+| Independencia | 137 y 138 **intactas** (0 respuestas); open_ids=`[137,138,139]` |
+| Efectos esperados de finish (aún no ejecutado) | 139 → `COMPLETED`; fila RIASEC; 137/138 siguen abiertas; historial muestra completada |
+| Limpieza prevista post-finish | Documentar resultado; opcional soft-cleanup solo de 139/RIASEC asociado tras evidencia; **nunca** borrar 137/138 |
+| Criterio de aceptación B2-08 | HTTP 200 finish en 139; status COMPLETED; resultado RIASEC legible; 137/138 sin finish ni respuestas nuevas |
+| Riesgos | Con 3 abiertas, `POST /start` sigue 422; UI muestra 3 «Continuar»; finish sin 60 respuestas → 422 |
+| **`/finish`** | **NO EJECUTADO** — pendiente autorización específica |
+
+### B2-09 — Dependencias (2026-10-21)
+
+| Ítem | Estado |
+|------|--------|
+| Dependencia | Requiere evidencia válida de finalización (B2-08) sobre sesión desechable |
+| E2E | **Pendiente** (sin finish autorizado) |
+| Solo lectura / tests sin finish real | `vocational_finish_history_sync_test.dart` (mocks) ejecutado en esta pasada → soporte `APROBADO_TEST`; **no** sustituye E2E |
+| Siguiente | Tras autorización de `/finish` en sesión **139** (con 60 respuestas previas) |
+
+### B2-08 — Ejecución E2E finish sesión 139 (2026-10-21)
+
+**Veredicto:** `APROBADO`.
+
+| Etapa | 137 | 138 | 139 |
+|-------|-----|-----|-----|
+| Antes | STARTED / 0 | IN_PROGRESS / 0 | STARTED / 0 |
+| Tras 60 answers | STARTED / 0 | IN_PROGRESS / 0 | IN_PROGRESS / **60** |
+| Tras finish | STARTED / 0 | IN_PROGRESS / 0 | **COMPLETED** / 60 |
+
+| Evidencia | Resultado |
+|-----------|-----------|
+| API | `:8001` / schema `avov_test`; login STUDENT 900000 |
+| Carga | 60× `POST /tests/139/answers` (preguntas oficiales de la sesión); failures=0 |
+| Aislamiento | qids de 139 = 60 activas; **137=0, 138=0** respuestas |
+| Finish | **Una** llamada `POST /tests/139/finish` → HTTP **200**, `success=true` |
+| RIASEC | `riasec_results.id=64`, `test_session_id=139`, dominante **R**, secundario **I**, combined **RIA**, scores 30 c/u |
+| Historial API | `GET /tests`: 139 COMPLETED answered=60; 137 STARTED 0; 138 IN_PROGRESS 0 |
+| Result API | `GET /tests/139/result` → 200, dominant=R, session=139 |
+| Prohibido | Sin finish en 137/138; sin tocar `avov_db` / `:3000` / `:8000` |
+
+### B2-09 — E2E historial y resultado UI (2026-10-21)
+
+**Veredicto:** `APROBADO` (con nota de caché).
+
+| Evidencia | Resultado |
+|-----------|-----------|
+| Resultados | `#/student/results` — «Evaluación Completada · 21/10/2026 16:24» + «Ver resultado» |
+| Resultado 139 | Hash `#/student/test/139/result`; `GET /tests/139/result` **200**; UI «Perfil RIA», «Dominante: R», «Secundario: I», scores 30, nota ética |
+| Aislamiento red | Sin `/tests/137/result` ni `/tests/138/result`; sin `/answers`/`/finish`/`/start` en B2-09 |
+| Retorno | Volver → `#/student/results` con completada visible; Test sigue con «Continuar» (abiertas 137/138) |
+| Nota | Primera entrada a Resultados justo tras finish API externo pudo mostrar vacío por caché del provider; tras `GET /tests` / reentrada Inicio→Resultados la lista fue correcta. Finish in-app ya refresca historial (tests mock). **No** se clasifica como defecto de producto bloqueante del criterio B2-09. |
+| Limpieza | **No ejecutada**. Candidatos solo-139: answers `id` 3795–3854 (60), riasec `id=64`, sesión 139 COMPLETED. Pendiente autorización de borrado. |
+
+### Checklist B2 (estado tras B2-08/09)
+
+| Caso | Estado |
+|------|--------|
+| B2-05c Varias abiertas | Aprobado (UI+HTTP) |
+| B2-06 Guardado progresivo HTTP | Aprobado (HTTP+BD) |
+| B2-07 Diálogo sin guardar | Parcial E2E / Aprobado (TEST) |
+| **B2-08 Finalización** | **Aprobado (E2E+HTTP+BD)** — sesión 139 |
+| **B2-09 Historial/resultado** | **Aprobado (E2E)** — sesión 139 |
+| B2-01 / B2-02 JWT/logout | Aplazados / solo TEST |
+| B2-10 Recomendaciones | Parcial UI / Aprobado (TEST) BE |

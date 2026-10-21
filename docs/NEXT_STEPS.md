@@ -23,7 +23,22 @@ No se continúa una fase funcional hasta que el entorno de este Windows quede co
    - API `:8001` / Flutter `:3001` (`.\scripts\dev-frontend-e2e-isolated.ps1`). Auth API acotada comprobada; login UI Flutter aún no observado por automatización.
    - Detener API aislada: `.\scripts\stop-backend-e2e-isolated.ps1`. Flutter `:3001`: `q` en la terminal de `flutter run` (no cerrar `:3000`).
    - S-20.28: dos sesiones abiertas QA en `avov_test` (ids 137/138); `POST /tests/start` → 422; widget tests open-sessions 8 passed (no sustituyen UI). Credenciales solo en `%LOCALAPPDATA%\AVOV\e2e\`.
-   - S-20.29–S-20.31: selección visual **bloqueada**. El Chrome hijo del Flutter E2E (`:3001`) se observó en `:3000/#/login`; la pestaña `:3001` era huérfana. DDC/DWDS: hipótesis secundaria sin confirmación. **Próxima acción manual:** en la ventana Chrome del `flutter run` E2E, abrir exactamente `http://127.0.0.1:3001/` y reportar splash/login/blanco/dashboard (sin tocar `:3000` ni sesiones 137/138). No suite destructiva ni S-21; S-20 **ABIERTA**.
+   - S-20.29–S-20.31: selección visual **bloqueada** en esa fecha; superada en S-20.49–S-20.51 con Chrome hijo del `dartvm` `:3001`.
+   - **S-20 CERRADA** (2026-10-21): S-20.50/51 reanudación 138/137; S-20.52 aislamiento `POST /tests/138/answers` HTTP 200 + limpieza `id=3794`; S-20.53 fix hash `optionURLReflectsImperativeAPIs` + 2 tests. Evidencia en `docs/s-20-e2e-estudiante.md`. **No iniciar S-21** hasta completar el post-cierre abajo.
+
+## Post-cierre S-20 (siguiente trabajo del expediente)
+
+Orden efectivo (no saltar; no inventar estados):
+
+1. **Verificación E2E del hash** — **HECHO** (S-20.54): tras recarga solo `:3001`, Continuar 138 → `#/student/test/138` + `GET /tests/138/questions` 200; 137/138 con 0 respuestas.
+2. **B2-08 finalización** — **HECHO** (sesión desechable **139**): 60 answers + `POST /tests/139/finish` HTTP 200; RIASEC id=64 (R/I); 137/138 intactas (0 answers).
+3. **B2-09 historial/resultado E2E** — **HECHO**: `#/student/results` muestra Completada; `#/student/test/139/result` con Perfil RIA; sin mezclar 137/138.
+4. **B2-01 / B2-02** (aplazables): expiry JWT real y logout E2E.
+5. **B2-10** recomendaciones: parcial; router BE no registrado (TEST).
+6. Limpieza opcional de 139 (answers 3795–3854, riasec 64, sesión): **solo con autorización** de borrado; conservar evidencia hasta entonces.
+7. Evaluar inicio de **S-21** según el plan vigente (S-20 ya cerrada).
+
+Estado al documentar: commit/push/PR **no** ejecutados. Propuesta de integración: `main.dart`, `test/router/student_test_imperative_url_test.dart`, `docs/s-20-e2e-estudiante.md`, `docs/NEXT_STEPS.md`; opcional `create_e2e_disposable_finish_session.py`. Excluir AGENTS.md, CDP sueltos, `.cursor/hooks/`, salvo petición expresa.
 
 ## Trabajo de producto, aún no validado en ejecución
 
