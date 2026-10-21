@@ -73,9 +73,9 @@ class StudentDashboardScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
                 const Text(
-                  'Las recomendaciones de carreras no están disponibles. '
-                  'Ese servicio no tiene operaciones.',
-                ),
+                  'Las recomendaciones de carreras se generan en el resultado '
+                  'de cada evaluación completada (menú Resultados).',
+                )
               ],
             ),
         ),
