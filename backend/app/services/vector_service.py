@@ -51,10 +51,13 @@ class VectorService:
         if self.qdrant.is_available():
             try:
                 items = self.qdrant.search_careers(query_text, limit=payload.limit)
-                if items:
+                # El índice puede contener career_id de otro schema o borrados;
+                # solo devolver hits que existan como ACTIVE en MySQL.
+                validated = self._validate_qdrant_hits(items)
+                if validated:
                     return CareerSearchResponse(
-                        items=[CareerVectorMatch.model_validate(item) for item in items],
-                        total=len(items),
+                        items=validated,
+                        total=len(validated),
                         query_text=query_text,
                         used_fallback=False,
                     )
@@ -72,6 +75,32 @@ class VectorService:
             query_text=query_text,
             used_fallback=True,
         )
+
+    def _validate_qdrant_hits(self, items: list) -> list[CareerVectorMatch]:
+        validated: list[CareerVectorMatch] = []
+        for raw in items:
+            match = (
+                raw
+                if isinstance(raw, CareerVectorMatch)
+                else CareerVectorMatch.model_validate(raw)
+            )
+            career = self.career_repo.get_by_id(match.career_id)
+            if career is None or career.status != CareerStatus.ACTIVE:
+                continue
+            validated.append(
+                CareerVectorMatch(
+                    career_id=career.id,
+                    name=career.name,
+                    area=career.area,
+                    riasec_profile=career.riasec_profile,
+                    degree_type=career.degree_type.value,
+                    institution_type=career.institution_type.value,
+                    score=match.score,
+                    qdrant_score=match.qdrant_score,
+                    source=match.source or "qdrant",
+                )
+            )
+        return validated
 
     def _search_mysql_fallback(
         self,

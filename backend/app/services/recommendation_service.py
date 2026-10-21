@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from sqlalchemy.orm import Session
 
-from app.core.enums import TestSessionStatus, UserRole
+from app.core.enums import CareerStatus, TestSessionStatus, UserRole
 from app.core.exceptions import ForbiddenException, NotFoundException, ValidationException
 from app.models.career import Recommendation
 from app.models.user import User
@@ -83,6 +83,10 @@ class RecommendationService:
 
         ranked: list[tuple[CareerVectorMatch, float, float]] = []
         for match in search.items:
+            # Defensa: no persistir career_id ausente o inactivo (FK MySQL).
+            career = self.vector.career_repo.get_by_id(match.career_id)
+            if career is None or career.status != CareerStatus.ACTIVE:
+                continue
             riasec_score = self._riasec_letter_score(profile, match.riasec_profile)
             qdrant_score = self._normalize_qdrant_score(match)
             hybrid = round(

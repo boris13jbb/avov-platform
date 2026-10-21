@@ -16,8 +16,11 @@ import 'package:avov_frontend/features/student/presentation/screens/student_prof
 import 'package:avov_frontend/features/students/domain/managed_student.dart';
 import 'package:avov_frontend/features/students/domain/student_repository.dart';
 import 'package:avov_frontend/features/students/presentation/providers/students_provider.dart';
+import 'package:avov_frontend/features/vocational/domain/career_recommendation.dart';
+import 'package:avov_frontend/features/vocational/domain/recommendation_repository.dart';
 import 'package:avov_frontend/features/vocational/domain/vocational_repository.dart';
 import 'package:avov_frontend/features/vocational/domain/vocational_test.dart';
+import 'package:avov_frontend/features/vocational/presentation/providers/recommendation_provider.dart';
 import 'package:avov_frontend/features/vocational/presentation/providers/vocational_provider.dart';
 import 'package:avov_frontend/features/vocational/presentation/screens/vocational_result_screen.dart';
 import 'package:avov_frontend/features/vocational/presentation/screens/vocational_test_screen.dart';
@@ -77,7 +80,12 @@ void main() {
     expect(find.text('Identificación: ID-PROPIA'), findsOneWidget);
     expect(find.text('Curso: 10'), findsOneWidget);
     expect(find.text('No tienes evaluaciones registradas.'), findsOneWidget);
-    expect(find.textContaining('recomendaciones de carreras no están disponibles'), findsOneWidget);
+    expect(
+      find.textContaining(
+        'Las recomendaciones de carreras se generan en el resultado',
+      ),
+      findsOneWidget,
+    );
     expect(find.textContaining('%'), findsNothing);
     expect(find.text('Iniciar evaluación'), findsOneWidget);
     expect(find.widgetWithText(TextButton, 'Cerrar sesión'), findsOneWidget);
@@ -303,19 +311,45 @@ void main() {
               ),
             ),
           ),
+          recommendationRepositoryProvider.overrideWithValue(
+            _EmptyRecommendations(),
+          ),
         ],
         child: const MaterialApp(home: VocationalResultScreen(sessionId: 8)),
       ),
     );
-    await tester.pump();
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('Perfil RIS'), findsOneWidget);
     expect(find.text('Realista: 40'), findsOneWidget);
-    expect(find.textContaining('no reemplaza la orientación profesional'), findsOneWidget);
-    expect(find.textContaining('recomendaciones de carreras no están disponibles'), findsOneWidget);
+    expect(find.textContaining('no reemplaza la orientación profesional'), findsWidgets);
+    expect(find.text('Carreras recomendadas'), findsOneWidget);
+    expect(
+      find.textContaining('No hay carreras compatibles'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Ese servicio no tiene operaciones'), findsNothing);
     expect(find.textContaining('Ingeniería'), findsNothing);
   });
+}
+
+class _EmptyRecommendations implements RecommendationRepository {
+  @override
+  Future<CareerRecommendationPage> listForSession(int sessionId) async {
+    return const CareerRecommendationPage(
+      testSessionId: 8,
+      studentId: 4,
+      riasecProfile: 'RIS',
+      usedFallback: true,
+      total: 0,
+      items: [],
+    );
+  }
+
+  @override
+  Future<CareerRecommendationPage> generateForSession(int sessionId) async {
+    return listForSession(sessionId);
+  }
 }
 
 Future<ProviderContainer> _appContainer(

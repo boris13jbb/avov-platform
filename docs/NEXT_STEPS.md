@@ -51,23 +51,21 @@ S-20 cerrada **no basta** por sí sola para abrir S-21. Condiciones observadas:
 | B2-05c / B2-06 | Sí para varias abiertas y guardado | Hecho |
 | B2-07 diálogo dirty | No bloqueante si queda documentado parcial + TEST | Parcial — aplazable |
 | B2-01 / B2-02 JWT/logout E2E | No bloqueantes si quedan aplazados con cobertura TEST | Aplazados |
-| B2-10 recomendaciones E2E | No es salida de B2: es **producto pendiente** (Fase 14 / pantalla 40) | Parcial — candidato natural de S-21 |
+| B2-10 recomendaciones E2E | No es salida de B2: es **producto pendiente** (Fase 14 / pantalla 40) | **E2E aislado hecho** (sesión 156); ver `docs/fase-14-recomendaciones.md` |
 
-**Conclusión:** el expediente permite avanzar a planificación/ejecución de **S-21** con B2-07/01/02/10 documentados como parciales o aplazados, siempre que el usuario autorice el alcance concreto de S-21. No iniciar S-21 de forma automática solo por el cierre de S-20.
+**Conclusión:** S-21 implementada y validada en E2E aislado (`:3001`/`:8001`/`avov_test`). Cierre formal en `main` pendiente de merge autorizado de PR #1 y luego PR #2. Evidencia detallada en `docs/fase-14-recomendaciones.md`.
 
-### Alcance propuesto de S-21 (pendiente de autorización)
+### Alcance S-21 (autorizado e implementado)
 
-Candidato alineado con hueco de producto y B2-10:
+1. **Recomendaciones de carreras (Fase 14):** router registrado, servicio híbrido RIASEC+Qdrant con fallback MySQL, contratos, pruebas `avov_test`, UI en resultado vocacional.
+2. Siguiente producto sugerido: **PDF de resultados (Fase 15)**.
 
-1. **Recomendaciones de carreras (Fase 14 / flujo docs/flujos.md §3):** registrar router real, servicio (RIASEC + Qdrant con fallback MySQL), contratos, pruebas `avov_test`, UI estudiante (hoy «no disponibles»).
-2. Alternativa / siguiente: **PDF de resultados (Fase 15)** si se prioriza reporte sobre matching.
+Dependencias de integración: fusionar PR [#1](https://github.com/boris13jbb/avov-platform/pull/1) antes que PR [#2](https://github.com/boris13jbb/avov-platform/pull/2); conservar 137/138/139. No hay workflows CI en el repo.
 
-Dependencias: Qdrant operativo; no mezclar con `avov_db` en pruebas; conservar evidencia 139 hasta decisión de retención. Riesgos: cambiar contratos públicos; exponer datos del estudiante a DeepSeek (solo backend, sanitizar). Criterios de aceptación mínimos: endpoint(s) registrados; STUDENT solo ve lo suyo; fallback sin Qdrant; pruebas automatizadas; UI deja de mostrar solo el mensaje de no disponible cuando el backend exista.
-
-**En curso:** implementación S-21 en rama `feature/s21-career-recommendations` (base `docs/windows-continuity`). PR independiente hacia esa base; no mezclar con merge automático del PR #1. Sin despliegue ni borrado de 139.
+**Estado Git (2026-10-21):** rama `feature/s21-career-recommendations` @ `95f4796` + correcciones locales pendientes de commit (filtro hits Qdrant obsoletos, tests Flutter, docs E2E). Sin merge ni despliegue en esta pasada.
 
 ## Trabajo de producto, aún no validado en ejecución
 
 - Reconciliar `docs/plan-desarrollo.md` con el código real (el plan histórico de fases 5–32 está desfasado respecto al avance en `docs/windows-continuity`).
-- No implementar pantallas nuevas de S-21 hasta autorización explícita del alcance.
+- Tras cierre formal S-21: iniciar **Fase 15 (PDF)** con autorización explícita.
 - La arquitectura de referencia sigue siendo `docs/arquitectura.md`.

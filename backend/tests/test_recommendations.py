@@ -222,6 +222,47 @@ def test_generate_uses_mysql_fallback_when_qdrant_unavailable(
     assert all(item.get("career_name") for item in data["items"])
 
 
+def test_generate_falls_back_when_qdrant_returns_stale_career_ids(
+    client: TestClient,
+    rec_student,
+    rec_careers,
+):
+    """Qdrant con career_id inexistente en MySQL no debe producir HTTP 500."""
+    headers, _student_id = rec_student
+    session_id = _finish_session(client, headers)
+
+    stale = [
+        {
+            "career_id": 9_999_991,
+            "name": "Carrera fantasma",
+            "area": "N/A",
+            "riasec_profile": "RIA",
+            "degree_type": "LICENCIATURA",
+            "institution_type": "PUBLICA",
+            "score": 0.9,
+            "qdrant_score": 90.0,
+            "source": "qdrant",
+        }
+    ]
+    with patch(
+        "app.services.qdrant_service.QdrantService.is_available",
+        return_value=True,
+    ), patch(
+        "app.services.qdrant_service.QdrantService.search_careers",
+        return_value=stale,
+    ):
+        generated = client.post(
+            f"/api/v1/recommendations/sessions/{session_id}/generate",
+            headers=headers,
+        )
+    assert generated.status_code == 200
+    data = generated.json()["data"]
+    assert data["used_fallback"] is True
+    assert data["total"] >= 1
+    assert all(item["career_id"] in rec_careers or item["career_id"] > 0 for item in data["items"])
+    assert all(item["career_id"] != 9_999_991 for item in data["items"])
+
+
 def test_generate_empty_when_no_compatible_careers(
     client: TestClient,
     rec_student,
