@@ -18,5 +18,10 @@ class UnauthorizedException extends AppException {
 }
 
 class ValidationException extends AppException {
-  ValidationException(super.message) : super(statusCode: 422);
+  ValidationException(
+    super.message, {
+    this.fieldErrors = const [],
+  }) : super(statusCode: 422);
+
+  final List<String> fieldErrors;
 }

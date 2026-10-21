@@ -8,6 +8,7 @@ from app.repositories.question_repository import QuestionRepository
 from app.repositories.student_repository import StudentRepository
 from app.repositories.test_session_repository import TestSessionRepository
 from app.schemas.test_session import (
+    PaginatedTestSessions,
     QuestionForTest,
     RiasecResultResponse,
     SessionQuestionsResponse,
@@ -37,9 +38,15 @@ class TestSessionService:
             raise ForbiddenException("Solo los estudiantes pueden iniciar el test vocacional")
 
         student = self._get_student_profile(current_user)
-        existing = self.repo.get_open_session_for_student(student.id)
-        if existing:
-            return self._build_session_response(existing)
+        self.repo.lock_student(student.id)
+        open_sessions = self.repo.list_open_sessions(student.id)
+        if len(open_sessions) > 1:
+            raise ValidationException(
+                "Hay más de una evaluación en progreso. "
+                "No se inicia otra ni se elige una automáticamente."
+            )
+        if len(open_sessions) == 1:
+            return self._build_session_response(open_sessions[0])
 
         active_count = self.question_repo.count_active()
         if active_count == 0:
@@ -47,6 +54,36 @@ class TestSessionService:
 
         session = self.repo.create_session(student.id, active_count)
         return self._build_session_response(session)
+
+    def list_my_sessions(
+        self,
+        current_user: User,
+        *,
+        page: int = 1,
+        page_size: int = 20,
+    ) -> PaginatedTestSessions:
+        if current_user.role != UserRole.STUDENT:
+            raise ForbiddenException("Solo un estudiante puede consultar su historial")
+        if page < 1:
+            raise ValidationException("La página debe ser mayor o igual a 1")
+        if page_size < 1 or page_size > 100:
+            raise ValidationException("El tamaño de página debe estar entre 1 y 100")
+
+        student = self.student_repo.get_by_user_id(current_user.id)
+        if student is None:
+            raise NotFoundException("No tienes una ficha de estudiante registrada")
+
+        sessions, total = self.repo.list_for_student(
+            student.id,
+            page=page,
+            page_size=page_size,
+        )
+        counts = self.repo.count_answers_by_session([item.id for item in sessions])
+        items = [
+            self._build_session_response(item, answered_count=counts.get(item.id, 0))
+            for item in sessions
+        ]
+        return PaginatedTestSessions.build(items, total, page, page_size)
 
     def get_session_questions(
         self,
@@ -247,8 +284,14 @@ class TestSessionService:
 
         raise ForbiddenException("No tienes permisos para ver este resultado")
 
-    def _build_session_response(self, session: TestSession) -> TestSessionResponse:
-        answered_count = self.repo.count_answers(session.id)
+    def _build_session_response(
+        self,
+        session: TestSession,
+        *,
+        answered_count: int | None = None,
+    ) -> TestSessionResponse:
+        if answered_count is None:
+            answered_count = self.repo.count_answers(session.id)
         total = session.total_questions or 1
         progress_percent = round((answered_count / total) * 100, 2)
 

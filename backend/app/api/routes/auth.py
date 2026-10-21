@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db, security
+from app.core.config import get_settings
+from app.core.exceptions import UnauthorizedException
 from app.core.responses import success_response
 from app.models.user import User
 from app.schemas.auth import (
@@ -10,14 +12,39 @@ from app.schemas.auth import (
     LogoutRequest,
     RefreshRequest,
 )
+from app.security.login_rate_limit import (
+    LoginRateLimiter,
+    client_host,
+    get_login_rate_limiter,
+)
 from app.services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
 
 @router.post("/login")
-def login(body: LoginRequest, db: Session = Depends(get_db)):
-    tokens = AuthService(db).login(body.email, body.password)
+def login(
+    body: LoginRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+    limiter: LoginRateLimiter = Depends(get_login_rate_limiter),
+):
+    settings = get_settings()
+    host = client_host(request, trust_proxy_headers=settings.trust_proxy_headers)
+    # La reserva ya cuenta el intento. Solo se conserva si las credenciales
+    # son incorrectas. Un acierto o una cuenta inactiva la retiran porque la
+    # contraseña era válida. Un fallo inesperado devuelve solo ese intento.
+    limiter.reserve(host, body.email)
+    try:
+        tokens = AuthService(db).login(body.email, body.password)
+    except UnauthorizedException as exc:
+        if exc.message != AuthService.INVALID_CREDENTIALS_MSG:
+            limiter.clear(host, body.email)
+        raise
+    except Exception:
+        limiter.release(host, body.email)
+        raise
+    limiter.clear(host, body.email)
     return success_response(
         data=tokens.model_dump(),
         message="Inicio de sesión exitoso",

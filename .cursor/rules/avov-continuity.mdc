@@ -1,0 +1,57 @@
+---
+description: Continuidad de AVOV entre equipos Windows — clon, entorno local, Git y secretos
+alwaysApply: true
+---
+
+# Continuidad AVOV en Windows
+
+Complementa las reglas de proyecto, backend, frontend e infraestructura. No cambia el stack ni la arquitectura.
+
+## Repositorio
+
+- Remoto oficial: `https://github.com/boris13jbb/avov-platform.git`
+- Rama de integración publicada: `main`
+- No trabajar cambios directamente en `main`. Usar `feature/`, `fix/`, `docs/` o `chore/`.
+- No hacer commit ni push sin aprobación explícita del usuario.
+- No hacer force push, reset destructivo ni borrar historial.
+
+## Qué viaja entre computadoras
+
+| Tipo | Dónde está | Disponible en otro equipo |
+|------|------------|---------------------------|
+| Código publicado | GitHub `origin` | Sí, después de `git pull` |
+| Commits solo locales | Rama local no empujada | No |
+| `.env`, `.venv/`, builds | Ignorados por Git | No; se recrean en cada equipo |
+| Datos MySQL, Redis, Qdrant | Volúmenes Docker o XAMPP | No, salvo backup restaurado |
+
+No afirmar que un cambio está en otro equipo hasta comprobar `git status` y que el commit existe en `origin`.
+
+## Preparar un equipo Windows
+
+1. Comprobar Git, Python 3.12+, Flutter 3.24+ (SDK Dart `>=3.5.0 <4.0.0`) y Docker Desktop.
+2. Clonar en `%USERPROFILE%\source\avov-platform` si esa carpeta no existe. No sobrescribir una copia previa.
+3. Abrir esa carpeta en Cursor (File > Open Folder).
+4. Copiar `.env.example` a `.env` solo en local. No commitear `.env`.
+5. Backend: `python -m venv .venv` y `pip install -r requirements.txt` dentro de `backend/`.
+6. Frontend: `flutter pub get` dentro de `frontend/`.
+7. Respetar el gestor ya usado: Python `requirements.txt` y Flutter `pubspec.lock`. No generar lockfiles de npm, pnpm ni Yarn.
+
+## Comandos de comprobación
+
+```powershell
+.\scripts\verify-structure.ps1
+cd backend; .\.venv\Scripts\python.exe -m pytest -q
+cd frontend; flutter analyze; flutter test
+```
+
+`pytest` usa MySQL. No ejecutarlo contra una base con datos ajenos. En este equipo el puerto 3306 es XAMPP (`mysqld`) y debe quedar intacto. Docker Compose publica el MySQL de AVOV en 3307; el contenedor sigue en 3306. Desde Windows, sin `DATABASE_URL`, el backend usa `127.0.0.1:3307`.
+
+## Secretos
+
+- No pegar tokens, contraseñas ni API keys en el chat ni en la documentación.
+- `DEEPSEEK_API_KEY`, `JWT_SECRET_KEY` y contraseñas de MySQL solo viven en `.env`.
+- DeepSeek se llama solo desde el backend.
+
+## Antes de publicar
+
+Revisar `git diff`, confirmar que no entra `.env`, ejecutar las pruebas que el cambio toque y actualizar la documentación existente en `docs/` si el comportamiento cambió. El detalle de arquitectura sigue en `docs/arquitectura.md`.

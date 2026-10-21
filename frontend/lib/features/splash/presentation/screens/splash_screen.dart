@@ -20,7 +20,7 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     _navigationTimer = Timer(const Duration(seconds: 2), () {
       if (mounted) {
-        context.go(RouteNames.home);
+        context.go(RouteNames.login);
       }
     });
   }

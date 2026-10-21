@@ -1,9 +1,12 @@
 import asyncio
+import logging
 from dataclasses import dataclass
 
 import httpx
 
-from app.core.config import Settings, get_settings
+logger = logging.getLogger(__name__)
+
+from app.core.config import DEEPSEEK_API_KEY_PLACEHOLDER, Settings, get_settings
 from app.services.llm.fallback_provider import ETHICAL_DISCLAIMER, FallbackProvider
 from app.services.llm.prompts import (
     build_chat_messages,
@@ -25,7 +28,8 @@ class LLMService:
         self._fallback = FallbackProvider()
 
     def is_configured(self) -> bool:
-        return bool(self.settings.deepseek_api_key.strip())
+        key = self.settings.deepseek_api_key.strip()
+        return bool(key) and key != DEEPSEEK_API_KEY_PLACEHOLDER
 
     async def explain_riasec_profile(self, profile_data: dict) -> LLMResult:
         messages = build_explain_profile_messages(profile_data)
@@ -77,7 +81,12 @@ class LLMService:
                     data = response.json()
                     content = data["choices"][0]["message"]["content"]
                     return str(content).strip()
-            except Exception:
+            except Exception as exc:
+                logger.warning(
+                    "DeepSeek no respondió en el intento %s: %s",
+                    attempt + 1,
+                    type(exc).__name__,
+                )
                 if attempt >= self.settings.deepseek_max_retries - 1:
                     return None
                 await asyncio.sleep(attempt + 1)

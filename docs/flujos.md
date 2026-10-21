@@ -96,9 +96,9 @@ sequenceDiagram
         API-->>FE: Resultado RIASEC
     end
 
-    FE->>API: POST /recommendations/generate
-    Note over API: Motor recomendaciones Fase 14
+    Note over FE,API: Recomendaciones de carreras (Fase 14): no implementadas ni registradas. El estudiante consulta el resultado RIASEC con GET /tests/{id}/result.
 ```
+
 
 ### Algoritmo de cálculo RIASEC
 
@@ -130,16 +130,19 @@ sequenceDiagram
 
 ---
 
-## 3. Flujo de recomendación (RIASEC + Qdrant + IA)
+## 3. Flujo de recomendación (RIASEC + Qdrant + IA) — Propuesta / no disponible
+
+> **Estado actual:** no hay endpoints de recomendaciones registrados en la API. El archivo `recommendations.py` es un router vacío y no está incluido en `main.py`. No existe `RecommendationService`. Lo siguiente es **diseño planificado (Fase 14)**, no contrato ni comportamiento disponible. No usar estas ideas como rutas consultables.
 
 ```mermaid
 sequenceDiagram
-    participant API as RecommendationService
+    participant API as RecommendationService (propuesto)
     participant MySQL as MySQL
     participant Qdrant as Qdrant
     participant LLM as DeepSeek
     participant Redis as Redis
 
+    Note over API: Flujo futuro — no expuesto en OpenAPI actual
     API->>MySQL: Obtener riasec_results + student
     API->>Redis: Buscar cache
     alt Cache hit
@@ -160,7 +163,7 @@ sequenceDiagram
     API-->>API: Retornar min 5 carreras ordenadas
 ```
 
-### Fórmula de compatibilidad híbrida
+### Fórmula de compatibilidad híbrida (propuesta)
 
 ```
 match_percentage = (riasec_score * 0.60) + (qdrant_score * 0.40)
@@ -169,11 +172,11 @@ match_percentage = (riasec_score * 0.60) + (qdrant_score * 0.40)
 - `riasec_score`: coincidencia de letras del perfil dominante/secundario con `career.riasec_profile`.
 - `qdrant_score`: score de similitud vectorial normalizado a 0-100.
 
-### Fallback sin Qdrant
+### Fallback sin Qdrant (propuesto)
 
 Filtrar carreras MySQL activas cuyo `riasec_profile` contenga letras del perfil dominante del estudiante. Ordenar por coincidencia de letras.
 
-### Reglas
+### Reglas previstas (cuando se implemente)
 
 - Mínimo **5 carreras** recomendadas.
 - Solo carreras con `status = ACTIVE`.
@@ -182,6 +185,7 @@ Filtrar carreras MySQL activas cuyo `riasec_profile` contenga letras del perfil 
 - Orientador puede agregar observaciones en `counselor_observations`.
 
 ---
+
 
 ## 4. Flujo de generación PDF
 

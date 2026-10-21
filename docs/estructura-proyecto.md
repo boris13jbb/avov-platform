@@ -49,12 +49,12 @@ backend/
 │   │       ├── careers.py
 │   │       ├── questions.py
 │   │       ├── tests.py
-│   │       ├── recommendations.py
-│   │       ├── reports.py
+│   │       ├── recommendations.py     # Stub vacío; NO registrado en main.py
+│   │       ├── reports.py             # Planificado / no asumir registrado
 │   │       ├── vector.py
 │   │       ├── assistant.py
-│   │       ├── audit.py
-│   │       ├── dashboard.py
+│   │       ├── audit.py               # Planificado / no asumir registrado
+│   │       ├── dashboard.py           # Planificado / no asumir registrado
 │   │       ├── health.py              # Existe
 │   │       └── status.py
 │   ├── core/
@@ -73,7 +73,7 @@ backend/
 │   │   ├── auth_service.py
 │   │   ├── test_service.py
 │   │   ├── riasec_calculator.py
-│   │   ├── recommendation_service.py
+│   │   ├── recommendation_service.py  # No existe aún (Fase 14 planificada)
 │   │   ├── qdrant_service.py
 │   │   ├── llm/
 │   │   │   ├── provider.py

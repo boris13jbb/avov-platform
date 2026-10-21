@@ -9,7 +9,7 @@ services:
       MYSQL_USER: ${MYSQL_USER:-avov_user}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-avov_user_secret}
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./database/init:/docker-entrypoint-initdb.d:ro
@@ -44,7 +44,7 @@ services:
     container_name: avov-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     healthcheck:

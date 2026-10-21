@@ -54,6 +54,69 @@ def test_list_students_forbidden_for_student(client: TestClient, auth_headers: d
     assert response.status_code == 403
 
 
+def test_own_student_requires_authentication(client: TestClient):
+    response = client.get("/api/v1/students/me")
+    assert response.status_code == 401
+    assert "password" not in response.text
+
+
+def test_own_student_forbidden_for_super_admin(
+    client: TestClient,
+    super_admin_headers: dict[str, str],
+):
+    response = client.get("/api/v1/students/me", headers=super_admin_headers)
+    assert response.status_code == 403
+
+
+def test_own_student_missing_profile_is_not_created(
+    client: TestClient,
+    auth_headers: dict[str, str],
+):
+    response = client.get("/api/v1/students/me", headers=auth_headers)
+    assert response.status_code == 404
+    assert response.json()["message"] == "No tienes una ficha de estudiante registrada"
+
+
+def test_own_student_returns_only_the_authenticated_record(
+    client: TestClient,
+    super_admin_headers: dict[str, str],
+    sample_institution,
+):
+    first = _student_payload(sample_institution.id)
+    second = _student_payload(sample_institution.id)
+    created_first = client.post("/api/v1/students", headers=super_admin_headers, json=first)
+    created_second = client.post("/api/v1/students", headers=super_admin_headers, json=second)
+    assert created_first.status_code == 200
+    assert created_second.status_code == 200
+    first_id = created_first.json()["data"]["id"]
+    second_id = created_second.json()["data"]["id"]
+    try:
+        login = client.post(
+            "/api/v1/auth/login",
+            json={"email": first["user"]["email"], "password": first["user"]["password"]},
+        )
+        headers = {"Authorization": f"Bearer {login.json()['data']['access_token']}"}
+        own = client.get("/api/v1/students/me", headers=headers)
+        assert own.status_code == 200
+        data = own.json()["data"]
+        assert data["id"] == first_id
+        assert data["identification"] == first["identification"]
+        assert data["grade"] == "10"
+        assert "password" not in data["user"]
+        assert "password_hash" not in response_text(data)
+
+        foreign = client.get(f"/api/v1/students/{second_id}", headers=headers)
+        assert foreign.status_code == 403
+        assert second["identification"] not in foreign.text
+    finally:
+        _delete_student_by_id(first_id)
+        _delete_student_by_id(second_id)
+
+
+def response_text(data: dict) -> str:
+    return str(data)
+
+
 def test_create_student_as_super_admin(
     client: TestClient,
     super_admin_headers: dict[str, str],

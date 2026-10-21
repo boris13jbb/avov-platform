@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db, security
@@ -10,6 +10,24 @@ from app.security.permissions import require_roles
 from app.services.test_session_service import TestSessionService
 
 router = APIRouter(prefix="/tests", tags=["Test Vocacional"])
+
+
+@router.get("", dependencies=[Depends(security)])
+def list_my_sessions(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    current_user: User = Depends(require_roles(UserRole.STUDENT)),
+    db: Session = Depends(get_db),
+):
+    result = TestSessionService(db).list_my_sessions(
+        current_user,
+        page=page,
+        page_size=page_size,
+    )
+    return success_response(
+        data=result.model_dump(mode="json"),
+        message="Evaluaciones obtenidas correctamente",
+    )
 
 
 @router.post("/start", dependencies=[Depends(security)])
