@@ -58,14 +58,12 @@ S-20 cerrada **no basta** por sí sola para abrir S-21. Condiciones observadas:
 ### Alcance S-21 (autorizado e implementado)
 
 1. **Recomendaciones de carreras (Fase 14):** router registrado, servicio híbrido RIASEC+Qdrant con fallback MySQL, contratos, pruebas `avov_test`, UI en resultado vocacional.
-2. Siguiente producto sugerido: **PDF de resultados (Fase 15)**.
+2. **Fase 15 (PDF)** en implementación local (ver `docs/fase-15-pdf.md`); sin commit/push en esa pasada salvo autorización aparte.
 
-Dependencias de integración: fusionar PR [#1](https://github.com/boris13jbb/avov-platform/pull/1) antes que PR [#2](https://github.com/boris13jbb/avov-platform/pull/2); conservar 137/138/139. No hay workflows CI en el repo.
-
-**Estado Git (2026-10-21):** rama `feature/s21-career-recommendations` @ `95f4796` + correcciones locales pendientes de commit (filtro hits Qdrant obsoletos, tests Flutter, docs E2E). Sin merge ni despliegue en esta pasada.
+Dependencias: S-21 ya integrada en `origin/main`. Conservar evidencia 137/138/139. No hay workflows CI en el repo.
 
 ## Trabajo de producto, aún no validado en ejecución
 
-- Reconciliar `docs/plan-desarrollo.md` con el código real (el plan histórico de fases 5–32 está desfasado respecto al avance en `docs/windows-continuity`).
-- Tras cierre formal S-21: iniciar **Fase 15 (PDF)** con autorización explícita.
+- Reconciliar `docs/plan-desarrollo.md` con el código real.
+- Completar historial `GET /reports/student/{id}` si se prioriza tras el MVP PDF.
 - La arquitectura de referencia sigue siendo `docs/arquitectura.md`.

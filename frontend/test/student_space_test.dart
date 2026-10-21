@@ -323,6 +323,7 @@ void main() {
     expect(find.text('Perfil RIS'), findsOneWidget);
     expect(find.text('Realista: 40'), findsOneWidget);
     expect(find.textContaining('no reemplaza la orientación profesional'), findsWidgets);
+    expect(find.text('Descargar PDF'), findsOneWidget);
     expect(find.text('Carreras recomendadas'), findsOneWidget);
     expect(
       find.textContaining('No hay carreras compatibles'),

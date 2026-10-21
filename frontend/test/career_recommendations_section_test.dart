@@ -27,13 +27,13 @@ class _FakeRecRepo implements RecommendationRepository {
 void main() {
   testWidgets('muestra carreras recomendadas y no el mensaje estático antiguo',
       (tester) async {
-    final page = CareerRecommendationPage(
+    const page = CareerRecommendationPage(
       testSessionId: 139,
       studentId: 900000,
       riasecProfile: 'RIA',
       usedFallback: false,
       total: 1,
-      items: const [
+      items: [
         CareerRecommendation(
           id: 1,
           careerId: 10,
@@ -73,13 +73,13 @@ void main() {
   });
 
   testWidgets('lista vacía muestra mensaje coherente', (tester) async {
-    final page = CareerRecommendationPage(
+    const page = CareerRecommendationPage(
       testSessionId: 1,
       studentId: 1,
       riasecProfile: 'RIA',
       usedFallback: true,
       total: 0,
-      items: const [],
+      items: [],
     );
 
     await tester.pumpWidget(
