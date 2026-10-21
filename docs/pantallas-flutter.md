@@ -97,7 +97,7 @@
 | 37 | Test vocacional | `/student/test/session/:id` | 23 |
 | 38 | Confirmar finalización | `/student/test/finish` | 23 |
 | 39 | Resultados RIASEC | `/student/results` | 24 |
-| 40 | Carreras recomendadas | `/student/recommendations` | 24 — **No disponible:** sin API de recomendaciones registrada; pantalla planificada, no operativa |
+| 40 | Carreras recomendadas | Sección en resultado `/student/test/:id/result` | 24 / S-21 — API `/recommendations` registrada; UI en resultado vocacional |
 | 41 | Asistente virtual | `/student/assistant` | 25 |
 | 42 | Descargar PDF | Acción en resultados | 24 |
 

@@ -3,7 +3,8 @@ import 'vocational_test.dart';
 /// Contrato de `/tests`.
 ///
 /// El historial solo incluye las sesiones del estudiante autenticado.
-/// La escala de respuesta es 1 a 5. No hay recomendaciones de carreras.
+/// La escala de respuesta es 1 a 5.
+/// Las recomendaciones de carreras usan `/recommendations` (Fase 14 / S-21).
 abstract class VocationalRepository {
   Future<VocationalSessionPage> listSessions({int page = 1, int pageSize = 20});
 

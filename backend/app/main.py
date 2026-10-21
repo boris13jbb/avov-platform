@@ -9,6 +9,7 @@ from app.api.routes import (
     health,
     institutions,
     questions,
+    recommendations,
     status,
     students,
     tests,
@@ -51,6 +52,7 @@ app.include_router(students.router, prefix=API_PREFIX)
 app.include_router(careers.router, prefix=API_PREFIX)
 app.include_router(questions.router, prefix=API_PREFIX)
 app.include_router(tests.router, prefix=API_PREFIX)
+app.include_router(recommendations.router, prefix=API_PREFIX)
 app.include_router(vector.router, prefix=API_PREFIX)
 app.include_router(assistant.router, prefix=API_PREFIX)
 
@@ -84,6 +86,7 @@ def custom_openapi():
         "/careers",
         "/questions",
         "/tests",
+        "/recommendations",
         "/vector",
         "/assistant",
     )

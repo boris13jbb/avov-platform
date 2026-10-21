@@ -64,7 +64,7 @@ Candidato alineado con hueco de producto y B2-10:
 
 Dependencias: Qdrant operativo; no mezclar con `avov_db` en pruebas; conservar evidencia 139 hasta decisión de retención. Riesgos: cambiar contratos públicos; exponer datos del estudiante a DeepSeek (solo backend, sanitizar). Criterios de aceptación mínimos: endpoint(s) registrados; STUDENT solo ve lo suyo; fallback sin Qdrant; pruebas automatizadas; UI deja de mostrar solo el mensaje de no disponible cuando el backend exista.
 
-**No iniciado:** implementación S-21, merge a `main`, despliegue, ni borrado de 139.
+**En curso:** implementación S-21 en rama `feature/s21-career-recommendations` (base `docs/windows-continuity`). PR independiente hacia esa base; no mezclar con merge automático del PR #1. Sin despliegue ni borrado de 139.
 
 ## Trabajo de producto, aún no validado en ejecución
 

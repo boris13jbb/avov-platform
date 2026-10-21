@@ -5,6 +5,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
 import '../../../../shared/widgets/student_scaffold.dart';
 import '../providers/vocational_provider.dart';
+import '../widgets/career_recommendations_section.dart';
 
 class VocationalResultScreen extends ConsumerWidget {
   const VocationalResultScreen({super.key, required this.sessionId});
@@ -54,11 +55,8 @@ class VocationalResultScreen extends ConsumerWidget {
                 'Este resultado es orientativo y no reemplaza la orientación profesional '
                 'de un psicólogo, docente u orientador educativo.',
               ),
-              const SizedBox(height: 12),
-              const Text(
-                'Las recomendaciones de carreras no están disponibles. '
-                'Ese servicio no tiene operaciones.',
-              ),
+              const SizedBox(height: 24),
+              CareerRecommendationsSection(sessionId: sessionId),
             ],
           ),
         ),

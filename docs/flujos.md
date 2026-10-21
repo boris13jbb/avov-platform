@@ -130,9 +130,9 @@ sequenceDiagram
 
 ---
 
-## 3. Flujo de recomendación (RIASEC + Qdrant + IA) — Propuesta / no disponible
+## 3. Flujo de recomendación (RIASEC + Qdrant + fallback MySQL) — S-21 / Fase 14
 
-> **Estado actual:** no hay endpoints de recomendaciones registrados en la API. El archivo `recommendations.py` es un router vacío y no está incluido en `main.py`. No existe `RecommendationService`. Lo siguiente es **diseño planificado (Fase 14)**, no contrato ni comportamiento disponible. No usar estas ideas como rutas consultables.
+> **Estado (2026-10-21):** implementado. `POST/GET /api/v1/recommendations/sessions/{session_id}` (+ `/generate`). Explicación con plantilla ética (DeepSeek no es obligatorio en el camino crítico). Ver `docs/fase-14-recomendaciones.md`.
 
 ```mermaid
 sequenceDiagram
