@@ -65,5 +65,5 @@ Dependencias: S-21 ya integrada en `origin/main`. Conservar evidencia 137/138/13
 ## Trabajo de producto, aún no validado en ejecución
 
 - Reconciliar `docs/plan-desarrollo.md` con el código real.
-- Completar historial `GET /reports/student/{id}` si se prioriza tras el MVP PDF.
+- Historial `GET /reports/student/{id}` — **implementado en Fase 16A** (`docs/fase-16a-historial-informes.md`).
 - La arquitectura de referencia sigue siendo `docs/arquitectura.md`.

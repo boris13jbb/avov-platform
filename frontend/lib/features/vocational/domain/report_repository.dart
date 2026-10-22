@@ -1,6 +1,14 @@
-/// Contrato de descarga de informe PDF vocacional.
+import 'report_history.dart';
+
+/// Contrato de descarga e historial de informes PDF vocacionales.
 abstract class ReportRepository {
   Future<VocationalPdfFile> downloadSessionPdf(int sessionId);
+
+  Future<ReportHistoryPage> listStudentReports(
+    int studentId, {
+    int page = 1,
+    int pageSize = 20,
+  });
 }
 
 class VocationalPdfFile {

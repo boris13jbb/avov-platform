@@ -1,4 +1,5 @@
 import 'package:avov_frontend/core/errors/app_exception.dart';
+import 'package:avov_frontend/features/vocational/domain/report_history.dart';
 import 'package:avov_frontend/features/vocational/domain/report_repository.dart';
 import 'package:avov_frontend/features/vocational/presentation/providers/report_provider.dart';
 import 'package:avov_frontend/features/vocational/presentation/widgets/download_vocational_pdf_button.dart';
@@ -28,6 +29,15 @@ class _FakeReportRepo implements ReportRepository {
       throw error!;
     }
     return file!;
+  }
+
+  @override
+  Future<ReportHistoryPage> listStudentReports(
+    int studentId, {
+    int page = 1,
+    int pageSize = 20,
+  }) {
+    throw UnimplementedError();
   }
 }
 

@@ -21,11 +21,13 @@ from app.repositories.recommendation_repository import RecommendationRepository
 from app.repositories.report_repository import ReportRepository
 from app.repositories.student_repository import StudentRepository
 from app.repositories.test_session_repository import TestSessionRepository
+from app.schemas.report import PaginatedReports
 from app.services.pdf_report_builder import (
     PdfCareerRow,
     VocationalPdfData,
     build_vocational_pdf,
 )
+from app.services.student_service import StudentService
 from app.services.test_session_service import TestSessionService
 from app.utils.file_storage import (
     relative_report_path,
@@ -55,6 +57,37 @@ class ReportService:
         self.recommendations = RecommendationRepository(db)
         self.audit = AuditRepository(db)
         self._session_service = TestSessionService(db)
+        self._student_service = StudentService(db)
+
+    def list_student_reports(
+        self,
+        student_id: int,
+        current_user: User,
+        *,
+        page: int = 1,
+        page_size: int = 20,
+    ) -> PaginatedReports:
+        """Lista metadatos de informes del estudiante (sin rutas de archivo).
+
+        La autorización reutiliza ``StudentService.get_student`` / ``_ensure_can_view``:
+        STUDENT solo su ficha, INSTITUTION_ADMIN misma institución, COUNSELOR
+        asignado, SUPER_ADMIN todos.
+        """
+        # Valida existencia y permisos; 404/403 iguales que GET /students/{id}.
+        self._student_service.get_student(student_id, current_user)
+
+        total = self.reports.count_by_student(student_id)
+        items = self.reports.list_by_student(
+            student_id,
+            page=page,
+            page_size=page_size,
+        )
+        return PaginatedReports.build(
+            items=items,
+            total=total,
+            page=page,
+            page_size=page_size,
+        )
 
     def get_session_pdf(
         self,

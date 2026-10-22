@@ -17,12 +17,25 @@ class DownloadVocationalPdfButton extends ConsumerStatefulWidget {
     super.key,
     required this.sessionId,
     this.saver,
+    this.idleLabel = 'Descargar PDF',
+    this.busyLabel = 'Preparando PDF…',
+    this.buttonKey,
   });
 
   final int sessionId;
 
   /// Inyectable en pruebas; por defecto usa el guardado de plataforma.
   final VocationalPdfSaver? saver;
+
+  /// Etiqueta en reposo (p. ej. historial: «Descargar PDF vigente»).
+  final String idleLabel;
+
+  final String busyLabel;
+
+  /// Identidad del botón de acción. Si es null, se usa `download-pdf-{sessionId}`.
+  /// En historial, inyectar una clave que incluya el `reportId` para evitar
+  /// colisiones cuando varios informes comparten la misma sesión.
+  final Key? buttonKey;
 
   @override
   ConsumerState<DownloadVocationalPdfButton> createState() =>
@@ -79,12 +92,12 @@ class _DownloadVocationalPdfButtonState
   @override
   Widget build(BuildContext context) {
     return FilledButton.icon(
-      key: ValueKey('download-pdf-${widget.sessionId}'),
+      key: widget.buttonKey ?? ValueKey('download-pdf-${widget.sessionId}'),
       onPressed: _busy ? null : _download,
       icon: Icon(
         _busy ? Icons.hourglass_top : Icons.picture_as_pdf_outlined,
       ),
-      label: Text(_busy ? 'Preparando PDF…' : 'Descargar PDF'),
+      label: Text(_busy ? widget.busyLabel : widget.idleLabel),
     );
   }
 }

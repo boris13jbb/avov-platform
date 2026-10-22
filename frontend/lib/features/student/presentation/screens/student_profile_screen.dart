@@ -5,6 +5,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
 import '../../../../shared/widgets/student_scaffold.dart';
 import '../../../students/presentation/providers/students_provider.dart';
+import '../../../vocational/presentation/widgets/student_reports_history_section.dart';
 
 class StudentProfileScreen extends ConsumerWidget {
   const StudentProfileScreen({super.key});
@@ -53,6 +54,8 @@ class StudentProfileScreen extends ConsumerWidget {
               const Text(
                 'Esta ficha es de consulta. El estudiante no puede modificarla.',
               ),
+              const SizedBox(height: 24),
+              StudentReportsHistorySection(studentId: data.id),
             ],
           ),
         ),
