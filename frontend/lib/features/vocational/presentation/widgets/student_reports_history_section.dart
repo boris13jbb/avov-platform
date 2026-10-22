@@ -127,6 +127,9 @@ class _HistoryTile extends StatelessWidget {
               sessionId: item.testSessionId,
               saver: saver,
               idleLabel: 'Descargar PDF vigente',
+              buttonKey: ValueKey(
+                'download-pdf-report-${item.id}-session-${item.testSessionId}',
+              ),
             ),
           ),
         ],

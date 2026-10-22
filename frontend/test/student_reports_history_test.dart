@@ -123,6 +123,83 @@ void main() {
   });
 
   testWidgets(
+    'AUD-01: claves únicas con dos informes de la misma sesión',
+    (tester) async {
+      const sharedSessionId = 77;
+      final sameSessionPage = ReportHistoryPage(
+        items: [
+          ReportHistoryItem(
+            id: 101,
+            studentId: 10,
+            testSessionId: sharedSessionId,
+            reportCode: 'AVOV-S77-AAA',
+            generatedBy: 1,
+            createdAt: DateTime.utc(2026, 4, 2, 10, 0),
+            updatedAt: DateTime.utc(2026, 4, 2, 10, 0),
+          ),
+          ReportHistoryItem(
+            id: 100,
+            studentId: 10,
+            testSessionId: sharedSessionId,
+            reportCode: 'AVOV-S77-BBB',
+            generatedBy: 1,
+            createdAt: DateTime.utc(2026, 4, 1, 9, 0),
+            updatedAt: DateTime.utc(2026, 4, 1, 9, 0),
+          ),
+        ],
+        total: 2,
+        page: 1,
+        pageSize: 20,
+        pages: 1,
+      );
+      final repo = _FakeHistoryRepo(page: sameSessionPage);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            reportRepositoryProvider.overrideWithValue(repo),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: StudentReportsHistorySection(
+                  studentId: 10,
+                  saver: ({required bytes, required filename}) async => filename,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      const keyA = ValueKey('download-pdf-report-101-session-77');
+      const keyB = ValueKey('download-pdf-report-100-session-77');
+      expect(find.byKey(keyA), findsOneWidget);
+      expect(find.byKey(keyB), findsOneWidget);
+      expect(keyA, isNot(equals(keyB)));
+      // La clave por solo sessionId colisionaría; no debe usarse aquí.
+      expect(
+        find.byKey(const ValueKey('download-pdf-$sharedSessionId')),
+        findsNothing,
+      );
+
+      // Rebuild del mismo árbol: claves estables y sin colisión.
+      await tester.pump();
+      expect(find.byKey(keyA), findsOneWidget);
+      expect(find.byKey(keyB), findsOneWidget);
+      expect(find.text('Descargar PDF vigente'), findsNWidgets(2));
+
+      await tester.tap(find.byKey(keyA));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pump(const Duration(milliseconds: 200));
+
+      expect(repo.downloadedSessions, [sharedSessionId]);
+      expect(find.textContaining('CODE-$sharedSessionId'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
     'aclara PDF vigente de sesión y descarga con flujo existente',
     (tester) async {
       final repo = _FakeHistoryRepo(page: samplePage);
