@@ -200,6 +200,20 @@ Autorización (alineada a consulta de ficha / descarga PDF del mismo estudiante)
 | `INSTITUTION_ADMIN` | Misma institución |
 | `SUPER_ADMIN` | Todos |
 
+### Historial frente a descarga PDF vigente
+
+El historial (`GET /reports/student/{student_id}`) y la descarga (`GET /reports/{session_id}/pdf`) son operaciones distintas:
+
+| Aspecto | Historial | Descarga PDF |
+|---------|-----------|--------------|
+| Finalidad | Listar metadatos de registros `Report` del estudiante (paginado) | Obtener el archivo PDF de una evaluación `COMPLETED` |
+| Identificador de entrada | `student_id` (+ `page`, `page_size`) | `session_id` (sesión de test) |
+| Identificador por fila | `id` del informe en la respuesta JSON (`Report.id`) y `test_session_id` | No usa el `id` del registro histórico |
+
+Puede haber varios registros históricos con el mismo `test_session_id`. La descarga se solicita solo con `session_id` y el backend devuelve el **PDF vigente** de esa sesión (el último informe asociado a esa sesión). No existe en esta API una descarga por `id` de informe (`report_id`) que recupere una versión histórica concreta de cada fila.
+
+Consecuencia para la UI: varias filas del historial de la misma sesión pueden mostrar `report_code` distintos y, aun así, la acción de descarga de cada una obtiene el mismo PDF vigente de la sesión. Detalle de alcance y limitaciones: `docs/fase-16a-historial-informes.md`.
+
 ---
 
 ## 13. Dashboard (Fase 19)
