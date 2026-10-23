@@ -607,3 +607,55 @@ Pendientes **fuera** del cierre S-20 (expediente post-S-20): B2-08/B2-09 E2E con
 | **B2-09 Historial/resultado** | **Aprobado (E2E)** — sesión 139 |
 | B2-01 / B2-02 JWT/logout | Aplazados / solo TEST |
 | B2-10 Recomendaciones | Parcial UI / Aprobado (TEST) BE |
+
+### Tooling backend E2E aislado (operativo, F.9)
+
+Guía de uso de los scripts en la raíz del repositorio (ejecutar desde la raíz Git del worktree, p. ej. `AVOV-e2e-tooling` o la copia que corresponda). No sustituye el registro histórico S-20.26–S-20.54 ni las pruebas Flutter.
+
+#### Scripts y directorio
+
+| Script | Rol |
+|--------|-----|
+| `scripts/dev-backend-e2e-isolated.ps1` | Arranca la API E2E (tras `assert_e2e_database.py`) |
+| `scripts/verify-backend-e2e-isolated.ps1` | Supervisión de solo lectura (listener, PID, health) |
+| `scripts/stop-backend-e2e-isolated.ps1` | Detiene solo una instancia cuya identidad E2E se demuestre |
+
+Ejecutar desde la **raíz del repo** (donde están `scripts/` y `backend/`), no desde `backend/` ni desde otro worktree.
+
+#### Parámetro `-Port`
+
+- Valor predeterminado: **8001** (compatible con el flujo histórico y con `dev-frontend-e2e-isolated.ps1`, que sigue esperando la API en `:8001`).
+- Alternativa (p. ej. cuando `:8001` está ocupado por otra copia): `-Port 8002`.
+- Los tres scripts deben usar el **mismo** puerto. PID/logs: `%TEMP%\avov-e2e-api-<puerto>.*` (con `8001` coinciden los nombres legacy).
+
+Ejemplos:
+
+```powershell
+.\scripts\dev-backend-e2e-isolated.ps1
+.\scripts\dev-backend-e2e-isolated.ps1 -Port 8002
+.\scripts\verify-backend-e2e-isolated.ps1 -Port 8002
+.\scripts\stop-backend-e2e-isolated.ps1 -Port 8002
+```
+
+#### Arranque (`dev-backend-e2e-isolated.ps1`)
+
+1. Si el puerto ya tiene listener, **no reutiliza** solo por health HTTP 200: falla con `reuse_blocked_unverified` (el health no demuestra schema `avov_test`).
+2. Antes de Uvicorn ejecuta `backend/scripts/assert_e2e_database.py` (nombre de schema en la URL + `SELECT DATABASE()` en esa conexión de preflight).
+3. Esa aserción valida la **URL configurada para el arranque**, no una lectura directa del entorno interno del proceso servidor ya en marcha. La evidencia operativa de F.6 sobre la conexión del servidor fue **indirecta** (assert previo + herencia de entorno al `Start-Process`), no una inspección PEB del proceso.
+4. Redis previsto: DB index **1** (`redis://127.0.0.1:6380/1`). No imprime credenciales ni `DATABASE_URL`.
+
+#### Verificación (`verify-backend-e2e-isolated.ps1`)
+
+- Comprueba listener, archivo PID, relación padre/hijo y health HTTP.
+- Códigos: `0` = supervisión básica satisfactoria; `1` = fallo de supervisión/health; `2` = uso incorrecto (p. ej. puerto inválido).
+- Emite `VERIFY_OK` y **`VERIFY_NOTE schema_contract_is_label=true does_not_prove_mysql_schema=true`**.
+- **`VERIFY_NOTE` no debe ignorarse** en revisión manual: exit `0` **no** demuestra que la conexión interna del servidor use `avov_test`.
+- `schema_contract=avov_test` es etiqueta declarativa. **HTTP 200 no demuestra** por sí solo el uso de `avov_test`.
+- La verificación Flutter / E2E de producto es **independiente** de este script.
+
+#### Parada (`stop-backend-e2e-isolated.ps1`)
+
+- Exige PID registrado + identidad demostrable: python del `.venv` de **este** worktree, `uvicorn app.main:app`, `--host 127.0.0.1`, `--port` coincidente.
+- Si la identidad no se demuestra, **falla de forma conservadora** sin terminar procesos.
+- **No** detiene un listener únicamente por el número de puerto.
+- No usar este script contra el `:8001` de otro worktree sin autorización y sin demostrar que el proceso pertenece a la instancia que se pretende detener.
