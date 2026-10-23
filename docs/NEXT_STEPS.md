@@ -20,8 +20,9 @@ No se continúa una fase funcional hasta que el entorno de este Windows quede co
 8. Entorno E2E aislado (S-20.26–S-20.27):
    - `avov_test`: Alembic `f4b5c6d7e8f9`, 60 preguntas; cuenta QA `E2E-STUDENT-QA` (user/student id ≥ 900000). Credenciales solo en `%LOCALAPPDATA%\AVOV\e2e\` (no en git).
    - Crear/reutilizar cuenta: `DATABASE_URL`→`avov_test` + `backend/scripts/create_e2e_student_qa.py`.
-   - API `:8001` / Flutter `:3001` (`.\scripts\dev-frontend-e2e-isolated.ps1`). Auth API acotada comprobada; login UI Flutter aún no observado por automatización.
-   - Detener API aislada: `.\scripts\stop-backend-e2e-isolated.ps1`. Flutter `:3001`: `q` en la terminal de `flutter run` (no cerrar `:3000`).
+   - API `:8001` (default) / Flutter `:3001` (`.\scripts\dev-frontend-e2e-isolated.ps1`). Auth API acotada comprobada; login UI Flutter aún no observado por automatización.
+   - Tooling backend: `dev` / `verify` / `stop-backend-e2e-isolated.ps1` con `-Port` (default `8001`; p. ej. `8002` si hace falta). Guía operativa y contrato de `VERIFY_NOTE`: `docs/s-20-e2e-estudiante.md` § «Tooling backend E2E aislado (operativo, F.9)». `verify` exit `0` = supervisión/health, **no** prueba de schema `avov_test`.
+   - Detener API aislada: `.\scripts\stop-backend-e2e-isolated.ps1` (mismo `-Port`; solo con identidad verificada). Flutter `:3001`: `q` en la terminal de `flutter run` (no cerrar `:3000`).
    - S-20.28: dos sesiones abiertas QA en `avov_test` (ids 137/138); `POST /tests/start` → 422; widget tests open-sessions 8 passed (no sustituyen UI). Credenciales solo en `%LOCALAPPDATA%\AVOV\e2e\`.
    - S-20.29–S-20.31: selección visual **bloqueada** en esa fecha; superada en S-20.49–S-20.51 con Chrome hijo del `dartvm` `:3001`.
    - **S-20 CERRADA** (2026-10-21): S-20.50/51 reanudación 138/137; S-20.52 aislamiento `POST /tests/138/answers` HTTP 200 + limpieza `id=3794`; S-20.53 fix hash `optionURLReflectsImperativeAPIs` + 2 tests. Evidencia en `docs/s-20-e2e-estudiante.md`. **No iniciar S-21** hasta completar el post-cierre abajo.
