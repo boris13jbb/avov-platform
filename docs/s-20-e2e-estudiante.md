@@ -612,6 +612,8 @@ Pendientes **fuera** del cierre S-20 (expediente post-S-20): B2-08/B2-09 E2E con
 
 Guía de uso de los scripts en la raíz del repositorio (ejecutar desde la raíz Git del worktree, p. ej. `AVOV-e2e-tooling` o la copia que corresponda). No sustituye el registro histórico S-20.26–S-20.54 ni las pruebas Flutter.
 
+El gate de CI que analiza estáticamente estos scripts (`e2e-tooling-static`) y la política frente a `[skip ci]` están documentados en `docs/ci-e2e-tooling-static.md`. Ese check **no** sustituye la ejecución operativa ni el registro E2E de esta sección.
+
 #### Scripts y directorio
 
 | Script | Rol |
