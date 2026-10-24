@@ -23,6 +23,10 @@ class StudentDetailScreen extends ConsumerWidget {
           data: (profile) => canManageStudents(profile.role),
           orElse: () => false,
         );
+    final operatorRole = operator.maybeWhen(
+          data: (profile) => profile.role,
+          orElse: () => null,
+        );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Estudiante')),
@@ -40,6 +44,10 @@ class StudentDetailScreen extends ConsumerWidget {
               data: (profile) => profile.role == 'SUPER_ADMIN',
               orElse: () => false,
             );
+            final assignHref = AssignmentAreaRoutes.createLocation(
+              role: operatorRole,
+              studentId: student.id,
+            );
             if (!isSuperAdmin) {
               return _detailBody(
                 context,
@@ -47,6 +55,7 @@ class StudentDetailScreen extends ConsumerWidget {
                 student,
                 'Institución ${student.institutionId}',
                 canManage,
+                assignHref,
               );
             }
             return Consumer(
@@ -62,7 +71,14 @@ class StudentDetailScreen extends ConsumerWidget {
                       },
                       orElse: () => 'Institución ${student.institutionId}',
                     );
-                return _detailBody(context, ref, student, institutionName, canManage);
+                return _detailBody(
+                  context,
+                  ref,
+                  student,
+                  institutionName,
+                  canManage,
+                  assignHref,
+                );
               },
             );
           },
@@ -78,6 +94,7 @@ Widget _detailBody(
   ManagedStudent student,
   String institutionName,
   bool canManage,
+  String? assignHref,
 ) {
   return ListView(
     padding: const EdgeInsets.all(24),
@@ -99,6 +116,14 @@ Widget _detailBody(
       const SizedBox(height: 24),
       StudentReportsHistorySection(studentId: student.id),
       const SizedBox(height: 24),
+      if (assignHref != null) ...[
+        OutlinedButton.icon(
+          onPressed: () => context.go(assignHref),
+          icon: const Icon(Icons.link_outlined),
+          label: const Text('Asignar orientador'),
+        ),
+        const SizedBox(height: 12),
+      ],
       if (canManage)
         FilledButton(
           onPressed: () {

@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 
 from app.api.routes import (
+    assignments,
     assistant,
     auth,
     careers,
@@ -50,6 +51,7 @@ app.include_router(auth.router, prefix=API_PREFIX)
 app.include_router(institutions.router, prefix=API_PREFIX)
 app.include_router(users.router, prefix=API_PREFIX)
 app.include_router(students.router, prefix=API_PREFIX)
+app.include_router(assignments.router, prefix=API_PREFIX)
 app.include_router(careers.router, prefix=API_PREFIX)
 app.include_router(questions.router, prefix=API_PREFIX)
 app.include_router(tests.router, prefix=API_PREFIX)
@@ -85,6 +87,7 @@ def custom_openapi():
         "/institutions",
         "/users",
         "/students",
+        "/assignments",
         "/careers",
         "/questions",
         "/tests",

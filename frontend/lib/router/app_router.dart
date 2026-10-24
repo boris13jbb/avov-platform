@@ -8,6 +8,8 @@ import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/auth/presentation/screens/unauthorized_screen.dart';
 import '../features/counselor/presentation/screens/counselor_dashboard_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
+import '../features/assignments/presentation/screens/assignment_create_screen.dart';
+import '../features/assignments/presentation/screens/assignment_list_screen.dart';
 import '../features/institution_admin/presentation/screens/counselor_create_screen.dart';
 import '../features/institution_admin/presentation/screens/counselor_edit_screen.dart';
 import '../features/institution_admin/presentation/screens/counselor_list_screen.dart';
@@ -114,6 +116,20 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: RouteNames.adminAssignments,
+        name: 'admin-assignments',
+        builder: (context, state) => const AssignmentListScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.adminAssignmentNew,
+        name: 'admin-assignment-new',
+        builder: (context, state) {
+          final raw = state.uri.queryParameters['studentId'];
+          final studentId = raw == null ? null : int.tryParse(raw);
+          return AssignmentCreateScreen(preselectedStudentId: studentId);
+        },
+      ),
+      GoRoute(
         path: RouteNames.adminUsers,
         name: 'admin-users',
         builder: (context, state) => const UserListScreen(),
@@ -211,6 +227,20 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             );
           }
           return CounselorEditScreen(userId: id);
+        },
+      ),
+      GoRoute(
+        path: RouteNames.institutionAssignments,
+        name: 'institution-assignments',
+        builder: (context, state) => const AssignmentListScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.institutionAssignmentNew,
+        name: 'institution-assignment-new',
+        builder: (context, state) {
+          final raw = state.uri.queryParameters['studentId'];
+          final studentId = raw == null ? null : int.tryParse(raw);
+          return AssignmentCreateScreen(preselectedStudentId: studentId);
         },
       ),
       GoRoute(

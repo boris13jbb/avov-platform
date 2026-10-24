@@ -43,6 +43,8 @@ void main() {
     expect(routeMatchesRole('/admin/students', 'SUPER_ADMIN'), isTrue);
     expect(routeMatchesRole('/admin/students/new', 'STUDENT'), isFalse);
     expect(routeMatchesRole('/admin/students/3', 'COUNSELOR'), isFalse);
+    expect(routeMatchesRole('/admin/assignments', 'SUPER_ADMIN'), isTrue);
+    expect(routeMatchesRole('/admin/assignments/new', 'COUNSELOR'), isFalse);
     expect(routeMatchesRole('/admin/dashboard', 'INSTITUTION_ADMIN'), isFalse);
   });
 
