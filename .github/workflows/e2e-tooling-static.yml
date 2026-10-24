@@ -1,5 +1,19 @@
-# Validación estática del tooling E2E aislado (PowerShell + git diff --check).
-# No arranca servicios ni ejecuta los scripts operativos del repositorio.
+# Gate estático de tooling E2E aislado (check obligatorio en main: e2e-tooling-static).
+#
+# Este job SÍ:
+# - Analiza la sintaxis PowerShell de:
+#     scripts/dev-backend-e2e-isolated.ps1
+#     scripts/stop-backend-e2e-isolated.ps1
+#     scripts/verify-backend-e2e-isolated.ps1
+# - Ejecuta `git diff --check` sobre el rango base/head calculado por el workflow.
+#
+# Este job NO:
+# - Ejecuta los scripts operativos del backend E2E.
+# - Comprueba el aislamiento real de MySQL (`avov_test`) ni de Redis.
+# - Ejecuta pytest, flutter analyze, flutter test ni pruebas funcionales de AVOV.
+# - Constituye una prueba E2E integral de la plataforma.
+#
+# Política operativa (omitir CI / ruleset): docs/ci-e2e-tooling-static.md
 name: e2e-tooling-static
 
 # Comillas en "on" para evitar que parsers YAML 1.1 lo interpreten como booleano.
@@ -26,7 +40,9 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        # actions/checkout@v4.4.0 — SHA verificado en https://github.com/actions/checkout
+        # (tag v4.4.0 / floating v4 → 11d5960a326750d5838078e36cf38b85af677262)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 0
 
