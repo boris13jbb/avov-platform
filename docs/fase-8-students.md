@@ -46,6 +46,7 @@ Implementar gestión de estudiantes creando usuario + perfil académico en una s
 
 ### COUNSELOR
 - Solo lista y ve estudiantes asignados en `counselor_assignments` (ACTIVE)
+- El filtro de lectura depende de asignaciones activas; la gestión del vínculo es F1-ASN
 
 ### STUDENT
 - Puede ver su propio perfil (`GET /students/{id}` propio)
@@ -67,6 +68,22 @@ Implementar gestión de estudiantes creando usuario + perfil académico en una s
 - [x] Orientador filtrado por asignaciones
 - [x] Tests pytest pasan
 
+## F1-ASN — Gestión operativa de asignaciones
+
+Complementa la Fase 8: permite crear, listar, desactivar y reactivar vínculos en `counselor_assignments` sin cambiar el esquema MySQL.
+
+| Método | Ruta | Rol |
+|--------|------|-----|
+| GET | `/api/v1/assignments` | SUPER_ADMIN, INSTITUTION_ADMIN, COUNSELOR |
+| GET | `/api/v1/assignments/{id}` | SUPER_ADMIN, INSTITUTION_ADMIN, COUNSELOR |
+| POST | `/api/v1/assignments` | SUPER_ADMIN, INSTITUTION_ADMIN |
+| PATCH | `/api/v1/assignments/{id}/status` | SUPER_ADMIN, INSTITUTION_ADMIN |
+
+- Desactivar → `INACTIVE` (el orientador deja de ver al estudiante en listados filtrados).
+- Reactivar → `ACTIVE` sobre la misma fila, o `POST` del mismo par si ya estaba inactivo.
+- Flutter: `INSTITUTION_ADMIN` usa `/institution/assignments` y `/institution/assignments/new`; `SUPER_ADMIN` usa `/admin/assignments` y `/admin/assignments/new` (mismos widgets). CTA «Asignar orientador» apunta solo a la ruta del rol.
+- Detalle del contrato: `docs/api-endpoints.md` §5B.
+
 ## Siguiente fase
 
-**FASE 9 — CRUD carreras**
+**FASE 9 — CRUD carreras** (histórico). Operativamente, F1-ASN cierra el hueco de escritura de asignaciones sobre el modelo ya existente.

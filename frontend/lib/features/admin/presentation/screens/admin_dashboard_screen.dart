@@ -135,6 +135,15 @@ class _DashboardContent extends StatelessWidget {
                   label: const Text('Gestionar estudiantes'),
                 ),
               ),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: FilledButton.icon(
+                  onPressed: () => context.go(RouteNames.adminAssignments),
+                  icon: const Icon(Icons.link_outlined),
+                  label: const Text('Gestionar asignaciones'),
+                ),
+              ),
               const SizedBox(height: 32),
               Text(
                 'Módulos pendientes',

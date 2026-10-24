@@ -20,7 +20,8 @@ class CounselorDashboardData {
 ///
 /// `GET /students` aplica en el servidor la institución y el `counselor_id`
 /// de la sesión. El `total` de la página es el recuento fiable.
-/// No existe un endpoint de asignación ni el nombre de la institución.
+/// La gestión de altas/bajas de asignación es `GET|POST|PATCH /assignments`
+/// (roles de administración); el orientador solo consulta las suyas.
 final counselorDashboardProvider =
     FutureProvider.autoDispose<CounselorDashboardData>((ref) async {
   final profile = await ref.watch(authRepositoryProvider).currentProfile();

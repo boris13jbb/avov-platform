@@ -90,6 +90,16 @@ class InstitutionDashboardScreen extends ConsumerWidget {
                     label: const Text('Gestionar orientadores'),
                   ),
                 ),
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: FilledButton.icon(
+                    onPressed: () =>
+                        context.go(RouteNames.institutionAssignments),
+                    icon: const Icon(Icons.link_outlined),
+                    label: const Text('Gestionar asignaciones'),
+                  ),
+                ),
               ],
             );
           },

@@ -24,6 +24,8 @@ class RouteNames {
   static String adminStudentDetail(int id) => '/admin/students/$id';
 
   static String adminStudentEdit(int id) => '/admin/students/$id/edit';
+  static const adminAssignments = '/admin/assignments';
+  static const adminAssignmentNew = '/admin/assignments/new';
 
   static const institutionPrefix = '/institution';
   static const institutionDashboard = '/institution/dashboard';
@@ -38,6 +40,8 @@ class RouteNames {
 
   static String institutionCounselorEdit(int id) =>
       '/institution/counselors/$id/edit';
+  static const institutionAssignments = '/institution/assignments';
+  static const institutionAssignmentNew = '/institution/assignments/new';
   static const counselorPrefix = '/counselor';
   static const counselorDashboard = '/counselor/dashboard';
   static const counselorStudents = '/counselor/students';
@@ -94,5 +98,46 @@ class StudentAreaRoutes {
       default:
         return null;
     }
+  }
+}
+
+/// Rutas de gestión de asignaciones según el rol (UI). La API sigue siendo
+/// la fuente de autorización.
+class AssignmentAreaRoutes {
+  const AssignmentAreaRoutes({
+    required this.list,
+    required this.create,
+  });
+
+  final String list;
+  final String create;
+
+  static AssignmentAreaRoutes? forRole(String? role) {
+    switch (role) {
+      case 'SUPER_ADMIN':
+        return const AssignmentAreaRoutes(
+          list: RouteNames.adminAssignments,
+          create: RouteNames.adminAssignmentNew,
+        );
+      case 'INSTITUTION_ADMIN':
+        return const AssignmentAreaRoutes(
+          list: RouteNames.institutionAssignments,
+          create: RouteNames.institutionAssignmentNew,
+        );
+      default:
+        return null;
+    }
+  }
+
+  /// Destino de alta; `null` si el rol no tiene pantalla de gestión.
+  static String? createLocation({required String? role, int? studentId}) {
+    final routes = forRole(role);
+    if (routes == null) {
+      return null;
+    }
+    if (studentId == null) {
+      return routes.create;
+    }
+    return '${routes.create}?studentId=$studentId';
   }
 }

@@ -106,6 +106,54 @@ Authorization: Bearer <access_token>
 
 ---
 
+## 5B. Asignaciones orientador–estudiante (F1-ASN)
+
+Prefijo: `/api/v1/assignments`. Modelo: `counselor_assignments` (`ACTIVE` / `INACTIVE`). No hay eliminación física.
+
+| Método | Ruta | Rol | Descripción |
+|--------|------|-----|-------------|
+| GET | `/assignments` | SUPER_ADMIN, INSTITUTION_ADMIN, COUNSELOR | Listar con filtros y paginación |
+| GET | `/assignments/{id}` | SUPER_ADMIN, INSTITUTION_ADMIN, COUNSELOR | Detalle (alcance por rol) |
+| POST | `/assignments` | SUPER_ADMIN, INSTITUTION_ADMIN | Crear o reactivar par inactivo |
+| PATCH | `/assignments/{id}/status` | SUPER_ADMIN, INSTITUTION_ADMIN | Transición `ACTIVE` ↔ `INACTIVE` |
+
+### Query de listado
+
+| Parámetro | Descripción |
+|-----------|-------------|
+| `page` | Página (≥ 1, default 1) |
+| `page_size` | Tamaño (1–100, default 20) |
+| `institution_id` | Solo SUPER_ADMIN; INSTITUTION_ADMIN/COUNSELOR quedan acotados a su institución |
+| `counselor_id` | Filtro por orientador; COUNSELOR solo puede usar su propio id |
+| `student_id` | Filtro por estudiante (sigue el alcance institucional/orientador) |
+| `status` | `ACTIVE` o `INACTIVE` |
+
+### Cuerpo de creación
+
+```json
+{ "student_id": 1, "counselor_id": 2 }
+```
+
+### Cuerpo de estado
+
+```json
+{ "status": "INACTIVE" }
+```
+
+### Reglas de negocio
+
+- Orientador y estudiante deben existir, estar activos y pertenecer a la misma institución.
+- `INSTITUTION_ADMIN` solo gestiona su institución; no puede asignar ni ver otra.
+- `COUNSELOR` solo lista/ve sus propias asignaciones; no crea ni cambia estado.
+- `STUDENT` no tiene acceso a este recurso.
+- Par ya `ACTIVE`: validación (no duplicar).
+- Par `INACTIVE` existente: `POST` lo reactiva (no crea fila nueva).
+- Mismo estado en `PATCH`: validación.
+- Errores relevantes: 401 sin token, 403 rol/alcance, 404 inexistente, 422 validación de negocio (incluye colisión de unicidad concurrente del par orientador–estudiante).
+- UI: `SUPER_ADMIN` → `/admin/assignments`; `INSTITUTION_ADMIN` → `/institution/assignments` (misma API).
+
+---
+
 ## 6. Carreras (Fase 9)
 
 | Método | Ruta | Rol | Descripción |
@@ -256,6 +304,7 @@ Fuente de verdad de rutas activas: routers registrados en `backend/app/main.py` 
 | Instituciones | 5 |
 | Usuarios | 5 |
 | Estudiantes | 5 |
+| Asignaciones | 4 |
 | Carreras | 5 |
 | Preguntas | 4 |
 | Test | 5 |
@@ -266,4 +315,4 @@ Fuente de verdad de rutas activas: routers registrados en `backend/app/main.py` 
 | Dashboard | 4 |
 | Auditoría | 2 |
 | Exportaciones | 2 |
-| **Total documentado (excl. recomendaciones inexistentes)** | **53** |
+| **Total documentado (excl. recomendaciones inexistentes)** | **57** |
