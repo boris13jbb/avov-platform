@@ -1,0 +1,150 @@
+# Validación estática del tooling E2E aislado (PowerShell + git diff --check).
+# No arranca servicios ni ejecuta los scripts operativos del repositorio.
+name: e2e-tooling-static
+
+# Comillas en "on" para evitar que parsers YAML 1.1 lo interpreten como booleano.
+"on":
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-tooling-static-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-tooling-static:
+    name: e2e-tooling-static
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve base and head SHAs
+        id: range
+        shell: pwsh
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          if ($env:EVENT_NAME -eq 'pull_request') {
+            $base = $env:PR_BASE_SHA
+            $head = $env:PR_HEAD_SHA
+            if ([string]::IsNullOrWhiteSpace($base) -or [string]::IsNullOrWhiteSpace($head)) {
+              throw 'Faltan SHA de base/head del pull request en el evento.'
+            }
+          }
+          elseif ($env:EVENT_NAME -eq 'push') {
+            $base = $env:PUSH_BEFORE
+            $head = $env:HEAD_SHA
+            if ([string]::IsNullOrWhiteSpace($head)) {
+              throw 'Falta github.sha en el evento push.'
+            }
+            if ([string]::IsNullOrWhiteSpace($base) -or ($base -match '^0+$')) {
+              # before vacío/cero (p. ej. primer push): el evento no aporta base usable.
+              # Se documenta el fallback al padre inmediato; si no existe, falla el job.
+              Write-Host "PUSH_BEFORE vacío o cero; usando padre inmediato de HEAD como base ($head^)."
+              $parent = git rev-parse --verify --quiet "$head^"
+              if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($parent)) {
+                throw 'No hay SHA base usable para git diff --check en este push.'
+              }
+              $base = $parent.Trim()
+            }
+          }
+          else {
+            throw "Evento no soportado: $($env:EVENT_NAME)"
+          }
+
+          # Asegurar que ambos objetos existen localmente (checkout con fetch-depth: 0).
+          # Comprobar LASTEXITCODE: un fallo de git nativo no siempre termina el step en pwsh.
+          git cat-file -e "${base}^{commit}"
+          if ($LASTEXITCODE -ne 0) {
+            throw "El commit base no está disponible tras el checkout: $base"
+          }
+          git cat-file -e "${head}^{commit}"
+          if ($LASTEXITCODE -ne 0) {
+            throw "El commit head no está disponible tras el checkout: $head"
+          }
+
+          # utf8NoBOM evita BOM en GITHUB_OUTPUT (Out-File -Encoding utf8 lo añade en Windows PowerShell 5.1;
+          # el runner usa pwsh, pero el encoding explícito sin BOM es el contrato seguro).
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "base=$base" -Encoding utf8NoBOM
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "head=$head" -Encoding utf8NoBOM
+          Write-Host "Rango de comparación: $base..$head"
+
+      - name: Parse PowerShell E2E tooling scripts
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $scripts = @(
+            'scripts/dev-backend-e2e-isolated.ps1',
+            'scripts/stop-backend-e2e-isolated.ps1',
+            'scripts/verify-backend-e2e-isolated.ps1'
+          )
+          $failed = $false
+
+          foreach ($relative in $scripts) {
+            $path = Join-Path $env:GITHUB_WORKSPACE $relative
+            if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+              Write-Error "No se encontró el script requerido: $relative"
+              $failed = $true
+              continue
+            }
+
+            $tokens = $null
+            $errors = $null
+            $null = [System.Management.Automation.Language.Parser]::ParseFile(
+              $path,
+              [ref]$tokens,
+              [ref]$errors
+            )
+
+            if ($null -ne $errors -and $errors.Count -gt 0) {
+              $failed = $true
+              Write-Host "::error file=$relative::Errores de sintaxis PowerShell ($($errors.Count))"
+              foreach ($err in $errors) {
+                Write-Host ("{0}:{1}: {2}" -f $relative, $err.Extent.StartLineNumber, $err.Message)
+              }
+            }
+            else {
+              Write-Host "PARSE_OK $relative"
+            }
+          }
+
+          if ($failed) {
+            exit 1
+          }
+
+      - name: git diff --check (base..head)
+        shell: pwsh
+        env:
+          BASE_SHA: ${{ steps.range.outputs.base }}
+          HEAD_SHA: ${{ steps.range.outputs.head }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ([string]::IsNullOrWhiteSpace($env:BASE_SHA) -or [string]::IsNullOrWhiteSpace($env:HEAD_SHA)) {
+            throw 'BASE_SHA o HEAD_SHA vacíos; no se puede ejecutar git diff --check.'
+          }
+
+          Write-Host "git diff --check $($env:BASE_SHA) $($env:HEAD_SHA)"
+          git diff --check "$($env:BASE_SHA)" "$($env:HEAD_SHA)"
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "git diff --check falló con código $LASTEXITCODE"
+            exit $LASTEXITCODE
+          }
+          Write-Host 'DIFF_CHECK_OK'
