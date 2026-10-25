@@ -52,6 +52,10 @@ class RouteNames {
   static const studentProfile = '/student/profile';
   static const studentTestHome = '/student/test';
   static const studentResults = '/student/results';
+  static const studentAssistant = '/student/assistant';
+
+  static String studentAssistantForSession(int sessionId) =>
+      '$studentAssistant?sessionId=$sessionId';
 
   static String studentTest(int sessionId) => '/student/test/$sessionId';
 

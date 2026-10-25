@@ -15,6 +15,7 @@ from app.schemas.assistant import (
     ExplainCareersRequest,
     ExplainProfileRequest,
 )
+from app.services.assistant_rate_limit import AssistantRateLimiter
 from app.services.llm.llm_service import LLMService
 from app.services.llm.prompts import RIASEC_NAMES
 from app.services.test_session_service import TestSessionService
@@ -31,6 +32,7 @@ class AssistantService:
         self.career_repo = CareerRepository(db)
         self.test_service = TestSessionService(db)
         self.llm = LLMService()
+        self.rate_limiter = AssistantRateLimiter()
 
     async def chat(
         self,
@@ -40,6 +42,7 @@ class AssistantService:
         if current_user.role != UserRole.STUDENT:
             raise ForbiddenException("Solo los estudiantes pueden usar el chat del asistente")
 
+        self.rate_limiter.check_and_increment(current_user.id)
         message = self._sanitize_message(payload.message)
         context = self._build_chat_context(current_user, payload.test_session_id)
         result = await self.llm.answer_student_question(message, context)
@@ -54,6 +57,7 @@ class AssistantService:
         payload: ExplainProfileRequest,
         current_user: User,
     ) -> AssistantResponse:
+        self.rate_limiter.check_and_increment(current_user.id)
         if current_user.role not in self.EXPLAIN_ROLES:
             raise ForbiddenException("No tienes permisos para solicitar esta explicación")
 
@@ -71,6 +75,7 @@ class AssistantService:
         payload: ExplainCareersRequest,
         current_user: User,
     ) -> AssistantResponse:
+        self.rate_limiter.check_and_increment(current_user.id)
         if current_user.role not in self.EXPLAIN_ROLES:
             raise ForbiddenException("No tienes permisos para solicitar esta explicación")
 

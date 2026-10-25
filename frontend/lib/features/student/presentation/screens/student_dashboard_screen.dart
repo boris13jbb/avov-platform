@@ -72,9 +72,20 @@ class StudentDashboardScreen extends ConsumerWidget {
                       ref.read(vocationalHistoryProvider.notifier).refresh(),
                 ),
                 const SizedBox(height: 24),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: FilledButton.icon(
+                    key: const Key('student-open-assistant'),
+                    onPressed: () => context.go(RouteNames.studentAssistant),
+                    icon: const Icon(Icons.smart_toy_outlined),
+                    label: const Text('Abrir asistente vocacional'),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 const Text(
                   'Las recomendaciones de carreras se generan en el resultado '
-                  'de cada evaluación completada (menú Resultados).',
+                  'de cada evaluación completada (menú Resultados). '
+                  'El asistente con IA también está en el menú lateral.',
                 )
               ],
             ),
