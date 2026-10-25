@@ -27,6 +27,7 @@ class StudentDetailScreen extends ConsumerWidget {
           data: (profile) => profile.role,
           orElse: () => null,
         );
+    final isCounselor = operatorRole == 'COUNSELOR';
 
     return Scaffold(
       appBar: AppBar(title: const Text('Estudiante')),
@@ -56,6 +57,7 @@ class StudentDetailScreen extends ConsumerWidget {
                 'Institución ${student.institutionId}',
                 canManage,
                 assignHref,
+                isCounselor,
               );
             }
             return Consumer(
@@ -78,6 +80,7 @@ class StudentDetailScreen extends ConsumerWidget {
                   institutionName,
                   canManage,
                   assignHref,
+                  isCounselor,
                 );
               },
             );
@@ -95,6 +98,7 @@ Widget _detailBody(
   String institutionName,
   bool canManage,
   String? assignHref,
+  bool counselorReviewEnabled,
 ) {
   return ListView(
     padding: const EdgeInsets.all(24),
@@ -114,7 +118,10 @@ Widget _detailBody(
       if (student.representativeName != null)
         Text('Representante: ${student.representativeName}'),
       const SizedBox(height: 24),
-      StudentReportsHistorySection(studentId: student.id),
+      StudentReportsHistorySection(
+        studentId: student.id,
+        counselorReviewEnabled: counselorReviewEnabled,
+      ),
       const SizedBox(height: 24),
       if (assignHref != null) ...[
         OutlinedButton.icon(
