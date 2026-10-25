@@ -26,6 +26,9 @@ class RouteNames {
   static String adminStudentEdit(int id) => '/admin/students/$id/edit';
   static const adminAssignments = '/admin/assignments';
   static const adminAssignmentNew = '/admin/assignments/new';
+  static const adminAudit = '/admin/audit';
+
+  static String adminAuditDetail(int id) => '/admin/audit/$id';
 
   static const institutionPrefix = '/institution';
   static const institutionDashboard = '/institution/dashboard';

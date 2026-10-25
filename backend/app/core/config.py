@@ -62,6 +62,7 @@ class Settings(BaseSettings):
     trust_proxy_headers: bool = Field(default=False, alias="TRUST_PROXY_HEADERS")
     login_max_attempts: int = Field(default=5, alias="LOGIN_MAX_ATTEMPTS")
     login_window_seconds: int = Field(default=900, alias="LOGIN_WINDOW_SECONDS")
+    audit_retention_days: int = Field(default=365, alias="AUDIT_RETENTION_DAYS")
 
     deepseek_api_key: str = Field(default="", alias="DEEPSEEK_API_KEY")
     deepseek_api_base_url: str = Field(

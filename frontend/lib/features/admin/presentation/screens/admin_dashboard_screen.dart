@@ -144,6 +144,15 @@ class _DashboardContent extends StatelessWidget {
                   label: const Text('Gestionar asignaciones'),
                 ),
               ),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: FilledButton.icon(
+                  onPressed: () => context.go(RouteNames.adminAudit),
+                  icon: const Icon(Icons.fact_check_outlined),
+                  label: const Text('Auditoría del sistema'),
+                ),
+              ),
               const SizedBox(height: 32),
               Text(
                 'Módulos pendientes',
@@ -151,8 +160,8 @@ class _DashboardContent extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Carreras, preguntas RIASEC y auditoría '
-                'aún no tienen pantalla. Esas secciones no aparecen como acciones.',
+                'Carreras y preguntas RIASEC aún no tienen pantalla. '
+                'Esas secciones no aparecen como acciones.',
               ),
             ],
           ),
