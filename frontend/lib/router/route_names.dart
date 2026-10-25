@@ -47,6 +47,10 @@ class RouteNames {
   static const counselorStudents = '/counselor/students';
 
   static String counselorStudentDetail(int id) => '/counselor/students/$id';
+
+  static String counselorStudentSession(int studentId, int sessionId) =>
+      '/counselor/students/$studentId/sessions/$sessionId';
+
   static const studentPrefix = '/student';
   static const studentDashboard = '/student/dashboard';
   static const studentProfile = '/student/profile';
