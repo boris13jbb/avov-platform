@@ -81,7 +81,8 @@ class _AssignmentCreateScreenState extends ConsumerState<AssignmentCreateScreen>
                     padding: const EdgeInsets.all(24),
                     children: [
                       DropdownButtonFormField<int>(
-                        value: _studentId != null &&
+                        key: ValueKey<int?>(_studentId),
+                        initialValue: _studentId != null &&
                                 studentItems.any((s) => s.id == _studentId)
                             ? _studentId
                             : null,
@@ -107,7 +108,8 @@ class _AssignmentCreateScreenState extends ConsumerState<AssignmentCreateScreen>
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<int>(
-                        value: _counselorId != null &&
+                        key: ValueKey<int?>(_counselorId),
+                        initialValue: _counselorId != null &&
                                 counselorItems.any((c) => c.id == _counselorId)
                             ? _counselorId
                             : null,

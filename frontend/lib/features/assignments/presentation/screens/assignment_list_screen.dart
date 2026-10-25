@@ -48,7 +48,8 @@ class _AssignmentListScreenState extends ConsumerState<AssignmentListScreen> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String?>(
-                      value: statusFilter,
+                      key: ValueKey<String?>('assignment-status-$statusFilter'),
+                      initialValue: statusFilter,
                       decoration: const InputDecoration(
                         labelText: 'Estado',
                         border: OutlineInputBorder(),
