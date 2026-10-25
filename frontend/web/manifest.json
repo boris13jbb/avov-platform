@@ -1,11 +1,11 @@
 {
-    "name": "avov_frontend",
-    "short_name": "avov_frontend",
+    "name": "AVOV",
+    "short_name": "AVOV",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Asistente Virtual de Orientación Vocacional",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

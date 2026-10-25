@@ -1,4 +1,4 @@
-package com.example.avov_frontend
+package com.avov.platform
 
 import io.flutter.embedding.android.FlutterActivity
 
