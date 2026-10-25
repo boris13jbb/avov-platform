@@ -46,6 +46,11 @@ jobs:
           --health-interval=5s
           --health-timeout=3s
           --health-retries=10
+      qdrant:
+        # Sin health-cmd: la imagen oficial no garantiza curl/bash en PATH.
+        image: qdrant/qdrant:v1.12.1
+        ports:
+          - 6333:6333
     env:
       APP_ENV: development
       APP_DEBUG: "true"
@@ -53,7 +58,10 @@ jobs:
       JWT_SECRET_KEY: ci-jwt-secret-key-min-32-chars-long!!
       DATABASE_URL: mysql+pymysql://avov_user:avov_user_secret@127.0.0.1:3306/avov_test
       REDIS_URL: redis://127.0.0.1:6379/1
-      DEEPSEEK_API_KEY: your-deepseek-api-key-here
+      # Clave distinta del marcador de .env.example; no es un secreto real.
+      # Vacía o el marcador hacen fallar tests que construyen Settings con otra clave
+      # porque pydantic-settings prioriza variables de entorno del job.
+      DEEPSEEK_API_KEY: ci-deepseek-key-not-for-production
       QDRANT_HOST: 127.0.0.1
       QDRANT_PORT: "6333"
     steps:

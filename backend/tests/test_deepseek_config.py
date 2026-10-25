@@ -8,6 +8,12 @@ from app.core.config import DEEPSEEK_API_KEY_PLACEHOLDER, Settings
 from app.services.llm.llm_service import LLMService
 
 
+@pytest.fixture(autouse=True)
+def _isolate_deepseek_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Los kwargs de Settings no ganan frente a DEEPSEEK_API_KEY del proceso (p. ej. CI)."""
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+
+
 def _service(api_key: str) -> LLMService:
     settings = Settings(_env_file=None, deepseek_api_key=api_key, deepseek_max_retries=1)
     return LLMService(settings)

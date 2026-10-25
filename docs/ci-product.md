@@ -1,13 +1,14 @@
 # CI de producto — AVOV
 
-**Workflow:** `.github/workflows/product-ci.yml`  
+**Workflow:** `.github/workflows/product-ci.yml`
+
 **Complementa:** `e2e-tooling-static` (parser PowerShell + `git diff --check`).
 
 ## Qué ejecuta
 
 | Job | Contenido |
 |-----|-----------|
-| `backend-pytest` | MySQL 8.4 + Redis servicios; `alembic upgrade head`; `pytest` con schema `avov_test` |
+| `backend-pytest` | MySQL 8.4 + Redis + Qdrant servicios; `alembic upgrade head`; `pytest` con schema `avov_test` |
 | `frontend-flutter` | `flutter pub get`, `flutter analyze`, `flutter test` |
 
 ## Qué no ejecuta
