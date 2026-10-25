@@ -4,6 +4,13 @@ import 'package:go_router/go_router.dart';
 
 import '../core/providers/providers.dart';
 import '../features/admin/presentation/screens/admin_dashboard_screen.dart';
+import '../features/admin/presentation/screens/vector_rebuild_screen.dart';
+import '../features/careers/presentation/screens/career_create_screen.dart';
+import '../features/careers/presentation/screens/career_edit_screen.dart';
+import '../features/careers/presentation/screens/career_list_screen.dart';
+import '../features/questions/presentation/screens/question_create_screen.dart';
+import '../features/questions/presentation/screens/question_edit_screen.dart';
+import '../features/questions/presentation/screens/question_list_screen.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/auth/presentation/screens/unauthorized_screen.dart';
 import '../features/counselor/presentation/screens/counselor_dashboard_screen.dart';
@@ -128,6 +135,57 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           final studentId = raw == null ? null : int.tryParse(raw);
           return AssignmentCreateScreen(preselectedStudentId: studentId);
         },
+      ),
+      GoRoute(
+        path: RouteNames.adminCareers,
+        name: 'admin-careers',
+        builder: (context, state) => const CareerListScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.adminCareerNew,
+        name: 'admin-career-new',
+        builder: (context, state) => const CareerCreateScreen(),
+      ),
+      GoRoute(
+        path: '/admin/careers/:careerId',
+        name: 'admin-career-edit',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['careerId'] ?? '');
+          if (id == null) {
+            return const Scaffold(
+              body: Center(child: Text('Carrera no encontrada')),
+            );
+          }
+          return CareerEditScreen(careerId: id);
+        },
+      ),
+      GoRoute(
+        path: RouteNames.adminQuestions,
+        name: 'admin-questions',
+        builder: (context, state) => const QuestionListScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.adminQuestionNew,
+        name: 'admin-question-new',
+        builder: (context, state) => const QuestionCreateScreen(),
+      ),
+      GoRoute(
+        path: '/admin/questions/:questionId',
+        name: 'admin-question-edit',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['questionId'] ?? '');
+          if (id == null) {
+            return const Scaffold(
+              body: Center(child: Text('Pregunta no encontrada')),
+            );
+          }
+          return QuestionEditScreen(questionId: id);
+        },
+      ),
+      GoRoute(
+        path: RouteNames.adminVectorRebuild,
+        name: 'admin-vector-rebuild',
+        builder: (context, state) => const VectorRebuildScreen(),
       ),
       GoRoute(
         path: RouteNames.adminUsers,
