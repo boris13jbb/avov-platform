@@ -14,6 +14,7 @@ import '../features/institution_admin/presentation/screens/counselor_create_scre
 import '../features/institution_admin/presentation/screens/counselor_edit_screen.dart';
 import '../features/institution_admin/presentation/screens/counselor_list_screen.dart';
 import '../features/institution_admin/presentation/screens/institution_dashboard_screen.dart';
+import '../features/observations/presentation/screens/counselor_session_review_screen.dart';
 import '../features/institutions/presentation/screens/institution_create_screen.dart';
 import '../features/institutions/presentation/screens/institution_edit_screen.dart';
 import '../features/institutions/presentation/screens/institution_list_screen.dart';
@@ -265,6 +266,23 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             );
           }
           return StudentDetailScreen(studentId: id);
+        },
+      ),
+      GoRoute(
+        path: '/counselor/students/:studentId/sessions/:sessionId',
+        name: 'counselor-student-session-review',
+        builder: (context, state) {
+          final studentId = int.tryParse(state.pathParameters['studentId'] ?? '');
+          final sessionId = int.tryParse(state.pathParameters['sessionId'] ?? '');
+          if (studentId == null || sessionId == null) {
+            return const Scaffold(
+              body: Center(child: Text('Sesión no encontrada')),
+            );
+          }
+          return CounselorSessionReviewScreen(
+            studentId: studentId,
+            sessionId: sessionId,
+          );
         },
       ),
       GoRoute(

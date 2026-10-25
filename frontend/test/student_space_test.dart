@@ -135,6 +135,9 @@ void main() {
     expect(find.byType(TextField), findsNothing);
     expect(students.getCalls, 0);
     expect(students.ownCalls, 1);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
   });
 
   testWidgets('el panel muestra carga, error y reintento', (tester) async {
