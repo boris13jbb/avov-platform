@@ -5,6 +5,7 @@ import 'package:avov_frontend/core/errors/failure_mapper.dart';
 import 'package:avov_frontend/features/student/presentation/screens/student_dashboard_screen.dart';
 import 'package:avov_frontend/features/student/presentation/screens/student_results_screen.dart';
 import 'package:avov_frontend/features/auth/domain/auth_repository.dart';
+import 'support/auth_repository_stubs.dart';
 import 'package:avov_frontend/features/auth/domain/auth_tokens.dart';
 import 'package:avov_frontend/features/auth/presentation/providers/auth_session_provider.dart';
 import 'package:avov_frontend/features/students/domain/managed_student.dart';
@@ -223,7 +224,7 @@ Future<ProviderContainer> _pumpDashboard(
   return container;
 }
 
-class _Auth implements AuthRepository {
+class _Auth with AuthRepositoryChangePasswordStub implements AuthRepository {
   @override
   Future<UserProfile> currentProfile() async {
     return const UserProfile(

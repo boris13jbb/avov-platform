@@ -7,6 +7,7 @@ import 'package:avov_frontend/core/storage/secure_token_storage.dart';
 import 'package:avov_frontend/features/admin/domain/user_directory_repository.dart';
 import 'package:avov_frontend/features/admin/presentation/providers/admin_dashboard_provider.dart';
 import 'package:avov_frontend/features/auth/domain/auth_repository.dart';
+import 'support/auth_repository_stubs.dart';
 import 'package:avov_frontend/features/auth/domain/auth_tokens.dart';
 import 'package:avov_frontend/features/auth/presentation/providers/auth_session_provider.dart';
 import 'package:avov_frontend/features/institutions/domain/institution.dart';
@@ -624,7 +625,7 @@ class _SlowStudents extends _Students {
   }
 }
 
-class _Auth implements AuthRepository {
+class _Auth with AuthRepositoryChangePasswordStub implements AuthRepository {
   _Auth(this.profile);
 
   final UserProfile profile;

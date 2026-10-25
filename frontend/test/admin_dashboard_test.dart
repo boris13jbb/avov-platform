@@ -6,6 +6,7 @@ import 'package:avov_frontend/features/admin/domain/user_directory_repository.da
 import 'package:avov_frontend/features/admin/presentation/providers/admin_dashboard_provider.dart';
 import 'package:avov_frontend/features/admin/presentation/screens/admin_dashboard_screen.dart';
 import 'package:avov_frontend/features/auth/domain/auth_repository.dart';
+import 'support/auth_repository_stubs.dart';
 import 'package:avov_frontend/features/auth/domain/auth_tokens.dart';
 import 'package:avov_frontend/features/auth/presentation/providers/auth_session_provider.dart';
 import 'package:avov_frontend/features/institutions/domain/institution.dart';
@@ -185,7 +186,7 @@ Widget _scope({
   );
 }
 
-class _AuthRepo implements AuthRepository {
+class _AuthRepo with AuthRepositoryChangePasswordStub implements AuthRepository {
   _AuthRepo(this.profile);
 
   final UserProfile profile;

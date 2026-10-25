@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../../../core/errors/app_exception.dart';
 import '../../../core/errors/failure_mapper.dart';
+import '../../../core/network/api_envelope.dart';
 import '../domain/auth_tokens.dart';
 
 /// Cliente de los endpoints reales de sesión.
@@ -62,6 +63,26 @@ class AuthRemoteDatasource {
       duringLogin: false,
       parse: UserProfile.fromResponseData,
     );
+  }
+
+  Future<String> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        '/auth/change-password',
+        data: <String, String>{
+          'current_password': currentPassword,
+          'new_password': newPassword,
+          'confirm_password': confirmPassword,
+        },
+      );
+      return readSuccessMessage(response.data);
+    } on DioException catch (error) {
+      throw FailureMapper.fromDioException(error);
+    }
   }
 
   Future<T> _send<T>(

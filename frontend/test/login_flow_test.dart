@@ -5,6 +5,7 @@ import 'package:avov_frontend/core/errors/failure_mapper.dart';
 import 'package:avov_frontend/core/providers/providers.dart';
 import 'package:avov_frontend/core/storage/secure_token_storage.dart';
 import 'package:avov_frontend/features/auth/domain/auth_repository.dart';
+import 'support/auth_repository_stubs.dart';
 import 'package:avov_frontend/features/auth/domain/auth_tokens.dart';
 import 'package:avov_frontend/features/auth/presentation/providers/auth_session_provider.dart';
 import 'package:avov_frontend/features/auth/presentation/screens/login_screen.dart';
@@ -225,7 +226,7 @@ class UnauthorizedProbe extends AppException {
   UnauthorizedProbe(super.message);
 }
 
-class _ImmediateRepository implements AuthRepository {
+class _ImmediateRepository with AuthRepositoryChangePasswordStub implements AuthRepository {
   _ImmediateRepository({this.profile});
 
   final UserProfile? profile;
@@ -252,7 +253,7 @@ class _ImmediateRepository implements AuthRepository {
   Future<void> clearSession() async {}
 }
 
-class _DelayedRepository implements AuthRepository {
+class _DelayedRepository with AuthRepositoryChangePasswordStub implements AuthRepository {
   final Completer<UserProfile> _pending = Completer<UserProfile>();
   int calls = 0;
 
@@ -292,7 +293,7 @@ class _DelayedRepository implements AuthRepository {
   Future<void> clearSession() async {}
 }
 
-class _ThrowingRepository implements AuthRepository {
+class _ThrowingRepository with AuthRepositoryChangePasswordStub implements AuthRepository {
   _ThrowingRepository(this.error);
 
   final AppException error;
