@@ -273,6 +273,16 @@ class _FakeUserRepository implements UserAccountRepository {
 class _FakeAuthRepository implements AuthRepository {
   @override
   Future<void> clearSession() async {}
+  @override
+  Future<String> forgotPassword({required String email}) async => '';
+
+  @override
+  Future<String> resetPassword({
+    required String token,
+    required String newPassword,
+    required String confirmPassword,
+  }) async => '';
+
 
   @override
   Future<UserProfile> currentProfile() async {

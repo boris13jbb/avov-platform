@@ -8,9 +8,11 @@ from app.core.responses import success_response
 from app.models.user import User
 from app.schemas.auth import (
     ChangePasswordRequest,
+    ForgotPasswordRequest,
     LoginRequest,
     LogoutRequest,
     RefreshRequest,
+    ResetPasswordRequest,
 )
 from app.security.login_rate_limit import (
     LoginRateLimiter,
@@ -87,3 +89,23 @@ def change_password(
 ):
     AuthService(db).change_password(current_user, body)
     return success_response(message="Contraseña actualizada correctamente")
+
+
+@router.post("/forgot-password")
+def forgot_password(
+    body: ForgotPasswordRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+    limiter: LoginRateLimiter = Depends(get_login_rate_limiter),
+):
+    settings = get_settings()
+    host = client_host(request, trust_proxy_headers=settings.trust_proxy_headers)
+    limiter.reserve(host, body.email)
+    message = AuthService(db).request_password_reset(body)
+    return success_response(message=message)
+
+
+@router.post("/reset-password")
+def reset_password(body: ResetPasswordRequest, db: Session = Depends(get_db)):
+    AuthService(db).reset_password(body)
+    return success_response(message="Contraseña restablecida correctamente")

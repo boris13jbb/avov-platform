@@ -63,6 +63,19 @@ class Settings(BaseSettings):
     login_max_attempts: int = Field(default=5, alias="LOGIN_MAX_ATTEMPTS")
     login_window_seconds: int = Field(default=900, alias="LOGIN_WINDOW_SECONDS")
 
+    password_reset_token_expire_hours: int = Field(
+        default=24,
+        alias="PASSWORD_RESET_TOKEN_EXPIRE_HOURS",
+    )
+
+    smtp_host: str = Field(default="", alias="SMTP_HOST")
+    smtp_port: int = Field(default=587, alias="SMTP_PORT")
+    smtp_user: str = Field(default="", alias="SMTP_USER")
+    smtp_password: str = Field(default="", alias="SMTP_PASSWORD")
+    smtp_from: str = Field(default="", alias="SMTP_FROM")
+    smtp_use_tls: bool = Field(default=True, alias="SMTP_USE_TLS")
+
+
     deepseek_api_key: str = Field(default="", alias="DEEPSEEK_API_KEY")
     deepseek_api_base_url: str = Field(
         default="https://api.deepseek.com",

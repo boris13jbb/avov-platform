@@ -165,6 +165,16 @@ class _Auth implements AuthRepository {
   Future<void> clearSession() async {
     await storage?.clearTokens();
   }
+  @override
+  Future<String> forgotPassword({required String email}) async => '';
+
+  @override
+  Future<String> resetPassword({
+    required String token,
+    required String newPassword,
+    required String confirmPassword,
+  }) async => '';
+
 }
 
 class _Students implements StudentRepository {
