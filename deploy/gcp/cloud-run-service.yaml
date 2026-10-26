@@ -1,0 +1,79 @@
+# Plantilla Cloud Run (YAML de referencia). NO aplicar con gcloud run services replace
+# sin autorización explícita: crea/actualiza un servicio facturable.
+#
+# Antes de usar:
+# - Construir y publicar la imagen (Artifact Registry).
+# - Crear Cloud SQL, VPC connector, bucket GCS, VM Redis/Qdrant.
+# - Cargar secretos en Secret Manager (nunca en este archivo).
+# - Sustituir PROJECT_ID, números de cuenta de servicio y hosts privados.
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: avov-api
+  annotations:
+    run.googleapis.com/ingress: all
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "3"
+        run.googleapis.com/cloudsql-instances: PROJECT_ID:southamerica-east1:avov-mysql
+        run.googleapis.com/vpc-access-connector: projects/PROJECT_ID/locations/southamerica-east1/connectors/avov-connector
+        run.googleapis.com/vpc-access-egress: private-ranges-only
+        run.googleapis.com/startup-cpu-boost: "true"
+    spec:
+      containerConcurrency: 40
+      timeoutSeconds: 300
+      serviceAccountName: avov-run@PROJECT_ID.iam.gserviceaccount.com
+      containers:
+        - image: southamerica-east1-docker.pkg.dev/PROJECT_ID/avov/avov-api:latest
+          ports:
+            - name: http1
+              containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          env:
+            - name: APP_ENV
+              value: production
+            - name: APP_DEBUG
+              value: "false"
+            - name: TRUST_PROXY_HEADERS
+              value: "true"
+            - name: AVOV_REPORTS_BACKEND
+              value: gcs
+            - name: AVOV_GCS_BUCKET
+              value: PROJECT_ID-avov-reports
+            - name: AVOV_GCS_PREFIX
+              value: reports
+            - name: QDRANT_HOST
+              value: "10.0.0.REPLACEME"
+            - name: QDRANT_PORT
+              value: "6333"
+            # Secretos: mapear desde Secret Manager (ejemplo de nombres).
+            # - name: DATABASE_URL
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: avov-database-url
+            #       key: latest
+            # - name: REDIS_URL
+            # - name: JWT_SECRET_KEY
+            # - name: APP_SECRET_KEY
+            # - name: DEEPSEEK_API_KEY
+            # - name: QDRANT_API_KEY
+            # - name: BACKEND_CORS_ORIGINS
+          startupProbe:
+            httpGet:
+              path: /api/v1/health/live
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 12
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health/live
+              port: 8080
+            periodSeconds: 30

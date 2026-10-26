@@ -78,6 +78,11 @@ class Settings(BaseSettings):
         alias="ASSISTANT_MAX_REQUESTS_PER_HOUR",
     )
 
+    # Informes PDF: local (disco) o gcs (Cloud Storage; requerido en Cloud Run multi-instancia).
+    reports_backend: str = Field(default="local", alias="AVOV_REPORTS_BACKEND")
+    gcs_bucket: str = Field(default="", alias="AVOV_GCS_BUCKET")
+    gcs_prefix: str = Field(default="reports", alias="AVOV_GCS_PREFIX")
+
     @property
     def cors_origins(self) -> List[str]:
         return [

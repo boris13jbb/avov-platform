@@ -35,9 +35,24 @@ Flutter no lee el `.env` del backend. La única fuente es `AppConfig.apiBaseUrl`
 
 ```powershell
 flutter run --dart-define=API_BASE_URL=https://api.ejemplo.edu/api/v1
+flutter build web --release --dart-define=API_BASE_URL=https://api.ejemplo.edu/api/v1
+flutter build apk --release --dart-define=API_BASE_URL=https://api.ejemplo.edu/api/v1
 ```
 
-Esa URL no debe incluir contraseñas, tokens ni claves. Si no se pasa `API_BASE_URL`, la aplicación no sustituye una URL de producción por una dirección local: el valor explícito siempre gana.
+Esa URL no debe incluir contraseñas, tokens ni claves. Si no se pasa `API_BASE_URL`, el binario empaqueta la URL local por defecto y no servirá fuera de la red de desarrollo. El valor explícito siempre gana.
+
+Guía cloud: [despliegue-gcp-firebase.md](despliegue-gcp-firebase.md).
+
+## Informes PDF (local vs Cloud Storage)
+
+| Variable | Valores | Uso |
+|----------|---------|-----|
+| `AVOV_REPORTS_BACKEND` | `local` (defecto) o `gcs` | Dónde se guardan los PDF |
+| `AVOV_REPORTS_DIR` | ruta absoluta opcional | Solo backend `local` |
+| `AVOV_GCS_BUCKET` | nombre del bucket | Obligatorio si backend `gcs` |
+| `AVOV_GCS_PREFIX` | `reports` por defecto | Prefijo de objetos en el bucket |
+
+En Cloud Run multi-instancia usar `gcs`. La cuenta de servicio de Cloud Run autentica con ADC; no hay clave de GCS en el frontend ni en el repositorio.
 
 ## MySQL según desde dónde se conecta
 

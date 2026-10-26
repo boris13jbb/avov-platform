@@ -21,7 +21,7 @@ from app.repositories.test_session_repository import (
 )
 from app.repositories.user_repository import UserRepository
 from app.schemas.institution import InstitutionCreate
-from app.utils.file_storage import resolve_report_path
+from app.utils.file_storage import get_report_blob_store, resolve_report_path
 
 
 def _student_payload(institution_id: int) -> dict:
@@ -145,7 +145,10 @@ def pdf_student(client: TestClient, super_admin_headers, sample_institution):
 @pytest.fixture
 def reports_dir(tmp_path, monkeypatch):
     monkeypatch.setenv("AVOV_REPORTS_DIR", str(tmp_path))
-    return tmp_path
+    monkeypatch.setenv("AVOV_REPORTS_BACKEND", "local")
+    get_report_blob_store.cache_clear()
+    yield tmp_path
+    get_report_blob_store.cache_clear()
 
 
 def test_reports_router_registered():
@@ -306,7 +309,7 @@ def test_storage_write_failure(
     headers, _, _ = pdf_student
     session_id = _finish_session(client, headers)
     with patch(
-        "pathlib.Path.write_bytes",
+        "app.utils.file_storage.LocalReportBlobStore.write_bytes",
         side_effect=OSError("disco lleno"),
     ):
         response = client.get(f"/api/v1/reports/{session_id}/pdf", headers=headers)
