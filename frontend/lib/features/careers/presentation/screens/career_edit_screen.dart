@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
@@ -8,6 +7,9 @@ import '../../../../router/route_names.dart';
 import '../../domain/career.dart';
 import '../providers/career_provider.dart';
 import '../widgets/career_form.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class CareerEditScreen extends ConsumerWidget {
   const CareerEditScreen({super.key, required this.careerId});
@@ -18,8 +20,13 @@ class CareerEditScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final detail = ref.watch(careerDetailProvider(careerId));
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Editar carrera')),
+    return InternalRouteScope(
+        child: Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
+        title: const Text('Editar carrera'),
+      ),
       body: SafeArea(
         child: detail.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -50,18 +57,16 @@ class CareerEditScreen extends ConsumerWidget {
             initial: career,
             submitLabel: 'Guardar cambios',
             onSubmit: (CareerDraft draft) async {
-              await ref
-                  .read(careerRepositoryProvider)
-                  .update(career.id, draft);
+              await ref.read(careerRepositoryProvider).update(career.id, draft);
               ref.invalidate(careerListProvider);
               ref.invalidate(careerDetailProvider(careerId));
               if (context.mounted) {
-                context.go(RouteNames.adminCareers);
+                AppNavigation.completeTo(context, RouteNames.adminCareers);
               }
             },
           ),
         ),
       ),
-    );
+    ));
   }
 }

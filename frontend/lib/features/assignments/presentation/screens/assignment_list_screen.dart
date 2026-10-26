@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
@@ -10,6 +9,9 @@ import '../../../auth/presentation/widgets/session_menu_button.dart';
 import '../../../users/presentation/providers/users_provider.dart';
 import '../../domain/counselor_assignment.dart';
 import '../providers/assignment_provider.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class AssignmentListScreen extends ConsumerStatefulWidget {
   const AssignmentListScreen({super.key});
@@ -34,8 +36,11 @@ class _AssignmentListScreenState extends ConsumerState<AssignmentListScreen> {
     final canManage = routes != null;
     final createHref = routes?.create;
 
-    return Scaffold(
+    return InternalRouteScope(
+        child: Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
         title: const Text('Asignaciones'),
         actions: const [SessionMenuButton()],
       ),
@@ -70,8 +75,9 @@ class _AssignmentListScreenState extends ConsumerState<AssignmentListScreen> {
                         ),
                       ],
                       onChanged: (value) {
-                        ref.read(assignmentStatusFilterProvider.notifier).state =
-                            value;
+                        ref
+                            .read(assignmentStatusFilterProvider.notifier)
+                            .state = value;
                         ref.read(assignmentPageProvider.notifier).state = 1;
                       },
                     ),
@@ -79,7 +85,7 @@ class _AssignmentListScreenState extends ConsumerState<AssignmentListScreen> {
                   if (createHref != null) ...[
                     const SizedBox(width: 12),
                     FilledButton.icon(
-                      onPressed: () => context.go(createHref),
+                      onPressed: () => AppNavigation.open(context, createHref),
                       icon: const Icon(Icons.person_add_alt_1_outlined),
                       label: const Text('Nueva'),
                     ),
@@ -89,8 +95,7 @@ class _AssignmentListScreenState extends ConsumerState<AssignmentListScreen> {
             ),
             Expanded(
               child: list.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: CircularProgressIndicator()),
                 error: (error, _) => _Notice(
                   message: error is AppException
                       ? error.message
@@ -102,10 +107,11 @@ class _AssignmentListScreenState extends ConsumerState<AssignmentListScreen> {
                   if (result.total == 0) {
                     return _Notice(
                       message: 'No hay asignaciones para mostrar.',
-                      actionLabel:
-                          createHref != null ? 'Crear asignación' : 'Reintentar',
+                      actionLabel: createHref != null
+                          ? 'Crear asignación'
+                          : 'Reintentar',
                       onPressed: createHref != null
-                          ? () => context.go(createHref)
+                          ? () => AppNavigation.open(context, createHref)
                           : () => ref.invalidate(assignmentListProvider),
                     );
                   }
@@ -162,7 +168,7 @@ class _AssignmentListScreenState extends ConsumerState<AssignmentListScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Future<void> _toggleStatus(CounselorAssignment assignment) async {

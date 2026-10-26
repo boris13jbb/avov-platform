@@ -3,7 +3,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/responsive_breakpoints.dart';
 import '../../features/auth/presentation/widgets/session_menu_button.dart';
+import '../../router/app_navigation.dart';
 import '../../router/route_names.dart';
+import 'internal_route_scope.dart';
+import 'root_exit_scope.dart';
 
 enum StudentSection { home, test, results, assistant, profile }
 
@@ -58,10 +61,11 @@ class StudentScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final desktop = ResponsiveBreakpoints.isDesktop(MediaQuery.sizeOf(context).width);
+    final desktop =
+        ResponsiveBreakpoints.isDesktop(MediaQuery.sizeOf(context).width);
     final showBack = section != StudentSection.home;
     final showMenu = !desktop;
-    return Scaffold(
+    final scaffold = Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         leadingWidth: showBack && showMenu ? 112 : 56,
@@ -74,7 +78,7 @@ class StudentScaffold extends StatelessWidget {
                   IconButton(
                     tooltip: 'Volver',
                     icon: const Icon(Icons.arrow_back),
-                    onPressed: () => _back(barContext),
+                    onPressed: () => AppNavigation.back(barContext),
                   ),
                 if (showMenu)
                   IconButton(
@@ -100,6 +104,10 @@ class StudentScaffold extends StatelessWidget {
             )
           : body,
     );
+    if (section == StudentSection.home) {
+      return RootExitScope(child: scaffold);
+    }
+    return InternalRouteScope(child: scaffold);
   }
 
   Widget _rail(BuildContext context) {
@@ -156,6 +164,7 @@ class StudentScaffold extends StatelessWidget {
     );
   }
 
+  /// Cambio entre secciones del menú: reemplaza la raíz del espacio estudiante.
   void _open(BuildContext context, String route) {
     final router = GoRouter.maybeOf(context);
     if (router == null) {
@@ -165,41 +174,6 @@ class StudentScaffold extends StatelessWidget {
     if (current != route) {
       router.go(route);
     }
-  }
-
-  /// Regresa por el historial. Si no hay pantalla anterior, usa un destino fijo.
-  ///
-  /// No envía cambios al servidor: las respuestas ya guardadas permanecen.
-  void _back(BuildContext context) {
-    final router = GoRouter.maybeOf(context);
-    if (router == null) {
-      return;
-    }
-    if (router.canPop()) {
-      router.pop();
-      return;
-    }
-    final path = GoRouterState.of(context).uri.path;
-    final fallback = _fallback(path);
-    if (path != fallback) {
-      router.go(fallback);
-    }
-  }
-
-  String _fallback(String path) {
-    if (path.startsWith('${RouteNames.studentTestHome}/') &&
-        path.endsWith('/result')) {
-      return RouteNames.studentResults;
-    }
-    if (path.startsWith('${RouteNames.studentTestHome}/')) {
-      return RouteNames.studentTestHome;
-    }
-    if (path == RouteNames.studentTestHome ||
-        path == RouteNames.studentResults ||
-        path == RouteNames.studentAssistant) {
-      return RouteNames.studentDashboard;
-    }
-    return RouteNames.studentDashboard;
   }
 }
 

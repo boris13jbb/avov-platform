@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
@@ -8,6 +7,9 @@ import '../../../../router/route_names.dart';
 import '../../../auth/presentation/widgets/session_menu_button.dart';
 import '../../../users/presentation/providers/users_provider.dart';
 import '../providers/assignment_provider.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class AssignmentCreateScreen extends ConsumerStatefulWidget {
   const AssignmentCreateScreen({super.key, this.preselectedStudentId});
@@ -19,7 +21,8 @@ class AssignmentCreateScreen extends ConsumerStatefulWidget {
       _AssignmentCreateScreenState();
 }
 
-class _AssignmentCreateScreenState extends ConsumerState<AssignmentCreateScreen> {
+class _AssignmentCreateScreenState
+    extends ConsumerState<AssignmentCreateScreen> {
   final _formKey = GlobalKey<FormState>();
   int? _studentId;
   int? _counselorId;
@@ -36,8 +39,11 @@ class _AssignmentCreateScreenState extends ConsumerState<AssignmentCreateScreen>
     final students = ref.watch(studentChoicesForAssignmentProvider);
     final counselors = ref.watch(counselorChoicesForAssignmentProvider);
 
-    return Scaffold(
+    return InternalRouteScope(
+        child: Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
         title: const Text('Nueva asignación'),
         actions: const [SessionMenuButton()],
       ),
@@ -102,9 +108,8 @@ class _AssignmentCreateScreenState extends ConsumerState<AssignmentCreateScreen>
                         onChanged: _submitting
                             ? null
                             : (value) => setState(() => _studentId = value),
-                        validator: (value) => value == null
-                            ? 'Selecciona un estudiante'
-                            : null,
+                        validator: (value) =>
+                            value == null ? 'Selecciona un estudiante' : null,
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<int>(
@@ -127,9 +132,8 @@ class _AssignmentCreateScreenState extends ConsumerState<AssignmentCreateScreen>
                         onChanged: _submitting
                             ? null
                             : (value) => setState(() => _counselorId = value),
-                        validator: (value) => value == null
-                            ? 'Selecciona un orientador'
-                            : null,
+                        validator: (value) =>
+                            value == null ? 'Selecciona un orientador' : null,
                       ),
                       const SizedBox(height: 24),
                       FilledButton(
@@ -138,7 +142,8 @@ class _AssignmentCreateScreenState extends ConsumerState<AssignmentCreateScreen>
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Text('Asignar'),
                       ),
@@ -150,7 +155,7 @@ class _AssignmentCreateScreenState extends ConsumerState<AssignmentCreateScreen>
           },
         ),
       ),
-    );
+    ));
   }
 
   Future<void> _submit() async {
@@ -185,7 +190,8 @@ class _AssignmentCreateScreenState extends ConsumerState<AssignmentCreateScreen>
             data: (profile) => AssignmentAreaRoutes.forRole(profile.role)?.list,
             orElse: () => null,
           );
-      context.go(listHref ?? RouteNames.institutionAssignments);
+      AppNavigation.completeTo(
+          context, listHref ?? RouteNames.institutionAssignments);
     } catch (error) {
       if (!mounted) {
         return;

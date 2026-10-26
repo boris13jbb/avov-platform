@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../router/app_navigation.dart';
 import '../../../../router/route_names.dart';
+import '../../../../shared/widgets/app_state_view.dart';
+import '../../../../shared/widgets/root_exit_scope.dart';
 import '../../../auth/presentation/widgets/session_menu_button.dart';
 import '../providers/admin_dashboard_provider.dart';
 
@@ -15,21 +18,23 @@ class AdminDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final overview = ref.watch(adminDashboardProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('AVOV'),
-        actions: const [SessionMenuButton()],
-      ),
-      body: SafeArea(
-        child: overview.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _DashboardMessage(
-            message: error is AppException
-                ? error.message
-                : FailureMapper.unexpectedMessage,
-            onRetry: () => ref.invalidate(adminDashboardProvider),
+    return RootExitScope(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('AVOV'),
+          actions: const [SessionMenuButton()],
+        ),
+        body: SafeArea(
+          child: overview.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, _) => AppStateView.error(
+              message: error is AppException
+                  ? error.message
+                  : FailureMapper.unexpectedMessage,
+              onRetry: () => ref.invalidate(adminDashboardProvider),
+            ),
+            data: (data) => _DashboardContent(data: data),
           ),
-          data: (data) => _DashboardContent(data: data),
         ),
       ),
     );
@@ -49,40 +54,34 @@ class _DashboardContent extends StatelessWidget {
     final fullName = '${profile.firstName} ${profile.lastName}'.trim();
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(AppSpacing.pagePadding),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1040),
+          constraints: const BoxConstraints(
+            maxWidth: AppSpacing.maxContentWidth,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Panel de superadministrador',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+              AppPageHeader(
+                title: 'Panel de superadministrador',
+                subtitle: fullName.isEmpty ? profile.email : fullName,
+                caption: profile.email,
               ),
-              const SizedBox(height: 8),
-              Text(
-                fullName.isEmpty ? profile.email : fullName,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              Text(
-                profile.email,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
               if (compact)
                 Column(
                   children: [
-                    _MetricCard(
+                    AppMetricCard(
                       label: 'Instituciones',
                       value: '${data.institutionTotal}',
+                      icon: Icons.apartment_outlined,
                     ),
-                    const SizedBox(height: 16),
-                    _MetricCard(
+                    const SizedBox(height: AppSpacing.lg),
+                    AppMetricCard(
                       label: 'Usuarios',
                       value: '${data.userTotal}',
+                      icon: Icons.people_outline,
                     ),
                   ],
                 )
@@ -91,94 +90,82 @@ class _DashboardContent extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: _MetricCard(
+                      child: AppMetricCard(
                         label: 'Instituciones',
                         value: '${data.institutionTotal}',
+                        icon: Icons.apartment_outlined,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: AppSpacing.lg),
                     Expanded(
-                      child: _MetricCard(
+                      child: AppMetricCard(
                         label: 'Usuarios',
                         value: '${data.userTotal}',
+                        icon: Icons.people_outline,
                       ),
                     ),
                   ],
                 ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
               if (data.institutionTotal == 0)
                 const _EmptyInstitutions()
               else
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: FilledButton.icon(
-                    onPressed: () => context.go(RouteNames.adminInstitutions),
-                    icon: const Icon(Icons.apartment_outlined),
-                    label: const Text('Gestionar instituciones'),
+                _ActionButton(
+                  icon: Icons.apartment_outlined,
+                  label: 'Gestionar instituciones',
+                  onPressed: () => AppNavigation.open(
+                    context,
+                    RouteNames.adminInstitutions,
                   ),
                 ),
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: FilledButton.icon(
-                  onPressed: () => context.go(RouteNames.adminUsers),
-                  icon: const Icon(Icons.people_outline),
-                  label: const Text('Gestionar usuarios'),
-                ),
+              const SizedBox(height: AppSpacing.lg),
+              _ActionButton(
+                icon: Icons.people_outline,
+                label: 'Gestionar usuarios',
+                onPressed: () =>
+                    AppNavigation.open(context, RouteNames.adminUsers),
               ),
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: FilledButton.icon(
-                  onPressed: () => context.go(RouteNames.adminStudents),
-                  icon: const Icon(Icons.school_outlined),
-                  label: const Text('Gestionar estudiantes'),
-                ),
+              const SizedBox(height: AppSpacing.lg),
+              _ActionButton(
+                icon: Icons.school_outlined,
+                label: 'Gestionar estudiantes',
+                onPressed: () =>
+                    AppNavigation.open(context, RouteNames.adminStudents),
               ),
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: FilledButton.icon(
-                  onPressed: () => context.go(RouteNames.adminAssignments),
-                  icon: const Icon(Icons.link_outlined),
-                  label: const Text('Gestionar asignaciones'),
-                ),
+              const SizedBox(height: AppSpacing.lg),
+              _ActionButton(
+                icon: Icons.link_outlined,
+                label: 'Gestionar asignaciones',
+                onPressed: () =>
+                    AppNavigation.open(context, RouteNames.adminAssignments),
               ),
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: FilledButton.icon(
-                  onPressed: () => context.go(RouteNames.adminCareers),
-                  icon: const Icon(Icons.work_outline),
-                  label: const Text('Gestionar carreras'),
-                ),
+              const SizedBox(height: AppSpacing.lg),
+              _ActionButton(
+                icon: Icons.work_outline,
+                label: 'Gestionar carreras',
+                onPressed: () =>
+                    AppNavigation.open(context, RouteNames.adminCareers),
               ),
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: FilledButton.icon(
-                  onPressed: () => context.go(RouteNames.adminQuestions),
-                  icon: const Icon(Icons.quiz_outlined),
-                  label: const Text('Gestionar preguntas RIASEC'),
-                ),
+              const SizedBox(height: AppSpacing.lg),
+              _ActionButton(
+                icon: Icons.quiz_outlined,
+                label: 'Gestionar preguntas RIASEC',
+                onPressed: () =>
+                    AppNavigation.open(context, RouteNames.adminQuestions),
               ),
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: FilledButton.icon(
-                  onPressed: () => context.go(RouteNames.adminVectorRebuild),
-                  icon: const Icon(Icons.hub_outlined),
-                  label: const Text('Reconstruir índice vectorial'),
-                ),
+              const SizedBox(height: AppSpacing.lg),
+              _ActionButton(
+                icon: Icons.hub_outlined,
+                label: 'Reconstruir índice vectorial',
+                onPressed: () =>
+                    AppNavigation.open(context, RouteNames.adminVectorRebuild),
               ),
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: FilledButton.icon(
-                  onPressed: () => context.go(RouteNames.adminAudit),
-                  icon: const Icon(Icons.fact_check_outlined),
-                  label: const Text('Auditoría del sistema'),
-                ),
+              const SizedBox(height: AppSpacing.lg),
+              _ActionButton(
+                icon: Icons.fact_check_outlined,
+                label: 'Auditoría del sistema',
+                onPressed: () =>
+                    AppNavigation.open(context, RouteNames.adminAudit),
               ),
             ],
           ),
@@ -188,30 +175,25 @@ class _DashboardContent extends StatelessWidget {
   }
 }
 
-class _MetricCard extends StatelessWidget {
-  const _MetricCard({required this.label, required this.value});
+class _ActionButton extends StatelessWidget {
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
 
+  final IconData icon;
   final String label;
-  final String value;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-          ],
-        ),
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: FilledButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon),
+        label: Text(label),
       ),
     );
   }
@@ -224,7 +206,7 @@ class _EmptyInstitutions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppSpacing.cardPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -232,47 +214,18 @@ class _EmptyInstitutions extends StatelessWidget {
               'Todavía no hay instituciones',
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             const Text(
               'Cuando registres la primera institución, sus datos aparecerán aquí.',
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             FilledButton.icon(
-              onPressed: () => context.go(RouteNames.adminInstitutionNew),
+              onPressed: () => AppNavigation.open(
+                context,
+                RouteNames.adminInstitutionNew,
+              ),
               icon: const Icon(Icons.add),
               label: const Text('Crear institución'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DashboardMessage extends StatelessWidget {
-  const _DashboardMessage({
-    required this.message,
-    required this.onRetry,
-  });
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.cloud_off_outlined, size: 40),
-            const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: onRetry,
-              child: const Text('Reintentar'),
             ),
           ],
         ),

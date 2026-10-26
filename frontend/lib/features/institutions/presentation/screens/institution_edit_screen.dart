@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
@@ -8,6 +7,9 @@ import '../../../../router/route_names.dart';
 import '../../../admin/presentation/providers/admin_dashboard_provider.dart';
 import '../../domain/institution.dart';
 import '../widgets/institution_form.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class InstitutionEditScreen extends ConsumerWidget {
   const InstitutionEditScreen({super.key, required this.institutionId});
@@ -18,8 +20,13 @@ class InstitutionEditScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final detail = ref.watch(institutionDetailProvider(institutionId));
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Editar institución')),
+    return InternalRouteScope(
+        child: Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
+        title: const Text('Editar institución'),
+      ),
       body: SafeArea(
         child: detail.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -60,12 +67,12 @@ class InstitutionEditScreen extends ConsumerWidget {
               ref.invalidate(adminDashboardProvider);
               ref.invalidate(institutionDetailProvider(institutionId));
               if (context.mounted) {
-                context.go(RouteNames.adminInstitutions);
+                AppNavigation.completeTo(context, RouteNames.adminInstitutions);
               }
             },
           ),
         ),
       ),
-    );
+    ));
   }
 }

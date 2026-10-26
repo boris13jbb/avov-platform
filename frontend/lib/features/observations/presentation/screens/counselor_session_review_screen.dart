@@ -11,6 +11,8 @@ import '../../../vocational/presentation/widgets/download_vocational_pdf_button.
 import '../../domain/observation.dart';
 import '../providers/observation_provider.dart';
 import '../widgets/observation_form.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class CounselorSessionReviewScreen extends ConsumerStatefulWidget {
   const CounselorSessionReviewScreen({
@@ -70,8 +72,11 @@ class _CounselorSessionReviewScreenState
     final observations =
         ref.watch(sessionObservationsProvider(widget.sessionId));
 
-    return Scaffold(
+    return InternalRouteScope(
+        child: Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
         title: Text('Sesión ${widget.sessionId}'),
         actions: const [SessionMenuButton()],
       ),
@@ -159,7 +164,8 @@ class _CounselorSessionReviewScreenState
               ),
               data: (page) {
                 if (page.items.isEmpty) {
-                  return const Text('Aún no hay observaciones para esta sesión.');
+                  return const Text(
+                      'Aún no hay observaciones para esta sesión.');
                 }
                 return Column(
                   children: [
@@ -171,7 +177,7 @@ class _CounselorSessionReviewScreenState
           ],
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -184,7 +190,8 @@ class _ObservationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final when =
         DateFormat('dd/MM/yyyy HH:mm').format(item.createdAt.toLocal());
-    final author = item.counselor?.displayName ?? 'Orientador ${item.counselorId}';
+    final author =
+        item.counselor?.displayName ?? 'Orientador ${item.counselorId}';
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(

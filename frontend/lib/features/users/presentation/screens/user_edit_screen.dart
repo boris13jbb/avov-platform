@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
@@ -10,6 +9,9 @@ import '../../../institutions/domain/institution.dart';
 import '../../domain/managed_user.dart';
 import '../providers/users_provider.dart';
 import '../widgets/user_form.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class UserEditScreen extends ConsumerWidget {
   const UserEditScreen({super.key, required this.userId});
@@ -22,8 +24,13 @@ class UserEditScreen extends ConsumerWidget {
     final institutions = ref.watch(institutionChoicesProvider);
     final operator = ref.watch(currentOperatorProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Editar usuario')),
+    return InternalRouteScope(
+        child: Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
+        title: const Text('Editar usuario'),
+      ),
       body: SafeArea(
         child: detail.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -74,7 +81,7 @@ class UserEditScreen extends ConsumerWidget {
                     ref.invalidate(adminDashboardProvider);
                     ref.invalidate(userDetailProvider(userId));
                     if (context.mounted) {
-                      context.go(RouteNames.adminUsers);
+                      AppNavigation.completeTo(context, RouteNames.adminUsers);
                     }
                   },
                 );
@@ -83,7 +90,7 @@ class UserEditScreen extends ConsumerWidget {
           },
         ),
       ),
-    );
+    ));
   }
 }
 
