@@ -299,4 +299,3 @@ class _InstitutionTileState extends ConsumerState<_InstitutionTile> {
         .showSnackBar(SnackBar(content: Text(message)));
   }
 }
-

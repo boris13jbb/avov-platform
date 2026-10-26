@@ -222,4 +222,3 @@ class _SessionTile extends StatelessWidget {
     );
   }
 }
-
