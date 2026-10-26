@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
+import '../../../../router/app_navigation.dart';
 import '../../../../router/route_names.dart';
 import '../../../vocational/domain/vocational_test.dart';
 
@@ -34,7 +34,10 @@ class OpenVocationalSessionTile extends StatelessWidget {
           const SizedBox(height: 8),
           OutlinedButton(
             key: continueKey,
-            onPressed: () => context.push(RouteNames.studentTest(session.id)),
+            onPressed: () => AppNavigation.open(
+              context,
+              RouteNames.studentTest(session.id),
+            ),
             child: const Text('Continuar esta evaluación'),
           ),
         ],

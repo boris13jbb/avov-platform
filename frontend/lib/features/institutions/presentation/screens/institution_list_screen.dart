@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
@@ -9,6 +8,9 @@ import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../admin/presentation/providers/admin_dashboard_provider.dart';
 import '../../../auth/presentation/widgets/session_menu_button.dart';
 import '../../domain/institution.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class InstitutionListScreen extends ConsumerWidget {
   const InstitutionListScreen({super.key});
@@ -18,8 +20,11 @@ class InstitutionListScreen extends ConsumerWidget {
     final list = ref.watch(institutionListProvider);
     final page = ref.watch(institutionPageProvider);
 
-    return Scaffold(
+    return InternalRouteScope(
+        child: Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
         title: const Text('Instituciones'),
         actions: const [SessionMenuButton()],
       ),
@@ -38,7 +43,8 @@ class InstitutionListScreen extends ConsumerWidget {
                 message:
                     'Todavía no hay instituciones registradas. Crea la primera para comenzar.',
                 actionLabel: 'Crear institución',
-                onRetry: () => context.go(RouteNames.adminInstitutionNew),
+                onRetry: () =>
+                    AppNavigation.open(context, RouteNames.adminInstitutionNew),
               );
             }
             return Column(
@@ -62,13 +68,14 @@ class InstitutionListScreen extends ConsumerWidget {
                           onSubmitted: (value) {
                             ref.read(institutionSearchProvider.notifier).state =
                                 value.trim();
-                            ref.read(institutionPageProvider.notifier).state = 1;
+                            ref.read(institutionPageProvider.notifier).state =
+                                1;
                           },
                         ),
                       ),
                       FilledButton.icon(
-                        onPressed: () =>
-                            context.go(RouteNames.adminInstitutionNew),
+                        onPressed: () => AppNavigation.open(
+                            context, RouteNames.adminInstitutionNew),
                         icon: const Icon(Icons.add),
                         label: const Text('Crear institución'),
                       ),
@@ -116,7 +123,7 @@ class InstitutionListScreen extends ConsumerWidget {
           },
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -196,13 +203,12 @@ class _InstitutionTileState extends ConsumerState<_InstitutionTile> {
       OutlinedButton(
         onPressed: _busy
             ? null
-            : () => context.go(RouteNames.adminInstitutionEdit(institution.id)),
+            : () => AppNavigation.open(
+                context, RouteNames.adminInstitutionEdit(institution.id)),
         child: const Text('Editar'),
       ),
       FilledButton.tonal(
-        onPressed: _busy
-            ? null
-            : () => active ? _deactivate() : _activate(),
+        onPressed: _busy ? null : () => active ? _deactivate() : _activate(),
         child: Text(active ? 'Desactivar' : 'Activar'),
       ),
     ];
@@ -272,7 +278,8 @@ class _InstitutionTileState extends ConsumerState<_InstitutionTile> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 

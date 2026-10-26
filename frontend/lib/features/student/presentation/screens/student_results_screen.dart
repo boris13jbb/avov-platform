@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
+import '../../../../router/app_navigation.dart';
 import '../../../../router/route_names.dart';
 import '../../../../shared/widgets/student_scaffold.dart';
 import '../../../vocational/domain/vocational_test.dart';
@@ -42,13 +42,16 @@ class StudentResultsScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(24),
               children: [
                 if (completed.isEmpty && !state.hasMore)
-                  const Text('No tienes resultados de evaluaciones completadas.'),
+                  const Text(
+                    'No tienes resultados de evaluaciones completadas.',
+                  ),
                 if (completed.isEmpty && state.hasMore)
                   const Text(
                     'Aún no hay resultados en las evaluaciones cargadas. '
                     'Puedes cargar más páginas del historial.',
                   ),
-                for (final session in completed) _CompletedSession(session: session),
+                for (final session in completed)
+                  _CompletedSession(session: session),
                 VocationalHistoryLoadMore(history: state),
                 if (completed.isEmpty) ...[
                   const SizedBox(height: 16),
@@ -77,7 +80,10 @@ class _CompletedSession extends StatelessWidget {
         children: [
           Text(_completedTitle(session)),
           OutlinedButton(
-            onPressed: () => context.push(RouteNames.studentTestResult(session.id)),
+            onPressed: () => AppNavigation.open(
+              context,
+              RouteNames.studentTestResult(session.id),
+            ),
             child: const Text('Ver resultado'),
           ),
         ],

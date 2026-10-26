@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
 import '../../../../router/route_names.dart';
 import '../../../auth/presentation/widgets/session_menu_button.dart';
 import '../providers/institution_dashboard_provider.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/root_exit_scope.dart';
 
 class InstitutionDashboardScreen extends ConsumerWidget {
   const InstitutionDashboardScreen({super.key});
@@ -14,7 +15,8 @@ class InstitutionDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboard = ref.watch(institutionDashboardProvider);
-    return Scaffold(
+    return RootExitScope(
+        child: Scaffold(
       appBar: AppBar(
         title: const Text('Panel de la institución'),
         actions: const [SessionMenuButton()],
@@ -49,9 +51,12 @@ class InstitutionDashboardScreen extends ConsumerWidget {
                 if (compact)
                   Column(
                     children: [
-                      _Metric(label: 'Estudiantes', value: '${data.studentTotal}'),
+                      _Metric(
+                          label: 'Estudiantes', value: '${data.studentTotal}'),
                       const SizedBox(height: 16),
-                      _Metric(label: 'Orientadores', value: '${data.counselorTotal}'),
+                      _Metric(
+                          label: 'Orientadores',
+                          value: '${data.counselorTotal}'),
                     ],
                   )
                 else
@@ -76,7 +81,8 @@ class InstitutionDashboardScreen extends ConsumerWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: FilledButton.icon(
-                    onPressed: () => context.go(RouteNames.institutionStudents),
+                    onPressed: () => AppNavigation.open(
+                        context, RouteNames.institutionStudents),
                     icon: const Icon(Icons.school_outlined),
                     label: const Text('Gestionar estudiantes'),
                   ),
@@ -85,7 +91,8 @@ class InstitutionDashboardScreen extends ConsumerWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: FilledButton.icon(
-                    onPressed: () => context.go(RouteNames.institutionCounselors),
+                    onPressed: () => AppNavigation.open(
+                        context, RouteNames.institutionCounselors),
                     icon: const Icon(Icons.support_agent_outlined),
                     label: const Text('Gestionar orientadores'),
                   ),
@@ -94,8 +101,8 @@ class InstitutionDashboardScreen extends ConsumerWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: FilledButton.icon(
-                    onPressed: () =>
-                        context.go(RouteNames.institutionAssignments),
+                    onPressed: () => AppNavigation.open(
+                        context, RouteNames.institutionAssignments),
                     icon: const Icon(Icons.link_outlined),
                     label: const Text('Gestionar asignaciones'),
                   ),
@@ -105,7 +112,7 @@ class InstitutionDashboardScreen extends ConsumerWidget {
           },
         ),
       ),
-    );
+    ));
   }
 }
 

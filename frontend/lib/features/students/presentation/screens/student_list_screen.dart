@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
@@ -13,6 +12,9 @@ import '../../../users/domain/managed_user.dart';
 import '../../../users/presentation/providers/users_provider.dart';
 import '../../domain/managed_student.dart';
 import '../providers/students_provider.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class StudentListScreen extends ConsumerWidget {
   const StudentListScreen({super.key});
@@ -25,8 +27,11 @@ class StudentListScreen extends ConsumerWidget {
       orElse: () => false,
     );
 
-    return Scaffold(
+    return InternalRouteScope(
+        child: Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
         title: const Text('Estudiantes'),
         actions: const [SessionMenuButton()],
       ),
@@ -38,7 +43,7 @@ class StudentListScreen extends ConsumerWidget {
                 institutionNames: {},
               ),
       ),
-    );
+    ));
   }
 }
 
@@ -84,41 +89,42 @@ class _StudentListBody extends ConsumerWidget {
     );
 
     return list.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _Notice(
-            message: error is AppException
-                ? error.message
-                : FailureMapper.unexpectedMessage,
-            actionLabel: 'Reintentar',
-            onPressed: () => ref.invalidate(studentListProvider),
-          ),
-          data: (result) {
-            final filtering = ref.watch(studentSearchProvider).isNotEmpty ||
-                ref.watch(studentInstitutionFilterProvider) != null ||
-                ref.watch(studentStatusFilterProvider) != null ||
-                ref.watch(studentGradeFilterProvider).isNotEmpty ||
-                ref.watch(studentGenderFilterProvider) != null;
-            if (result.total == 0 && !filtering) {
-              return _Notice(
-                message: 'Todavía no hay estudiantes.',
-                actionLabel: canManage && routes != null ? 'Crear estudiante' : 'Actualizar',
-                onPressed: canManage && routes != null
-                    ? () => context.go(routes.create)
-                    : () => ref.invalidate(studentListProvider),
-              );
-            }
-            return _studentColumn(
-              ref,
-              context,
-              result: result,
-              page: page,
-              canManage: canManage,
-              routes: routes,
-              isSuperAdmin: showInstitutionFilter,
-              institutionNames: institutionNames,
-            );
-          },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, _) => _Notice(
+        message: error is AppException
+            ? error.message
+            : FailureMapper.unexpectedMessage,
+        actionLabel: 'Reintentar',
+        onPressed: () => ref.invalidate(studentListProvider),
+      ),
+      data: (result) {
+        final filtering = ref.watch(studentSearchProvider).isNotEmpty ||
+            ref.watch(studentInstitutionFilterProvider) != null ||
+            ref.watch(studentStatusFilterProvider) != null ||
+            ref.watch(studentGradeFilterProvider).isNotEmpty ||
+            ref.watch(studentGenderFilterProvider) != null;
+        if (result.total == 0 && !filtering) {
+          return _Notice(
+            message: 'Todavía no hay estudiantes.',
+            actionLabel:
+                canManage && routes != null ? 'Crear estudiante' : 'Actualizar',
+            onPressed: canManage && routes != null
+                ? () => AppNavigation.open(context, routes.create)
+                : () => ref.invalidate(studentListProvider),
+          );
+        }
+        return _studentColumn(
+          ref,
+          context,
+          result: result,
+          page: page,
+          canManage: canManage,
+          routes: routes,
+          isSuperAdmin: showInstitutionFilter,
+          institutionNames: institutionNames,
         );
+      },
+    );
   }
 }
 
@@ -133,59 +139,61 @@ Widget _studentColumn(
   required Map<int, String> institutionNames,
 }) {
   return Column(
-              children: [
-                _Filters(canManage: canManage, routes: routes, showInstitutionFilter: isSuperAdmin),
-                Expanded(
-                  child: result.items.isEmpty
-                      ? const Center(
-                          child: Text(
-                            'Todavía no hay estudiantes que coincidan con la búsqueda.',
-                          ),
-                        )
-                      : ListView.separated(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: result.items.length,
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(height: 12),
-                          itemBuilder: (context, index) {
-                            final student = result.items[index];
-                            return _StudentTile(
-                              student: student,
-                              institutionName:
-                                  institutionNames[student.institutionId] ??
-                                      'Institución ${student.institutionId}',
-                              canManage: canManage,
-                              routes: routes,
-                            );
-                          },
-                        ),
+    children: [
+      _Filters(
+          canManage: canManage,
+          routes: routes,
+          showInstitutionFilter: isSuperAdmin),
+      Expanded(
+        child: result.items.isEmpty
+            ? const Center(
+                child: Text(
+                  'Todavía no hay estudiantes que coincidan con la búsqueda.',
                 ),
-                if (result.pages > 1)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        IconButton(
-                          onPressed: page > 1
-                              ? () => ref.read(studentPageProvider.notifier).state =
-                                  page - 1
-                              : null,
-                          icon: const Icon(Icons.chevron_left),
-                        ),
-                        Text('Página $page de ${result.pages}'),
-                        IconButton(
-                          onPressed: page < result.pages
-                              ? () => ref.read(studentPageProvider.notifier).state =
-                                  page + 1
-                              : null,
-                          icon: const Icon(Icons.chevron_right),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            );
+              )
+            : ListView.separated(
+                padding: const EdgeInsets.all(16),
+                itemCount: result.items.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final student = result.items[index];
+                  return _StudentTile(
+                    student: student,
+                    institutionName: institutionNames[student.institutionId] ??
+                        'Institución ${student.institutionId}',
+                    canManage: canManage,
+                    routes: routes,
+                  );
+                },
+              ),
+      ),
+      if (result.pages > 1)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                onPressed: page > 1
+                    ? () =>
+                        ref.read(studentPageProvider.notifier).state = page - 1
+                    : null,
+                icon: const Icon(Icons.chevron_left),
+              ),
+              Text('Página $page de ${result.pages}'),
+              IconButton(
+                onPressed: page < result.pages
+                    ? () =>
+                        ref.read(studentPageProvider.notifier).state = page + 1
+                    : null,
+                icon: const Icon(Icons.chevron_right),
+              ),
+            ],
+          ),
+        ),
+    ],
+  );
 }
 
 class _Filters extends ConsumerWidget {
@@ -233,29 +241,30 @@ class _Filters extends ConsumerWidget {
           ),
           if (showInstitutionFilter)
             SizedBox(
-            width: 220,
-            child: DropdownButtonFormField<int?>(
-              key: const Key('student-institution-filter'),
-              initialValue: ref.watch(studentInstitutionFilterProvider),
-              isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Institución'),
-              items: [
-                const DropdownMenuItem<int?>(
-                  value: null,
-                  child: Text('Todas las instituciones'),
-                ),
-                for (final institution in institutions)
-                  DropdownMenuItem<int?>(
-                    value: institution.id,
-                    child: Text(institution.name),
+              width: 220,
+              child: DropdownButtonFormField<int?>(
+                key: const Key('student-institution-filter'),
+                initialValue: ref.watch(studentInstitutionFilterProvider),
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Institución'),
+                items: [
+                  const DropdownMenuItem<int?>(
+                    value: null,
+                    child: Text('Todas las instituciones'),
                   ),
-              ],
-              onChanged: (value) {
-                ref.read(studentInstitutionFilterProvider.notifier).state = value;
-                ref.read(studentPageProvider.notifier).state = 1;
-              },
+                  for (final institution in institutions)
+                    DropdownMenuItem<int?>(
+                      value: institution.id,
+                      child: Text(institution.name),
+                    ),
+                ],
+                onChanged: (value) {
+                  ref.read(studentInstitutionFilterProvider.notifier).state =
+                      value;
+                  ref.read(studentPageProvider.notifier).state = 1;
+                },
+              ),
             ),
-          ),
           SizedBox(
             width: 180,
             child: DropdownButtonFormField<String?>(
@@ -317,7 +326,7 @@ class _Filters extends ConsumerWidget {
           ),
           if (canManage && routes != null)
             FilledButton.icon(
-              onPressed: () => context.go(routes!.create),
+              onPressed: () => AppNavigation.open(context, routes!.create),
               icon: const Icon(Icons.person_add_alt_1_outlined),
               label: const Text('Crear estudiante'),
             ),
@@ -356,7 +365,8 @@ class _StudentTileState extends ConsumerState<_StudentTile> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(student.fullName, style: Theme.of(context).textTheme.titleMedium),
+            Text(student.fullName,
+                style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 4),
             Text(student.statusLabel),
             const SizedBox(height: 8),
@@ -371,14 +381,16 @@ class _StudentTileState extends ConsumerState<_StudentTile> {
                 OutlinedButton(
                   onPressed: _busy || widget.routes == null
                       ? null
-                      : () => context.go(widget.routes!.detail(student.id)),
+                      : () => AppNavigation.open(
+                          context, widget.routes!.detail(student.id)),
                   child: const Text('Ver'),
                 ),
                 if (widget.canManage)
                   OutlinedButton(
                     onPressed: _busy || widget.routes == null
                         ? null
-                        : () => context.go(widget.routes!.edit(student.id)),
+                        : () => AppNavigation.open(
+                            context, widget.routes!.edit(student.id)),
                     child: const Text('Editar'),
                   ),
                 if (widget.canManage && student.isActive) ...[
@@ -423,7 +435,9 @@ class _StudentTileState extends ConsumerState<_StudentTile> {
       return;
     }
     try {
-      await ref.read(studentRepositoryProvider).updateStatus(widget.student.id, status);
+      await ref
+          .read(studentRepositoryProvider)
+          .updateStatus(widget.student.id, status);
       ref.invalidate(studentListProvider);
       ref.invalidate(studentDetailProvider(widget.student.id));
       ref.invalidate(adminDashboardProvider);
@@ -442,7 +456,8 @@ class _StudentTileState extends ConsumerState<_StudentTile> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
+import '../../../../router/app_navigation.dart';
 import '../../../../router/route_names.dart';
+import '../../../../shared/widgets/root_exit_scope.dart';
 import '../../../auth/presentation/widgets/session_menu_button.dart';
 import '../providers/admin_dashboard_provider.dart';
 
@@ -15,21 +16,23 @@ class AdminDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final overview = ref.watch(adminDashboardProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('AVOV'),
-        actions: const [SessionMenuButton()],
-      ),
-      body: SafeArea(
-        child: overview.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _DashboardMessage(
-            message: error is AppException
-                ? error.message
-                : FailureMapper.unexpectedMessage,
-            onRetry: () => ref.invalidate(adminDashboardProvider),
+    return RootExitScope(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('AVOV'),
+          actions: const [SessionMenuButton()],
+        ),
+        body: SafeArea(
+          child: overview.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, _) => _DashboardMessage(
+              message: error is AppException
+                  ? error.message
+                  : FailureMapper.unexpectedMessage,
+              onRetry: () => ref.invalidate(adminDashboardProvider),
+            ),
+            data: (data) => _DashboardContent(data: data),
           ),
-          data: (data) => _DashboardContent(data: data),
         ),
       ),
     );
@@ -112,7 +115,10 @@ class _DashboardContent extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: FilledButton.icon(
-                    onPressed: () => context.go(RouteNames.adminInstitutions),
+                    onPressed: () => AppNavigation.open(
+                      context,
+                      RouteNames.adminInstitutions,
+                    ),
                     icon: const Icon(Icons.apartment_outlined),
                     label: const Text('Gestionar instituciones'),
                   ),
@@ -121,7 +127,8 @@ class _DashboardContent extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: FilledButton.icon(
-                  onPressed: () => context.go(RouteNames.adminUsers),
+                  onPressed: () =>
+                      AppNavigation.open(context, RouteNames.adminUsers),
                   icon: const Icon(Icons.people_outline),
                   label: const Text('Gestionar usuarios'),
                 ),
@@ -130,7 +137,8 @@ class _DashboardContent extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: FilledButton.icon(
-                  onPressed: () => context.go(RouteNames.adminStudents),
+                  onPressed: () =>
+                      AppNavigation.open(context, RouteNames.adminStudents),
                   icon: const Icon(Icons.school_outlined),
                   label: const Text('Gestionar estudiantes'),
                 ),
@@ -139,7 +147,10 @@ class _DashboardContent extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: FilledButton.icon(
-                  onPressed: () => context.go(RouteNames.adminAssignments),
+                  onPressed: () => AppNavigation.open(
+                    context,
+                    RouteNames.adminAssignments,
+                  ),
                   icon: const Icon(Icons.link_outlined),
                   label: const Text('Gestionar asignaciones'),
                 ),
@@ -148,7 +159,8 @@ class _DashboardContent extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: FilledButton.icon(
-                  onPressed: () => context.go(RouteNames.adminCareers),
+                  onPressed: () =>
+                      AppNavigation.open(context, RouteNames.adminCareers),
                   icon: const Icon(Icons.work_outline),
                   label: const Text('Gestionar carreras'),
                 ),
@@ -157,7 +169,8 @@ class _DashboardContent extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: FilledButton.icon(
-                  onPressed: () => context.go(RouteNames.adminQuestions),
+                  onPressed: () =>
+                      AppNavigation.open(context, RouteNames.adminQuestions),
                   icon: const Icon(Icons.quiz_outlined),
                   label: const Text('Gestionar preguntas RIASEC'),
                 ),
@@ -166,7 +179,10 @@ class _DashboardContent extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: FilledButton.icon(
-                  onPressed: () => context.go(RouteNames.adminVectorRebuild),
+                  onPressed: () => AppNavigation.open(
+                    context,
+                    RouteNames.adminVectorRebuild,
+                  ),
                   icon: const Icon(Icons.hub_outlined),
                   label: const Text('Reconstruir índice vectorial'),
                 ),
@@ -175,7 +191,8 @@ class _DashboardContent extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: FilledButton.icon(
-                  onPressed: () => context.go(RouteNames.adminAudit),
+                  onPressed: () =>
+                      AppNavigation.open(context, RouteNames.adminAudit),
                   icon: const Icon(Icons.fact_check_outlined),
                   label: const Text('Auditoría del sistema'),
                 ),
@@ -238,7 +255,10 @@ class _EmptyInstitutions extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             FilledButton.icon(
-              onPressed: () => context.go(RouteNames.adminInstitutionNew),
+              onPressed: () => AppNavigation.open(
+                context,
+                RouteNames.adminInstitutionNew,
+              ),
               icon: const Icon(Icons.add),
               label: const Text('Crear institución'),
             ),

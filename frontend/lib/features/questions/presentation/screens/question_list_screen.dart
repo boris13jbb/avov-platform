@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
@@ -9,6 +8,9 @@ import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../auth/presentation/widgets/session_menu_button.dart';
 import '../../domain/question.dart';
 import '../providers/question_provider.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class QuestionListScreen extends ConsumerStatefulWidget {
   const QuestionListScreen({super.key});
@@ -27,8 +29,11 @@ class _QuestionListScreenState extends ConsumerState<QuestionListScreen> {
     final categoryFilter = ref.watch(questionCategoryFilterProvider);
     final statusFilter = ref.watch(questionStatusFilterProvider);
 
-    return Scaffold(
+    return InternalRouteScope(
+        child: Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
         title: const Text('Preguntas RIASEC'),
         actions: const [SessionMenuButton()],
       ),
@@ -47,7 +52,8 @@ class _QuestionListScreenState extends ConsumerState<QuestionListScreen> {
                 message:
                     'No hay preguntas que coincidan con los filtros actuales.',
                 actionLabel: 'Crear pregunta',
-                onRetry: () => context.go(RouteNames.adminQuestionNew),
+                onRetry: () =>
+                    AppNavigation.open(context, RouteNames.adminQuestionNew),
               );
             }
             return Column(
@@ -137,7 +143,8 @@ class _QuestionListScreenState extends ConsumerState<QuestionListScreen> {
                         ),
                       ),
                       FilledButton.icon(
-                        onPressed: () => context.go(RouteNames.adminQuestionNew),
+                        onPressed: () => AppNavigation.open(
+                            context, RouteNames.adminQuestionNew),
                         icon: const Icon(Icons.add),
                         label: const Text('Crear pregunta'),
                       ),
@@ -155,8 +162,8 @@ class _QuestionListScreenState extends ConsumerState<QuestionListScreen> {
                         question: question,
                         busy: _busyQuestionId == question.id,
                         onToggleStatus: () => _toggleStatus(question),
-                        onEdit: () =>
-                            context.go(RouteNames.adminQuestionEdit(question.id)),
+                        onEdit: () => AppNavigation.open(
+                            context, RouteNames.adminQuestionEdit(question.id)),
                       );
                     },
                   ),
@@ -192,7 +199,7 @@ class _QuestionListScreenState extends ConsumerState<QuestionListScreen> {
           },
         ),
       ),
-    );
+    ));
   }
 
   Future<void> _toggleStatus(VocationalQuestion question) async {
@@ -233,7 +240,8 @@ class _QuestionListScreenState extends ConsumerState<QuestionListScreen> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 

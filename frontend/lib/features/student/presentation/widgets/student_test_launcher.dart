@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
+import '../../../../router/app_navigation.dart';
 import '../../../../router/route_names.dart';
 import '../../../vocational/presentation/providers/vocational_provider.dart';
 import 'open_vocational_session_tile.dart';
@@ -22,7 +22,8 @@ class StudentTestLauncher extends ConsumerStatefulWidget {
   final int openCount;
 
   @override
-  ConsumerState<StudentTestLauncher> createState() => _StudentTestLauncherState();
+  ConsumerState<StudentTestLauncher> createState() =>
+      _StudentTestLauncherState();
 }
 
 class _StudentTestLauncherState extends ConsumerState<StudentTestLauncher> {
@@ -85,7 +86,7 @@ class _StudentTestLauncherState extends ConsumerState<StudentTestLauncher> {
       if (!mounted) {
         return;
       }
-      context.push(RouteNames.studentTest(session.id));
+      AppNavigation.open(context, RouteNames.studentTest(session.id));
     } on ValidationException catch (error) {
       await _handleStartValidation(error);
     } on AppException catch (error) {
@@ -108,9 +109,8 @@ class _StudentTestLauncherState extends ConsumerState<StudentTestLauncher> {
         error.message.toLowerCase().contains(_multipleOpenServerHint);
     if (mounted) {
       setState(() {
-        _error = isMultipleOpen
-            ? MultipleOpenSessionsNotice.message
-            : error.message;
+        _error =
+            isMultipleOpen ? MultipleOpenSessionsNotice.message : error.message;
       });
     }
     // Reinicia desde la página 1; el padre muestra carga/error/reintento.

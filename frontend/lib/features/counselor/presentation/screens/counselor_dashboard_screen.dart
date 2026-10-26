@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
 import '../../../../router/route_names.dart';
 import '../../../auth/presentation/widgets/session_menu_button.dart';
 import '../providers/counselor_dashboard_provider.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/root_exit_scope.dart';
 
 class CounselorDashboardScreen extends ConsumerWidget {
   const CounselorDashboardScreen({super.key});
@@ -14,7 +15,8 @@ class CounselorDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboard = ref.watch(counselorDashboardProvider);
-    return Scaffold(
+    return RootExitScope(
+        child: Scaffold(
       appBar: AppBar(
         title: const Text('Panel del orientador'),
         actions: const [SessionMenuButton()],
@@ -65,7 +67,8 @@ class CounselorDashboardScreen extends ConsumerWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: FilledButton.icon(
-                    onPressed: () => context.go(RouteNames.counselorStudents),
+                    onPressed: () => AppNavigation.open(
+                        context, RouteNames.counselorStudents),
                     icon: const Icon(Icons.school_outlined),
                     label: const Text('Ver estudiantes asignados'),
                   ),
@@ -92,7 +95,7 @@ class CounselorDashboardScreen extends ConsumerWidget {
           },
         ),
       ),
-    );
+    ));
   }
 }
 

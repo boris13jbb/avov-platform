@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
+import '../../../../router/app_navigation.dart';
 import '../../../../router/route_names.dart';
 import '../../../../shared/widgets/student_scaffold.dart';
 import '../../domain/vocational_test.dart';
@@ -16,7 +16,8 @@ class VocationalTestScreen extends ConsumerStatefulWidget {
   final int sessionId;
 
   @override
-  ConsumerState<VocationalTestScreen> createState() => _VocationalTestScreenState();
+  ConsumerState<VocationalTestScreen> createState() =>
+      _VocationalTestScreenState();
 }
 
 class _VocationalTestScreenState extends ConsumerState<VocationalTestScreen> {
@@ -51,7 +52,8 @@ class _VocationalTestScreenState extends ConsumerState<VocationalTestScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final questionnaire = ref.watch(vocationalQuestionsProvider(widget.sessionId));
+    final questionnaire =
+        ref.watch(vocationalQuestionsProvider(widget.sessionId));
     return PopScope(
       canPop: !_hasUnsavedSelection && !_busy,
       onPopInvokedWithResult: (didPop, _) async {
@@ -78,7 +80,8 @@ class _VocationalTestScreenState extends ConsumerState<VocationalTestScreen> {
                 message: message,
                 actionLabel: completed ? 'Ver resultado' : 'Reintentar',
                 onPressed: completed
-                    ? () => context.go(
+                    ? () => AppNavigation.completeTo(
+                          context,
                           RouteNames.studentTestResult(widget.sessionId),
                         )
                     : () => ref.invalidate(
@@ -184,10 +187,10 @@ class _VocationalTestScreenState extends ConsumerState<VocationalTestScreen> {
                       ),
                       if (_index < questions.length - 1)
                         OutlinedButton(
-                          onPressed: _busy ||
-                                  (question.answerValue == null && !dirty)
-                              ? null
-                              : () => _moveTo(_index + 1),
+                          onPressed:
+                              _busy || (question.answerValue == null && !dirty)
+                                  ? null
+                                  : () => _moveTo(_index + 1),
                           child: const Text('Siguiente'),
                         ),
                       if (saved == questions.length)
@@ -449,7 +452,10 @@ class _VocationalTestScreenState extends ConsumerState<VocationalTestScreen> {
       if (!mounted) {
         return;
       }
-      context.go(RouteNames.studentTestResult(widget.sessionId));
+      AppNavigation.completeTo(
+        context,
+        RouteNames.studentTestResult(widget.sessionId),
+      );
     } on AppException catch (error) {
       if (!_completed) {
         _error = error.message;

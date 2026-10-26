@@ -7,12 +7,15 @@ import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../auth/presentation/widgets/session_menu_button.dart';
 import '../../domain/vector_admin_repository.dart';
 import '../providers/vector_admin_provider.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class VectorRebuildScreen extends ConsumerStatefulWidget {
   const VectorRebuildScreen({super.key});
 
   @override
-  ConsumerState<VectorRebuildScreen> createState() => _VectorRebuildScreenState();
+  ConsumerState<VectorRebuildScreen> createState() =>
+      _VectorRebuildScreenState();
 }
 
 class _VectorRebuildScreenState extends ConsumerState<VectorRebuildScreen> {
@@ -67,8 +70,11 @@ class _VectorRebuildScreenState extends ConsumerState<VectorRebuildScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return InternalRouteScope(
+        child: Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
         title: const Text('Índice vectorial'),
         actions: const [SessionMenuButton()],
       ),
@@ -95,7 +101,8 @@ class _VectorRebuildScreenState extends ConsumerState<VectorRebuildScreen> {
                   if (_errorMessage != null) ...[
                     Text(
                       _errorMessage!,
-                      style: TextStyle(color: Theme.of(context).colorScheme.error),
+                      style:
+                          TextStyle(color: Theme.of(context).colorScheme.error),
                     ),
                     const SizedBox(height: 16),
                   ],
@@ -113,7 +120,8 @@ class _VectorRebuildScreenState extends ConsumerState<VectorRebuildScreen> {
                             const SizedBox(height: 8),
                             Text('Colección: ${_lastResult!.collection}'),
                             Text('Carreras indexadas: ${_lastResult!.indexed}'),
-                            Text('Dimensión del vector: ${_lastResult!.vectorSize}'),
+                            Text(
+                                'Dimensión del vector: ${_lastResult!.vectorSize}'),
                             Text('Origen: ${_lastResult!.source}'),
                           ],
                         ),
@@ -130,7 +138,8 @@ class _VectorRebuildScreenState extends ConsumerState<VectorRebuildScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.refresh),
-                    label: Text(_busy ? 'Reconstruyendo…' : 'Reconstruir índice'),
+                    label:
+                        Text(_busy ? 'Reconstruyendo…' : 'Reconstruir índice'),
                   ),
                 ],
               ),
@@ -138,6 +147,6 @@ class _VectorRebuildScreenState extends ConsumerState<VectorRebuildScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

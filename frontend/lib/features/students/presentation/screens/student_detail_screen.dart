@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
@@ -9,6 +8,9 @@ import '../../../users/presentation/providers/users_provider.dart';
 import '../../../vocational/presentation/widgets/student_reports_history_section.dart';
 import '../../domain/managed_student.dart';
 import '../providers/students_provider.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class StudentDetailScreen extends ConsumerWidget {
   const StudentDetailScreen({super.key, required this.studentId});
@@ -20,17 +22,22 @@ class StudentDetailScreen extends ConsumerWidget {
     final detail = ref.watch(studentDetailProvider(studentId));
     final operator = ref.watch(currentOperatorProvider);
     final canManage = operator.maybeWhen(
-          data: (profile) => canManageStudents(profile.role),
-          orElse: () => false,
-        );
+      data: (profile) => canManageStudents(profile.role),
+      orElse: () => false,
+    );
     final operatorRole = operator.maybeWhen(
-          data: (profile) => profile.role,
-          orElse: () => null,
-        );
+      data: (profile) => profile.role,
+      orElse: () => null,
+    );
     final isCounselor = operatorRole == 'COUNSELOR';
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Estudiante')),
+    return InternalRouteScope(
+        child: Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
+        title: const Text('Estudiante'),
+      ),
       body: SafeArea(
         child: detail.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -62,17 +69,18 @@ class StudentDetailScreen extends ConsumerWidget {
             }
             return Consumer(
               builder: (context, ref, _) {
-                final institutionName = ref.watch(institutionChoicesProvider).maybeWhen(
-                      data: (items) {
-                        for (final item in items) {
-                          if (item.id == student.institutionId) {
-                            return item.name;
-                          }
-                        }
-                        return 'Institución ${student.institutionId}';
-                      },
-                      orElse: () => 'Institución ${student.institutionId}',
-                    );
+                final institutionName =
+                    ref.watch(institutionChoicesProvider).maybeWhen(
+                          data: (items) {
+                            for (final item in items) {
+                              if (item.id == student.institutionId) {
+                                return item.name;
+                              }
+                            }
+                            return 'Institución ${student.institutionId}';
+                          },
+                          orElse: () => 'Institución ${student.institutionId}',
+                        );
                 return _detailBody(
                   context,
                   ref,
@@ -87,7 +95,7 @@ class StudentDetailScreen extends ConsumerWidget {
           },
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -125,7 +133,7 @@ Widget _detailBody(
       const SizedBox(height: 24),
       if (assignHref != null) ...[
         OutlinedButton.icon(
-          onPressed: () => context.go(assignHref),
+          onPressed: () => AppNavigation.open(context, assignHref),
           icon: const Icon(Icons.link_outlined),
           label: const Text('Asignar orientador'),
         ),
@@ -139,7 +147,7 @@ Widget _detailBody(
                   orElse: () => null,
                 );
             if (routes != null) {
-              context.go(routes.edit(student.id));
+              AppNavigation.open(context, routes.edit(student.id));
             }
           },
           child: const Text('Editar'),

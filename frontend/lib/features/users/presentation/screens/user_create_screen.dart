@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
@@ -9,6 +8,9 @@ import '../../../admin/presentation/providers/admin_dashboard_provider.dart';
 import '../../domain/managed_user.dart';
 import '../providers/users_provider.dart';
 import '../widgets/user_form.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class UserCreateScreen extends ConsumerWidget {
   const UserCreateScreen({super.key});
@@ -16,8 +18,13 @@ class UserCreateScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final institutions = ref.watch(institutionChoicesProvider);
-    return Scaffold(
-      appBar: AppBar(title: const Text('Crear usuario')),
+    return InternalRouteScope(
+        child: Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
+        title: const Text('Crear usuario'),
+      ),
       body: SafeArea(
         child: institutions.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -39,13 +46,13 @@ class UserCreateScreen extends ConsumerWidget {
               ref.invalidate(adminDashboardProvider);
               ref.read(userPageProvider.notifier).state = 1;
               if (context.mounted) {
-                context.go(RouteNames.adminUsers);
+                AppNavigation.completeTo(context, RouteNames.adminUsers);
               }
             },
           ),
         ),
       ),
-    );
+    ));
   }
 }
 
