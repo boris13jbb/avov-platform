@@ -10,6 +10,7 @@ from app.models.user import User
 from app.repositories.audit_repository import AuditRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.audit import AuditLogResponse, AuditLogUserSummary, PaginatedAuditLogs
+from app.security.audit_details import sanitize_audit_details
 
 
 class AuditService:
@@ -126,7 +127,7 @@ class AuditService:
             entity_id=log.entity_id,
             ip_address=log.ip_address,
             user_agent=log.user_agent,
-            details=log.details,
+            details=sanitize_audit_details(log.details),
             created_at=log.created_at,
             user=user_summary,
         )

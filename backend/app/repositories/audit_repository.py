@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.models.audit import AuditLog
 from app.models.user import User
+from app.security.audit_details import sanitize_audit_details
 
 
 class AuditRepository:
@@ -91,7 +92,7 @@ class AuditRepository:
             action=action,
             entity=entity,
             entity_id=entity_id,
-            details=details,
+            details=sanitize_audit_details(details),
             ip_address=ip_address,
             user_agent=user_agent,
         )
