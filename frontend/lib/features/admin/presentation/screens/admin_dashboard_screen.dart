@@ -171,6 +171,15 @@ class _DashboardContent extends StatelessWidget {
                   label: const Text('Reconstruir índice vectorial'),
                 ),
               ),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: FilledButton.icon(
+                  onPressed: () => context.go(RouteNames.adminAudit),
+                  icon: const Icon(Icons.fact_check_outlined),
+                  label: const Text('Auditoría del sistema'),
+                ),
+              ),
             ],
           ),
         ),

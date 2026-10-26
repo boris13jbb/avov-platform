@@ -5,6 +5,7 @@ from fastapi.openapi.utils import get_openapi
 from app.api.routes import (
     assignments,
     assistant,
+    audit,
     auth,
     careers,
     health,
@@ -53,6 +54,7 @@ app.include_router(institutions.router, prefix=API_PREFIX)
 app.include_router(users.router, prefix=API_PREFIX)
 app.include_router(students.router, prefix=API_PREFIX)
 app.include_router(assignments.router, prefix=API_PREFIX)
+app.include_router(audit.router, prefix=API_PREFIX)
 app.include_router(careers.router, prefix=API_PREFIX)
 app.include_router(questions.router, prefix=API_PREFIX)
 app.include_router(tests.router, prefix=API_PREFIX)
@@ -90,6 +92,7 @@ def custom_openapi():
         "/users",
         "/students",
         "/assignments",
+        "/audit",
         "/careers",
         "/questions",
         "/tests",

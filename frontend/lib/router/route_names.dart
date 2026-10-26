@@ -33,6 +33,9 @@ class RouteNames {
   static const adminQuestionNew = '/admin/questions/new';
   static String adminQuestionEdit(int id) => '/admin/questions/$id';
   static const adminVectorRebuild = '/admin/vector-rebuild';
+  static const adminAudit = '/admin/audit';
+
+  static String adminAuditDetail(int id) => '/admin/audit/$id';
 
   static const institutionPrefix = '/institution';
   static const institutionDashboard = '/institution/dashboard';

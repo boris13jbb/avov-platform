@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../core/providers/providers.dart';
 import '../features/admin/presentation/screens/admin_dashboard_screen.dart';
 import '../features/admin/presentation/screens/vector_rebuild_screen.dart';
+import '../features/audit/presentation/screens/audit_log_detail_screen.dart';
+import '../features/audit/presentation/screens/audit_log_list_screen.dart';
 import '../features/careers/presentation/screens/career_create_screen.dart';
 import '../features/careers/presentation/screens/career_edit_screen.dart';
 import '../features/careers/presentation/screens/career_list_screen.dart';
@@ -122,6 +124,26 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             );
           }
           return StudentDetailScreen(studentId: id);
+        },
+      ),
+      GoRoute(
+        path: RouteNames.adminAudit,
+        name: 'admin-audit',
+        builder: (context, state) => const AuditLogListScreen(
+          detailRouteBuilder: RouteNames.adminAuditDetail,
+        ),
+      ),
+      GoRoute(
+        path: '/admin/audit/:logId',
+        name: 'admin-audit-detail',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['logId'] ?? '');
+          if (id == null) {
+            return const Scaffold(
+              body: Center(child: Text('Registro no encontrado')),
+            );
+          }
+          return AuditLogDetailScreen(logId: id);
         },
       ),
       GoRoute(
