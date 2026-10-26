@@ -78,7 +78,11 @@ void main() {
     expect(find.textContaining('identificador 7'), findsOneWidget);
     expect(find.text('2'), findsOneWidget);
     expect(find.text('Ver estudiantes asignados'), findsOneWidget);
-    expect(find.textContaining('todavía no están disponibles'), findsOneWidget);
+    expect(
+      find.textContaining('Desde la ficha de cada estudiante asignado'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('test RIASEC'), findsOneWidget);
     expect(find.text('Crear estudiante'), findsNothing);
     expect(find.text('Gestionar instituciones'), findsNothing);
     expect(students.queries.single.pageSize, 1);
