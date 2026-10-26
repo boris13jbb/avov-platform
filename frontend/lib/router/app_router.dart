@@ -21,10 +21,12 @@ import '../features/institution_admin/presentation/screens/counselor_create_scre
 import '../features/institution_admin/presentation/screens/counselor_edit_screen.dart';
 import '../features/institution_admin/presentation/screens/counselor_list_screen.dart';
 import '../features/institution_admin/presentation/screens/institution_dashboard_screen.dart';
+import '../features/observations/presentation/screens/counselor_session_review_screen.dart';
 import '../features/institutions/presentation/screens/institution_create_screen.dart';
 import '../features/institutions/presentation/screens/institution_edit_screen.dart';
 import '../features/institutions/presentation/screens/institution_list_screen.dart';
 import '../features/splash/presentation/screens/splash_screen.dart';
+import '../features/assistant/presentation/screens/assistant_chat_screen.dart';
 import '../features/student/presentation/screens/student_dashboard_screen.dart';
 import '../features/student/presentation/screens/student_profile_screen.dart';
 import '../features/student/presentation/screens/student_results_screen.dart';
@@ -325,6 +327,23 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/counselor/students/:studentId/sessions/:sessionId',
+        name: 'counselor-student-session-review',
+        builder: (context, state) {
+          final studentId = int.tryParse(state.pathParameters['studentId'] ?? '');
+          final sessionId = int.tryParse(state.pathParameters['sessionId'] ?? '');
+          if (studentId == null || sessionId == null) {
+            return const Scaffold(
+              body: Center(child: Text('Sesión no encontrada')),
+            );
+          }
+          return CounselorSessionReviewScreen(
+            studentId: studentId,
+            sessionId: sessionId,
+          );
+        },
+      ),
+      GoRoute(
         path: RouteNames.studentDashboard,
         name: 'student-dashboard',
         builder: (context, state) => const StudentDashboardScreen(),
@@ -343,6 +362,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: RouteNames.studentResults,
         name: 'student-results',
         builder: (context, state) => const StudentResultsScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.studentAssistant,
+        name: 'student-assistant',
+        builder: (context, state) {
+          final raw = state.uri.queryParameters['sessionId'];
+          final sessionId = raw == null ? null : int.tryParse(raw);
+          return AssistantChatScreen(testSessionId: sessionId);
+        },
       ),
       GoRoute(
         path: '/student/test/:sessionId/result',

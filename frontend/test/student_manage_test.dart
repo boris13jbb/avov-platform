@@ -244,6 +244,10 @@ void main() {
     await tester.pump();
 
     expect(find.text('Estudiante no encontrado'), findsOneWidget);
+
+    // Evita timers pendientes (p. ej. SnackBar/debounce) al desechar el árbol.
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
   });
 
   testWidgets('la edición guarda el curso y no envía contraseña', (tester) async {
