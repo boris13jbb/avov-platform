@@ -4,8 +4,15 @@ import 'package:go_router/go_router.dart';
 
 import '../core/providers/providers.dart';
 import '../features/admin/presentation/screens/admin_dashboard_screen.dart';
+import '../features/admin/presentation/screens/vector_rebuild_screen.dart';
 import '../features/audit/presentation/screens/audit_log_detail_screen.dart';
 import '../features/audit/presentation/screens/audit_log_list_screen.dart';
+import '../features/careers/presentation/screens/career_create_screen.dart';
+import '../features/careers/presentation/screens/career_edit_screen.dart';
+import '../features/careers/presentation/screens/career_list_screen.dart';
+import '../features/questions/presentation/screens/question_create_screen.dart';
+import '../features/questions/presentation/screens/question_edit_screen.dart';
+import '../features/questions/presentation/screens/question_list_screen.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/auth/presentation/screens/unauthorized_screen.dart';
 import '../features/counselor/presentation/screens/counselor_dashboard_screen.dart';
@@ -16,10 +23,12 @@ import '../features/institution_admin/presentation/screens/counselor_create_scre
 import '../features/institution_admin/presentation/screens/counselor_edit_screen.dart';
 import '../features/institution_admin/presentation/screens/counselor_list_screen.dart';
 import '../features/institution_admin/presentation/screens/institution_dashboard_screen.dart';
+import '../features/observations/presentation/screens/counselor_session_review_screen.dart';
 import '../features/institutions/presentation/screens/institution_create_screen.dart';
 import '../features/institutions/presentation/screens/institution_edit_screen.dart';
 import '../features/institutions/presentation/screens/institution_list_screen.dart';
 import '../features/splash/presentation/screens/splash_screen.dart';
+import '../features/assistant/presentation/screens/assistant_chat_screen.dart';
 import '../features/student/presentation/screens/student_dashboard_screen.dart';
 import '../features/student/presentation/screens/student_profile_screen.dart';
 import '../features/student/presentation/screens/student_results_screen.dart';
@@ -150,6 +159,57 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           final studentId = raw == null ? null : int.tryParse(raw);
           return AssignmentCreateScreen(preselectedStudentId: studentId);
         },
+      ),
+      GoRoute(
+        path: RouteNames.adminCareers,
+        name: 'admin-careers',
+        builder: (context, state) => const CareerListScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.adminCareerNew,
+        name: 'admin-career-new',
+        builder: (context, state) => const CareerCreateScreen(),
+      ),
+      GoRoute(
+        path: '/admin/careers/:careerId',
+        name: 'admin-career-edit',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['careerId'] ?? '');
+          if (id == null) {
+            return const Scaffold(
+              body: Center(child: Text('Carrera no encontrada')),
+            );
+          }
+          return CareerEditScreen(careerId: id);
+        },
+      ),
+      GoRoute(
+        path: RouteNames.adminQuestions,
+        name: 'admin-questions',
+        builder: (context, state) => const QuestionListScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.adminQuestionNew,
+        name: 'admin-question-new',
+        builder: (context, state) => const QuestionCreateScreen(),
+      ),
+      GoRoute(
+        path: '/admin/questions/:questionId',
+        name: 'admin-question-edit',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['questionId'] ?? '');
+          if (id == null) {
+            return const Scaffold(
+              body: Center(child: Text('Pregunta no encontrada')),
+            );
+          }
+          return QuestionEditScreen(questionId: id);
+        },
+      ),
+      GoRoute(
+        path: RouteNames.adminVectorRebuild,
+        name: 'admin-vector-rebuild',
+        builder: (context, state) => const VectorRebuildScreen(),
       ),
       GoRoute(
         path: RouteNames.adminUsers,
@@ -289,6 +349,23 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/counselor/students/:studentId/sessions/:sessionId',
+        name: 'counselor-student-session-review',
+        builder: (context, state) {
+          final studentId = int.tryParse(state.pathParameters['studentId'] ?? '');
+          final sessionId = int.tryParse(state.pathParameters['sessionId'] ?? '');
+          if (studentId == null || sessionId == null) {
+            return const Scaffold(
+              body: Center(child: Text('Sesión no encontrada')),
+            );
+          }
+          return CounselorSessionReviewScreen(
+            studentId: studentId,
+            sessionId: sessionId,
+          );
+        },
+      ),
+      GoRoute(
         path: RouteNames.studentDashboard,
         name: 'student-dashboard',
         builder: (context, state) => const StudentDashboardScreen(),
@@ -307,6 +384,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: RouteNames.studentResults,
         name: 'student-results',
         builder: (context, state) => const StudentResultsScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.studentAssistant,
+        name: 'student-assistant',
+        builder: (context, state) {
+          final raw = state.uri.queryParameters['sessionId'];
+          final sessionId = raw == null ? null : int.tryParse(raw);
+          return AssistantChatScreen(testSessionId: sessionId);
+        },
       ),
       GoRoute(
         path: '/student/test/:sessionId/result',

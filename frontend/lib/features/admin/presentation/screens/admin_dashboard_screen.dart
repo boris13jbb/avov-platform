@@ -148,20 +148,37 @@ class _DashboardContent extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: FilledButton.icon(
+                  onPressed: () => context.go(RouteNames.adminCareers),
+                  icon: const Icon(Icons.work_outline),
+                  label: const Text('Gestionar carreras'),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: FilledButton.icon(
+                  onPressed: () => context.go(RouteNames.adminQuestions),
+                  icon: const Icon(Icons.quiz_outlined),
+                  label: const Text('Gestionar preguntas RIASEC'),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: FilledButton.icon(
+                  onPressed: () => context.go(RouteNames.adminVectorRebuild),
+                  icon: const Icon(Icons.hub_outlined),
+                  label: const Text('Reconstruir índice vectorial'),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: FilledButton.icon(
                   onPressed: () => context.go(RouteNames.adminAudit),
                   icon: const Icon(Icons.fact_check_outlined),
                   label: const Text('Auditoría del sistema'),
                 ),
-              ),
-              const SizedBox(height: 32),
-              Text(
-                'Módulos pendientes',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Carreras y preguntas RIASEC aún no tienen pantalla. '
-                'Esas secciones no aparecen como acciones.',
               ),
             ],
           ),

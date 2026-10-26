@@ -58,6 +58,7 @@ class _StudentTestLauncherState extends ConsumerState<StudentTestLauncher> {
         ],
         if (widget.openCount == 0)
           FilledButton(
+            key: const Key('student-start-test'),
             onPressed: _starting ? null : _start,
             child: _starting
                 ? const SizedBox(

@@ -10,6 +10,7 @@ from app.api.routes import (
     careers,
     health,
     institutions,
+    observations,
     questions,
     recommendations,
     reports,
@@ -57,6 +58,7 @@ app.include_router(audit.router, prefix=API_PREFIX)
 app.include_router(careers.router, prefix=API_PREFIX)
 app.include_router(questions.router, prefix=API_PREFIX)
 app.include_router(tests.router, prefix=API_PREFIX)
+app.include_router(observations.router, prefix=API_PREFIX)
 app.include_router(recommendations.router, prefix=API_PREFIX)
 app.include_router(reports.router, prefix=API_PREFIX)
 app.include_router(vector.router, prefix=API_PREFIX)

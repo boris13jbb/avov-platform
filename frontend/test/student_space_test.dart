@@ -17,6 +17,9 @@ import 'package:avov_frontend/features/students/domain/managed_student.dart';
 import 'package:avov_frontend/features/students/domain/student_repository.dart';
 import 'package:avov_frontend/features/students/presentation/providers/students_provider.dart';
 import 'package:avov_frontend/features/vocational/domain/career_recommendation.dart';
+import 'package:avov_frontend/features/vocational/domain/report_history.dart';
+import 'package:avov_frontend/features/vocational/domain/report_repository.dart';
+import 'package:avov_frontend/features/vocational/presentation/providers/report_provider.dart';
 import 'package:avov_frontend/features/vocational/domain/recommendation_repository.dart';
 import 'package:avov_frontend/features/vocational/domain/vocational_repository.dart';
 import 'package:avov_frontend/features/vocational/domain/vocational_test.dart';
@@ -80,12 +83,7 @@ void main() {
     expect(find.text('Identificación: ID-PROPIA'), findsOneWidget);
     expect(find.text('Curso: 10'), findsOneWidget);
     expect(find.text('No tienes evaluaciones registradas.'), findsOneWidget);
-    expect(
-      find.textContaining(
-        'Las recomendaciones de carreras se generan en el resultado',
-      ),
-      findsOneWidget,
-    );
+    expect(find.byKey(const Key('student-open-assistant')), findsOneWidget);
     expect(find.textContaining('%'), findsNothing);
     expect(find.text('Iniciar evaluación'), findsOneWidget);
     expect(find.widgetWithText(TextButton, 'Cerrar sesión'), findsOneWidget);
@@ -123,6 +121,7 @@ void main() {
         overrides: [
           authRepositoryProvider.overrideWithValue(_Auth(profile)),
           studentRepositoryProvider.overrideWithValue(students),
+          reportRepositoryProvider.overrideWithValue(_Reports()),
         ],
         child: const MaterialApp(home: StudentProfileScreen()),
       ),
@@ -136,6 +135,9 @@ void main() {
     expect(find.byType(TextField), findsNothing);
     expect(students.getCalls, 0);
     expect(students.ownCalls, 1);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
   });
 
   testWidgets('el panel muestra carga, error y reintento', (tester) async {
@@ -207,9 +209,10 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    await tester.tap(find.text('Iniciar evaluación'));
+    final startButton = find.byKey(const Key('student-start-test'));
+    await tester.tap(startButton);
     await tester.pump();
-    await tester.tap(find.byType(FilledButton));
+    await tester.tap(startButton);
     await tester.pump();
 
     expect(vocational.startCalls, 1);
@@ -334,6 +337,28 @@ void main() {
   });
 }
 
+class _Reports implements ReportRepository {
+  @override
+  Future<VocationalPdfFile> downloadSessionPdf(int sessionId) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<ReportHistoryPage> listStudentReports(
+    int studentId, {
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    return const ReportHistoryPage(
+      items: [],
+      total: 0,
+      page: 1,
+      pageSize: 20,
+      pages: 0,
+    );
+  }
+}
+
 class _EmptyRecommendations implements RecommendationRepository {
   @override
   Future<CareerRecommendationPage> listForSession(int sessionId) async {
@@ -372,6 +397,7 @@ Future<ProviderContainer> _appContainer(
       institutionRepositoryProvider.overrideWithValue(_Institutions()),
       userDirectoryRepositoryProvider.overrideWithValue(_Directory()),
       vocationalRepositoryProvider.overrideWithValue(_Vocational()),
+      reportRepositoryProvider.overrideWithValue(_Reports()),
     ],
   );
   addTearDown(container.dispose);

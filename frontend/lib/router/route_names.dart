@@ -26,6 +26,13 @@ class RouteNames {
   static String adminStudentEdit(int id) => '/admin/students/$id/edit';
   static const adminAssignments = '/admin/assignments';
   static const adminAssignmentNew = '/admin/assignments/new';
+  static const adminCareers = '/admin/careers';
+  static const adminCareerNew = '/admin/careers/new';
+  static String adminCareerEdit(int id) => '/admin/careers/$id';
+  static const adminQuestions = '/admin/questions';
+  static const adminQuestionNew = '/admin/questions/new';
+  static String adminQuestionEdit(int id) => '/admin/questions/$id';
+  static const adminVectorRebuild = '/admin/vector-rebuild';
   static const adminAudit = '/admin/audit';
 
   static String adminAuditDetail(int id) => '/admin/audit/$id';
@@ -50,11 +57,19 @@ class RouteNames {
   static const counselorStudents = '/counselor/students';
 
   static String counselorStudentDetail(int id) => '/counselor/students/$id';
+
+  static String counselorStudentSession(int studentId, int sessionId) =>
+      '/counselor/students/$studentId/sessions/$sessionId';
+
   static const studentPrefix = '/student';
   static const studentDashboard = '/student/dashboard';
   static const studentProfile = '/student/profile';
   static const studentTestHome = '/student/test';
   static const studentResults = '/student/results';
+  static const studentAssistant = '/student/assistant';
+
+  static String studentAssistantForSession(int sessionId) =>
+      '$studentAssistant?sessionId=$sessionId';
 
   static String studentTest(int sessionId) => '/student/test/$sessionId';
 

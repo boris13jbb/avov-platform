@@ -68,7 +68,10 @@ void main() {
     expect(find.text('Todavía no hay instituciones'), findsOneWidget);
     expect(find.text('Gestionar usuarios'), findsOneWidget);
     expect(find.text('Gestionar estudiantes'), findsOneWidget);
-    expect(find.textContaining('Carreras, preguntas RIASEC'), findsOneWidget);
+    expect(find.text('Gestionar carreras'), findsOneWidget);
+    expect(find.text('Gestionar preguntas RIASEC'), findsOneWidget);
+    expect(find.text('Reconstruir índice vectorial'), findsOneWidget);
+    expect(find.text('Auditoría del sistema'), findsOneWidget);
   });
 
   testWidgets('un error de carga ofrece reintento', (tester) async {

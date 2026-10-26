@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/errors/app_exception.dart';
+import '../../../../router/route_names.dart';
 import '../../../../core/errors/failure_mapper.dart';
 import '../../domain/report_history.dart';
 import '../providers/report_provider.dart';
@@ -14,10 +16,12 @@ class StudentReportsHistorySection extends ConsumerWidget {
     super.key,
     required this.studentId,
     this.saver,
+    this.counselorReviewEnabled = false,
   });
 
   final int studentId;
   final VocationalPdfSaver? saver;
+  final bool counselorReviewEnabled;
 
   static const historyIntroKey = ValueKey('reports-history-intro');
 
@@ -72,7 +76,12 @@ class StudentReportsHistorySection extends ConsumerWidget {
               key: ValueKey('reports-history-list-${page.total}'),
               children: [
                 for (final item in page.items)
-                  _HistoryTile(item: item, saver: saver),
+                  _HistoryTile(
+                    item: item,
+                    saver: saver,
+                    counselorReviewEnabled: counselorReviewEnabled,
+                    studentId: studentId,
+                  ),
                 if (page.total > page.items.length)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
@@ -92,10 +101,17 @@ class StudentReportsHistorySection extends ConsumerWidget {
 }
 
 class _HistoryTile extends StatelessWidget {
-  const _HistoryTile({required this.item, this.saver});
+  const _HistoryTile({
+    required this.item,
+    required this.studentId,
+    this.saver,
+    this.counselorReviewEnabled = false,
+  });
 
   final ReportHistoryItem item;
+  final int studentId;
   final VocationalPdfSaver? saver;
+  final bool counselorReviewEnabled;
 
   @override
   Widget build(BuildContext context) {
@@ -121,16 +137,33 @@ class _HistoryTile extends StatelessWidget {
             style: theme.textTheme.bodySmall,
           ),
           const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: DownloadVocationalPdfButton(
-              sessionId: item.testSessionId,
-              saver: saver,
-              idleLabel: 'Descargar PDF vigente',
-              buttonKey: ValueKey(
-                'download-pdf-report-${item.id}-session-${item.testSessionId}',
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              DownloadVocationalPdfButton(
+                sessionId: item.testSessionId,
+                saver: saver,
+                idleLabel: 'Descargar PDF vigente',
+                buttonKey: ValueKey(
+                  'download-pdf-report-${item.id}-session-${item.testSessionId}',
+                ),
               ),
-            ),
+              if (counselorReviewEnabled)
+                OutlinedButton.icon(
+                  key: ValueKey(
+                    'counselor-review-session-${item.testSessionId}',
+                  ),
+                  onPressed: () => context.go(
+                    RouteNames.counselorStudentSession(
+                      studentId,
+                      item.testSessionId,
+                    ),
+                  ),
+                  icon: const Icon(Icons.rate_review_outlined),
+                  label: const Text('Resultado y observaciones'),
+                ),
+            ],
           ),
         ],
       ),
