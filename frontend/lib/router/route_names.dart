@@ -26,6 +26,13 @@ class RouteNames {
   static String adminStudentEdit(int id) => '/admin/students/$id/edit';
   static const adminAssignments = '/admin/assignments';
   static const adminAssignmentNew = '/admin/assignments/new';
+  static const adminCareers = '/admin/careers';
+  static const adminCareerNew = '/admin/careers/new';
+  static String adminCareerEdit(int id) => '/admin/careers/$id';
+  static const adminQuestions = '/admin/questions';
+  static const adminQuestionNew = '/admin/questions/new';
+  static String adminQuestionEdit(int id) => '/admin/questions/$id';
+  static const adminVectorRebuild = '/admin/vector-rebuild';
 
   static const institutionPrefix = '/institution';
   static const institutionDashboard = '/institution/dashboard';
