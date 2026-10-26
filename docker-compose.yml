@@ -83,10 +83,22 @@ services:
     env_file:
       - .env
     environment:
+      PORT: "8000"
       DATABASE_URL: mysql+pymysql://${MYSQL_USER:-avov_user}:${MYSQL_PASSWORD:-avov_user_secret}@mysql:3306/${MYSQL_DATABASE:-avov_db}
       REDIS_URL: redis://redis:6379/0
       QDRANT_HOST: qdrant
       QDRANT_PORT: 6333
+    # Desarrollo: --reload. La imagen de producción (Cloud Run) no lo incluye.
+    command:
+      [
+        "uvicorn",
+        "app.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--reload",
+      ]
     ports:
       - "8000:8000"
     volumes:

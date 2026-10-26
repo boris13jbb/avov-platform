@@ -1,0 +1,67 @@
+# Redis + Qdrant para la VM GCE de la vía A (coste controlado).
+# NO publicar estos puertos a Internet. Escuchar solo en la red privada de la VPC.
+# Cloud Run alcanza estos servicios vía VPC connector / IP privada de la VM.
+#
+# Uso en la VM (tras instalar Docker):
+#   cd /opt/avov/vm-redis-qdrant
+#   # Definir REDIS_PASSWORD y QDRANT_API_KEY en un .env local NO versionado
+#   docker compose up -d
+#
+# Firewall GCP: permitir TCP 6379 y 6333 únicamente desde el rango del
+# Serverless VPC Access connector (y/o la red privada de Cloud SQL/admin).
+# Prohibido: regla 0.0.0.0/0 hacia estos puertos. Preferible VM sin IP pública;
+# SSH solo vía IAP si hace falta administración.
+
+services:
+  redis:
+    image: redis:7.4-alpine
+    container_name: avov-redis
+    restart: unless-stopped
+    # Los ports mapean en la NIC de la VM para acceso por IP privada desde
+    # Cloud Run. El aislamiento frente a Internet es firewall + sin IP pública,
+    # no el mapeo Docker por sí solo.
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --requirepass
+      - ${REDIS_PASSWORD:?Definir REDIS_PASSWORD en .env de la VM}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - avov_data
+
+  qdrant:
+    image: qdrant/qdrant:v1.12.5
+    container_name: avov-qdrant
+    restart: unless-stopped
+    environment:
+      QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY:-}
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+      - ./qdrant-config.yaml:/qdrant/config/production.yaml:ro
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo >/dev/tcp/127.0.0.1/6333'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - avov_data
+
+volumes:
+  redis_data:
+  qdrant_data:
+
+networks:
+  avov_data:
+    driver: bridge

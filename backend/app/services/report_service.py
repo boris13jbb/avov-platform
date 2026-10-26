@@ -30,8 +30,8 @@ from app.services.pdf_report_builder import (
 from app.services.student_service import StudentService
 from app.services.test_session_service import TestSessionService
 from app.utils.file_storage import (
-    relative_report_path,
-    resolve_report_path,
+    get_report_blob_store,
+    storage_object_name,
 )
 
 
@@ -108,17 +108,18 @@ class ReportService:
                 "Solo se puede generar el informe PDF de una evaluación finalizada"
             )
 
+        store = get_report_blob_store()
         existing = self.reports.get_latest_for_session(session_id)
         if existing is not None:
             try:
-                path = resolve_report_path(Path(existing.file_path).name)
+                stored_name = storage_object_name(Path(existing.file_path).name)
             except ValueError as exc:
                 raise ValidationException(
                     "El registro del informe tiene una ruta inválida"
                 ) from exc
 
-            if path.is_file():
-                content = path.read_bytes()
+            if store.exists(stored_name):
+                content = store.read_bytes(stored_name)
                 if not content.startswith(b"%PDF-"):
                     content = self._rewrite_file(existing, session_id, current_user)
                     regenerated = True
@@ -152,9 +153,13 @@ class ReportService:
                 current_user=current_user,
             )
             filename = self._storage_filename(existing.report_code)
-            path = resolve_report_path(filename)
-            path.write_bytes(content)
-            self.reports.update_file_path(existing, relative_report_path(path))
+            try:
+                relative = store.write_bytes(filename, content)
+            except OSError as exc:
+                raise ValidationException(
+                    "No se pudo guardar el informe PDF en el almacenamiento"
+                ) from exc
+            self.reports.update_file_path(existing, relative)
             self._audit(
                 user_id=current_user.id,
                 action=self.ACTION_REGENERATED,
@@ -181,9 +186,8 @@ class ReportService:
             current_user=current_user,
         )
         filename = self._storage_filename(report_code)
-        path = resolve_report_path(filename)
         try:
-            path.write_bytes(content)
+            relative = store.write_bytes(filename, content)
         except OSError as exc:
             raise ValidationException(
                 "No se pudo guardar el informe PDF en el almacenamiento"
@@ -192,15 +196,14 @@ class ReportService:
         report = Report(
             student_id=session.student_id,
             test_session_id=session_id,
-            file_path=relative_report_path(path),
+            file_path=relative,
             report_code=report_code,
             generated_by=current_user.id,
         )
         try:
             created = self.reports.create(report)
         except Exception:
-            if path.exists():
-                path.unlink(missing_ok=True)
+            store.delete(filename)
             raise
 
         try:
@@ -240,10 +243,10 @@ class ReportService:
             current_user=current_user,
         )
         filename = self._storage_filename(report.report_code)
-        path = resolve_report_path(filename)
-        path.write_bytes(content)
+        store = get_report_blob_store()
+        relative = store.write_bytes(filename, content)
         if Path(report.file_path).name != filename:
-            self.reports.update_file_path(report, relative_report_path(path))
+            self.reports.update_file_path(report, relative)
         return content
 
     def _build_pdf_bytes(

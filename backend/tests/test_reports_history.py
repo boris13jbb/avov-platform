@@ -37,8 +37,13 @@ def _assert_no_storage_leak(payload) -> None:
 
 @pytest.fixture
 def reports_dir(tmp_path, monkeypatch):
+    from app.utils.file_storage import get_report_blob_store
+
     monkeypatch.setenv("AVOV_REPORTS_DIR", str(tmp_path))
-    return tmp_path
+    monkeypatch.setenv("AVOV_REPORTS_BACKEND", "local")
+    get_report_blob_store.cache_clear()
+    yield tmp_path
+    get_report_blob_store.cache_clear()
 
 
 @pytest.fixture
