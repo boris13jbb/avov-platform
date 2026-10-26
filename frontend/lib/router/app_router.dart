@@ -19,6 +19,7 @@ import '../features/institutions/presentation/screens/institution_create_screen.
 import '../features/institutions/presentation/screens/institution_edit_screen.dart';
 import '../features/institutions/presentation/screens/institution_list_screen.dart';
 import '../features/splash/presentation/screens/splash_screen.dart';
+import '../features/assistant/presentation/screens/assistant_chat_screen.dart';
 import '../features/student/presentation/screens/student_dashboard_screen.dart';
 import '../features/student/presentation/screens/student_profile_screen.dart';
 import '../features/student/presentation/screens/student_results_screen.dart';
@@ -303,6 +304,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: RouteNames.studentResults,
         name: 'student-results',
         builder: (context, state) => const StudentResultsScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.studentAssistant,
+        name: 'student-assistant',
+        builder: (context, state) {
+          final raw = state.uri.queryParameters['sessionId'];
+          final sessionId = raw == null ? null : int.tryParse(raw);
+          return AssistantChatScreen(testSessionId: sessionId);
+        },
       ),
       GoRoute(
         path: '/student/test/:sessionId/result',

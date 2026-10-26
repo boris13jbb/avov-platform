@@ -5,7 +5,7 @@ import '../../core/theme/responsive_breakpoints.dart';
 import '../../features/auth/presentation/widgets/session_menu_button.dart';
 import '../../router/route_names.dart';
 
-enum StudentSection { home, test, results, profile }
+enum StudentSection { home, test, results, assistant, profile }
 
 /// Barra y menú del estudiante.
 ///
@@ -41,6 +41,12 @@ class StudentScaffold extends StatelessWidget {
       Icons.assessment_outlined,
       Icons.assessment,
       RouteNames.studentResults,
+    ),
+    StudentSection.assistant: _StudentLink(
+      'Asistente IA',
+      Icons.smart_toy_outlined,
+      Icons.smart_toy,
+      RouteNames.studentAssistant,
     ),
     StudentSection.profile: _StudentLink(
       'Perfil',
@@ -188,7 +194,9 @@ class StudentScaffold extends StatelessWidget {
     if (path.startsWith('${RouteNames.studentTestHome}/')) {
       return RouteNames.studentTestHome;
     }
-    if (path == RouteNames.studentTestHome || path == RouteNames.studentResults) {
+    if (path == RouteNames.studentTestHome ||
+        path == RouteNames.studentResults ||
+        path == RouteNames.studentAssistant) {
       return RouteNames.studentDashboard;
     }
     return RouteNames.studentDashboard;

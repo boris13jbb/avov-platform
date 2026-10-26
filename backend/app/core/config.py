@@ -71,6 +71,11 @@ class Settings(BaseSettings):
     deepseek_model: str = Field(default="deepseek-chat", alias="DEEPSEEK_MODEL")
     deepseek_timeout_seconds: int = Field(default=60, alias="DEEPSEEK_TIMEOUT_SECONDS")
     deepseek_max_retries: int = Field(default=3, alias="DEEPSEEK_MAX_RETRIES")
+    # Cupo suave por usuario/hora (0 = sin límite). Controla coste del asistente.
+    assistant_max_requests_per_hour: int = Field(
+        default=30,
+        alias="ASSISTANT_MAX_REQUESTS_PER_HOUR",
+    )
 
     @property
     def cors_origins(self) -> List[str]:
