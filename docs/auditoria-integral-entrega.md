@@ -22,7 +22,7 @@
 
 ## G. Pruebas
 
-- Flutter: analyze OK, **202** tests OK  
+- Flutter: analyze OK, **202** tests OK
 - Pytest: **246** passed, **1** failed (`test_vector` search — entorno Qdrant)
 
 ## J. Veredicto

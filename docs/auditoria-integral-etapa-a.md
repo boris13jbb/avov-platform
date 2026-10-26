@@ -1,9 +1,9 @@
 # Auditoría integral AVOV — Etapa A (Inventario y línea base)
 
-**Fecha:** 2026-10-26  
-**Worktree:** `C:\Users\BRS\Documents\AVOV-audit-uiux`  
-**Rama:** `feature/audit-integral-uiux`  
-**Base:** `origin/main` @ `dfca9ee` (Merge PR #16 — auditoría consultable)  
+**Fecha:** 2026-10-26
+**Worktree:** `C:\Users\BRS\Documents\AVOV-audit-uiux`
+**Rama:** `feature/audit-integral-uiux`
+**Base:** `origin/main` @ `dfca9ee` (Merge PR #16 — auditoría consultable)
 **Copia con WIP preservada (no tocada):** `C:\Users\BRS\Documents\AVOV` @ `feature/s21-career-recommendations` (`0dce77b` + WIP local)
 
 ## A. Estado del repositorio
@@ -45,7 +45,7 @@ Incluye catálogo/auditoría/navegación local y scripts E2E/CDP. La corrección
 
 ### Routers montados
 
-`health`, `status`, `auth`, `institutions`, `users`, `students`, `assignments`, `audit`, `careers`, `questions`, `tests`, `observations`, `recommendations`, `reports`, `vector`, `assistant`  
+`health`, `status`, `auth`, `institutions`, `users`, `students`, `assignments`, `audit`, `careers`, `questions`, `tests`, `observations`, `recommendations`, `reports`, `vector`, `assistant`
 (`dashboard` router existe; revisar uso efectivo en servicios)
 
 ## C. Roles reales
@@ -57,7 +57,7 @@ Incluye catálogo/auditoría/navegación local y scripts E2E/CDP. La corrección
 
 ## D. Matriz de pantallas (inventario estático sobre `origin/main`)
 
-Leyenda **Estado:**  
+Leyenda **Estado:**
 `completa` = archivo + ruta + acceso UI + API aparente · `incompleta` = falta pieza · `desconectada` = UI sin API o API sin UI · `inexistente` · `bloqueada` = fuera de main / PR
 
 ### Comunes / auth

@@ -1,6 +1,6 @@
 # Auditoría integral AVOV — Etapa D (UI/UX, primer corte)
 
-**Rama:** `feature/audit-integral-uiux`  
+**Rama:** `feature/audit-integral-uiux`
 **Alcance:** sistema visual compartido + aplicación a paneles y pantallas clave (sin reescritura total).
 
 ## Sistema visual

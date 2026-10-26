@@ -1,7 +1,7 @@
 # Auditoría integral AVOV — Etapa C (integridad funcional, primer corte)
 
-**Worktree:** `C:\Users\BRS\Documents\AVOV-audit-uiux`  
-**Rama:** `feature/audit-integral-uiux`  
+**Worktree:** `C:\Users\BRS\Documents\AVOV-audit-uiux`
+**Rama:** `feature/audit-integral-uiux`
 **Tras commit Etapa B:** `27372c3`
 
 ## Cambios

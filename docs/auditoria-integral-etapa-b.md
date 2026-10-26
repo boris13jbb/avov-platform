@@ -1,7 +1,7 @@
 # Auditoría integral AVOV — Etapa B (Navegación y acceso)
 
-**Worktree:** `C:\Users\BRS\Documents\AVOV-audit-uiux`  
-**Rama:** `feature/audit-integral-uiux` (sin push/commit aún)  
+**Worktree:** `C:\Users\BRS\Documents\AVOV-audit-uiux`
+**Rama:** `feature/audit-integral-uiux` (sin push/commit aún)
 **Base:** `origin/main` @ `dfca9ee`
 
 ## Objetivo
@@ -31,9 +31,9 @@ Dashboards (RootExit + open), listados/formularios/detalles admin e institución
 
 ### `context.go` residual justificado
 
-- Splash → login  
-- Login → destino por rol  
-- Logout → login  
+- Splash → login
+- Login → destino por rol
+- Logout → login
 
 ## Pruebas (ejecutadas)
 

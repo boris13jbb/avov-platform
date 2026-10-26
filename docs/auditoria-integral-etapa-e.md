@@ -1,6 +1,6 @@
 # Auditoría integral AVOV — Etapa E (QA)
 
-**Rama:** `feature/audit-integral-uiux`  
+**Rama:** `feature/audit-integral-uiux`
 **Alcance de código de la rama:** frontend (navegación, UI compartida, panel orientador). Backend sin cambios de producto en esta rama.
 
 ## Frontend (worktree)
@@ -32,6 +32,6 @@ Ejecutado desde el código del worktree con el venv de `AVOV/backend` y `DATABAS
 
 ## Veredicto parcial
 
-- FE: OK  
-- BE: OK salvo 1 test vectorial de entorno  
+- FE: OK
+- BE: OK salvo 1 test vectorial de entorno
 - Regresión atribuible a esta rama: no evidenciada en FE; BE sin diff de código de app
