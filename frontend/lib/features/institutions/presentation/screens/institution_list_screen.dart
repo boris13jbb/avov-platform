@@ -3,14 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../router/app_navigation.dart';
 import '../../../../router/route_names.dart';
+import '../../../../shared/widgets/app_state_view.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 import '../../../admin/presentation/providers/admin_dashboard_provider.dart';
 import '../../../auth/presentation/widgets/session_menu_button.dart';
 import '../../domain/institution.dart';
-import '../../../../router/app_navigation.dart';
-import '../../../../shared/widgets/internal_route_scope.dart';
-import '../../../../shared/widgets/navigation_back_button.dart';
 
 class InstitutionListScreen extends ConsumerWidget {
   const InstitutionListScreen({super.key});
@@ -21,109 +23,124 @@ class InstitutionListScreen extends ConsumerWidget {
     final page = ref.watch(institutionPageProvider);
 
     return InternalRouteScope(
-        child: Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leading: NavigationBackButton.maybeOf(context),
-        title: const Text('Instituciones'),
-        actions: const [SessionMenuButton()],
-      ),
-      body: SafeArea(
-        child: list.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _ListNotice(
-            message: error is AppException
-                ? error.message
-                : FailureMapper.unexpectedMessage,
-            onRetry: () => ref.invalidate(institutionListProvider),
-          ),
-          data: (result) {
-            if (result.total == 0) {
-              return _ListNotice(
-                message:
-                    'Todavía no hay instituciones registradas. Crea la primera para comenzar.',
-                actionLabel: 'Crear institución',
-                onRetry: () =>
-                    AppNavigation.open(context, RouteNames.adminInstitutionNew),
-              );
-            }
-            return Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                  child: Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    alignment: WrapAlignment.spaceBetween,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 280,
-                        child: TextField(
-                          decoration: const InputDecoration(
-                            labelText: 'Buscar',
-                            prefixIcon: Icon(Icons.search),
-                          ),
-                          textInputAction: TextInputAction.search,
-                          onSubmitted: (value) {
-                            ref.read(institutionSearchProvider.notifier).state =
-                                value.trim();
-                            ref.read(institutionPageProvider.notifier).state =
-                                1;
-                          },
-                        ),
-                      ),
-                      FilledButton.icon(
-                        onPressed: () => AppNavigation.open(
-                            context, RouteNames.adminInstitutionNew),
-                        icon: const Icon(Icons.add),
-                        label: const Text('Crear institución'),
-                      ),
-                    ],
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          leading: NavigationBackButton.maybeOf(context),
+          title: const Text('Instituciones'),
+          actions: const [SessionMenuButton()],
+        ),
+        body: SafeArea(
+          child: list.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, _) => AppStateView.error(
+              message: error is AppException
+                  ? error.message
+                  : FailureMapper.unexpectedMessage,
+              onRetry: () => ref.invalidate(institutionListProvider),
+            ),
+            data: (result) {
+              if (result.total == 0) {
+                return AppStateView.empty(
+                  message:
+                      'Todavía no hay instituciones registradas. Crea la primera para comenzar.',
+                  actionLabel: 'Crear institución',
+                  onAction: () => AppNavigation.open(
+                    context,
+                    RouteNames.adminInstitutionNew,
                   ),
-                ),
-                Expanded(
-                  child: ListView.separated(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: result.items.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      return _InstitutionTile(institution: result.items[index]);
-                    },
-                  ),
-                ),
-                if (result.pages > 1)
+                  icon: Icons.apartment_outlined,
+                );
+              }
+              return Column(
+                children: [
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      AppSpacing.lg,
+                      AppSpacing.lg,
+                      0,
+                    ),
+                    child: Wrap(
+                      spacing: AppSpacing.md,
+                      runSpacing: AppSpacing.md,
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        IconButton(
-                          onPressed: page > 1
-                              ? () => ref
-                                  .read(institutionPageProvider.notifier)
-                                  .state = page - 1
-                              : null,
-                          icon: const Icon(Icons.chevron_left),
+                        SizedBox(
+                          width: 280,
+                          child: TextField(
+                            decoration: const InputDecoration(
+                              labelText: 'Buscar',
+                              prefixIcon: Icon(Icons.search),
+                            ),
+                            textInputAction: TextInputAction.search,
+                            onSubmitted: (value) {
+                              ref
+                                  .read(institutionSearchProvider.notifier)
+                                  .state = value.trim();
+                              ref.read(institutionPageProvider.notifier).state =
+                                  1;
+                            },
+                          ),
                         ),
-                        Text('Página $page de ${result.pages}'),
-                        IconButton(
-                          onPressed: page < result.pages
-                              ? () => ref
-                                  .read(institutionPageProvider.notifier)
-                                  .state = page + 1
-                              : null,
-                          icon: const Icon(Icons.chevron_right),
+                        FilledButton.icon(
+                          onPressed: () => AppNavigation.open(
+                            context,
+                            RouteNames.adminInstitutionNew,
+                          ),
+                          icon: const Icon(Icons.add),
+                          label: const Text('Crear institución'),
                         ),
                       ],
                     ),
                   ),
-              ],
-            );
-          },
+                  Expanded(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      itemCount: result.items.length,
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: AppSpacing.md),
+                      itemBuilder: (context, index) {
+                        return _InstitutionTile(
+                          institution: result.items[index],
+                        );
+                      },
+                    ),
+                  ),
+                  if (result.pages > 1)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: page > 1
+                                ? () => ref
+                                    .read(institutionPageProvider.notifier)
+                                    .state = page - 1
+                                : null,
+                            icon: const Icon(Icons.chevron_left),
+                          ),
+                          Text('Página $page de ${result.pages}'),
+                          IconButton(
+                            onPressed: page < result.pages
+                                ? () => ref
+                                    .read(institutionPageProvider.notifier)
+                                    .state = page + 1
+                                : null,
+                            icon: const Icon(Icons.chevron_right),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
         ),
       ),
-    ));
+    );
   }
 }
 
@@ -283,34 +300,3 @@ class _InstitutionTileState extends ConsumerState<_InstitutionTile> {
   }
 }
 
-class _ListNotice extends StatelessWidget {
-  const _ListNotice({
-    required this.message,
-    required this.onRetry,
-    this.actionLabel = 'Reintentar',
-  });
-
-  final String message;
-  final VoidCallback onRetry;
-  final String actionLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: onRetry,
-              child: Text(actionLabel),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

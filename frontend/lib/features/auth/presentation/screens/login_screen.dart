@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/validators/app_validators.dart';
 import '../../../../router/role_destination.dart';
 import '../../../../shared/widgets/error_banner.dart';
@@ -54,7 +56,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.xl,
+              AppSpacing.xl,
+              AppSpacing.xl,
+              AppSpacing.xl + bottomInset,
+            ),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
               child: Form(
@@ -62,25 +69,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.school_outlined,
                       size: 64,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: AppColors.primary,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.lg),
                     Text(
                       'AVOV',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineMedium
+                          ?.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
                           ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.sm),
                     Text(
                       'Asistente Virtual de Orientación Vocacional',
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: AppSpacing.xxl + AppSpacing.sm),
                     if (session.errorMessage != null) ...[
                       ErrorBanner(message: session.errorMessage!),
                       const SizedBox(height: 16),

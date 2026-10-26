@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../router/app_navigation.dart';
 import '../../../../router/route_names.dart';
+import '../../../../shared/widgets/app_state_view.dart';
 import '../../../../shared/widgets/student_scaffold.dart';
 import '../../../students/domain/managed_student.dart';
 import '../../../students/presentation/providers/students_provider.dart';
@@ -27,14 +29,14 @@ class StudentDashboardScreen extends ConsumerWidget {
       body: SafeArea(
         child: profile.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _Notice(
+          error: (error, _) => AppStateView.error(
             message: error is AppException
                 ? error.message
                 : FailureMapper.unexpectedMessage,
             onRetry: () => ref.invalidate(currentOperatorProvider),
           ),
           data: (data) => ListView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppSpacing.pagePadding),
             children: [
               Text(
                 '${data.firstName} ${data.lastName}'.trim(),
@@ -111,7 +113,7 @@ class _RecordSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return record.when(
       loading: () => const LinearProgressIndicator(),
-      error: (error, _) => _Notice(
+      error: (error, _) => AppStateView.error(
         message: error is AppException
             ? error.message
             : FailureMapper.unexpectedMessage,
@@ -148,7 +150,7 @@ class _HistorySection extends StatelessWidget {
       skipLoadingOnReload: true,
       skipLoadingOnRefresh: true,
       loading: () => const LinearProgressIndicator(),
-      error: (error, _) => _Notice(
+      error: (error, _) => AppStateView.error(
         message: error is AppException
             ? error.message
             : FailureMapper.unexpectedMessage,
@@ -221,26 +223,3 @@ class _SessionTile extends StatelessWidget {
   }
 }
 
-class _Notice extends StatelessWidget {
-  const _Notice({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            FilledButton(onPressed: onRetry, child: const Text('Reintentar')),
-          ],
-        ),
-      ),
-    );
-  }
-}
