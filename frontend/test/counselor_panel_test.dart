@@ -7,6 +7,7 @@ import 'package:avov_frontend/core/storage/secure_token_storage.dart';
 import 'package:avov_frontend/features/admin/domain/user_directory_repository.dart';
 import 'package:avov_frontend/features/admin/presentation/providers/admin_dashboard_provider.dart';
 import 'package:avov_frontend/features/auth/domain/auth_repository.dart';
+import 'support/auth_repository_stubs.dart';
 import 'package:avov_frontend/features/auth/domain/auth_tokens.dart';
 import 'package:avov_frontend/features/auth/presentation/providers/auth_session_provider.dart';
 import 'package:avov_frontend/features/counselor/presentation/screens/counselor_dashboard_screen.dart';
@@ -313,7 +314,7 @@ Future<void> _pumpApp(
   await tester.pump();
 }
 
-class _Auth implements AuthRepository {
+class _Auth with AuthRepositoryChangePasswordStub implements AuthRepository {
   _Auth(this.profile, {this.error});
 
   final UserProfile profile;
@@ -338,6 +339,16 @@ class _Auth implements AuthRepository {
 
   @override
   Future<void> clearSession() async {}
+  @override
+  Future<String> forgotPassword({required String email}) async => '';
+
+  @override
+  Future<String> resetPassword({
+    required String token,
+    required String newPassword,
+    required String confirmPassword,
+  }) async => '';
+
 }
 
 class _Students implements StudentRepository {

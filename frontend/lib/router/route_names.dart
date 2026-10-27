@@ -3,6 +3,9 @@ class RouteNames {
 
   static const splash = '/';
   static const login = '/login';
+  static const changePassword = '/change-password';
+  static const forgotPassword = '/forgot-password';
+  static const resetPassword = '/reset-password';
   static const home = '/inicio';
   static const unauthorized = '/unauthorized';
   static const notFound = '/not-found';

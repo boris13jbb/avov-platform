@@ -7,6 +7,7 @@ import 'package:avov_frontend/core/network/auth_interceptor.dart';
 import 'package:avov_frontend/core/storage/secure_token_storage.dart';
 import 'package:avov_frontend/features/auth/data/api_auth_repository.dart';
 import 'package:avov_frontend/features/auth/domain/auth_repository.dart';
+import 'support/auth_repository_stubs.dart';
 import 'package:avov_frontend/features/auth/domain/auth_tokens.dart';
 import 'package:avov_frontend/features/auth/presentation/providers/auth_session_provider.dart';
 import 'package:avov_frontend/router/role_destination.dart';
@@ -286,7 +287,7 @@ void main() {
   });
 }
 
-class _SlowRepository implements AuthRepository {
+class _SlowRepository with AuthRepositoryChangePasswordStub implements AuthRepository {
   final Completer<UserProfile> _pending = Completer<UserProfile>();
   int calls = 0;
 
@@ -324,6 +325,16 @@ class _SlowRepository implements AuthRepository {
 
   @override
   Future<void> clearSession() async {}
+  @override
+  Future<String> forgotPassword({required String email}) async => '';
+
+  @override
+  Future<String> resetPassword({
+    required String token,
+    required String newPassword,
+    required String confirmPassword,
+  }) async => '';
+
 }
 
 ApiAuthRepository _repository(

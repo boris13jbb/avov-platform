@@ -5,10 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../../../router/route_names.dart';
 import '../providers/auth_session_provider.dart';
 
-/// Acción visible de cierre de sesión en la barra de la pantalla.
+/// Acciones de sesión en la barra: cambio de contraseña y cierre visible.
 ///
-/// El texto permanece en la barra para que no haga falta abrir un menú.
-/// Mientras el cierre está en curso, el botón queda deshabilitado.
+/// El texto «Cerrar sesión» permanece en la barra para no exigir un menú.
+/// El acceso a cambio de contraseña usa un icono con tooltip accesible.
 class SessionMenuButton extends ConsumerWidget {
   const SessionMenuButton({super.key});
 
@@ -17,25 +17,38 @@ class SessionMenuButton extends ConsumerWidget {
     final busy = ref.watch(
       authSessionProvider.select((state) => state.isSubmitting),
     );
-    final foreground = Theme.of(context).appBarTheme.foregroundColor ?? Colors.white;
-    return TextButton.icon(
-      onPressed: busy ? null : () => _logout(context, ref),
-      style: TextButton.styleFrom(
-        foregroundColor: foreground,
-        disabledForegroundColor: foreground.withValues(alpha: 0.7),
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-      ),
-      icon: busy
-          ? SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: foreground,
-              ),
-            )
-          : const Icon(Icons.logout),
-      label: const Text('Cerrar sesión'),
+    final foreground =
+        Theme.of(context).appBarTheme.foregroundColor ?? Colors.white;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          tooltip: 'Cambiar contraseña',
+          onPressed: busy
+              ? null
+              : () => context.go(RouteNames.changePassword),
+          icon: Icon(Icons.lock_outline, color: foreground),
+        ),
+        TextButton.icon(
+          onPressed: busy ? null : () => _logout(context, ref),
+          style: TextButton.styleFrom(
+            foregroundColor: foreground,
+            disabledForegroundColor: foreground.withValues(alpha: 0.7),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+          ),
+          icon: busy
+              ? SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: foreground,
+                  ),
+                )
+              : const Icon(Icons.logout),
+          label: const Text('Cerrar sesión'),
+        ),
+      ],
     );
   }
 

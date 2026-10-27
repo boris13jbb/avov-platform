@@ -26,6 +26,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import 'support/auth_repository_stubs.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -249,7 +251,7 @@ const _studentProfile = UserProfile(
   institutionId: 7,
 );
 
-class _Auth implements AuthRepository {
+class _Auth with AuthRepositoryChangePasswordStub implements AuthRepository {
   _Auth(this.profile, [this.storage]);
 
   final UserProfile profile;

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:avov_frontend/core/errors/app_exception.dart';
 import 'package:avov_frontend/core/errors/failure_mapper.dart';
 import 'package:avov_frontend/features/auth/domain/auth_repository.dart';
+import 'support/auth_repository_stubs.dart';
 import 'package:avov_frontend/features/auth/domain/auth_tokens.dart';
 import 'package:avov_frontend/features/auth/presentation/providers/auth_session_provider.dart';
 import 'package:avov_frontend/features/student/presentation/screens/student_test_home_screen.dart';
@@ -214,7 +215,7 @@ Future<void> _pumpTestHome(
   await tester.pump();
 }
 
-class _Auth implements AuthRepository {
+class _Auth with AuthRepositoryChangePasswordStub implements AuthRepository {
   @override
   Future<UserProfile> currentProfile() async {
     return const UserProfile(
@@ -238,6 +239,16 @@ class _Auth implements AuthRepository {
 
   @override
   Future<void> clearSession() async {}
+  @override
+  Future<String> forgotPassword({required String email}) async => '';
+
+  @override
+  Future<String> resetPassword({
+    required String token,
+    required String newPassword,
+    required String confirmPassword,
+  }) async => '';
+
 }
 
 class _Students implements StudentRepository {

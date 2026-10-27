@@ -62,4 +62,35 @@ class ApiAuthRepository implements AuthRepository {
   Future<void> clearSession() {
     return _storage.clearTokens();
   }
+
+  @override
+  Future<String> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) {
+    return _remote.changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+      confirmPassword: confirmPassword,
+    );
+  }
+
+  @override
+  Future<String> forgotPassword({required String email}) {
+    return _remote.forgotPassword(email: email);
+  }
+
+  @override
+  Future<String> resetPassword({
+    required String token,
+    required String newPassword,
+    required String confirmPassword,
+  }) {
+    return _remote.resetPassword(
+      token: token,
+      newPassword: newPassword,
+      confirmPassword: confirmPassword,
+    );
+  }
 }

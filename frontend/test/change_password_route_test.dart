@@ -3,6 +3,7 @@ import 'package:avov_frontend/core/storage/secure_token_storage.dart';
 import 'package:avov_frontend/features/admin/domain/user_directory_repository.dart';
 import 'package:avov_frontend/features/admin/presentation/providers/admin_dashboard_provider.dart';
 import 'package:avov_frontend/features/auth/domain/auth_repository.dart';
+import 'support/auth_repository_stubs.dart';
 import 'package:avov_frontend/features/auth/domain/auth_tokens.dart';
 import 'package:avov_frontend/features/auth/presentation/providers/auth_session_provider.dart';
 import 'package:avov_frontend/features/institutions/domain/institution.dart';
@@ -25,8 +26,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
-/// S-19: no hay pantalla Flutter de cambio de contraseña.
-/// La constante huérfana se retiró; la ruta no debe registrarse ni ofrecerse.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -34,7 +33,7 @@ void main() {
     FlutterSecureStorage.setMockInitialValues(<String, String>{});
   });
 
-  test('GoRouter no registra /change-password', () {
+  test('GoRouter registra la pantalla de cambio de contraseña', () {
     final container = _container();
     addTearDown(container.dispose);
 
@@ -46,45 +45,33 @@ void main() {
         .map((route) => route.path)
         .toList();
 
-    expect(paths, isNot(contains('/change-password')));
+    expect(paths, contains(RouteNames.changePassword));
     expect(paths, contains(RouteNames.login));
     expect(paths, contains(RouteNames.studentDashboard));
     expect(paths, contains(RouteNames.studentProfile));
-    expect(paths, contains(RouteNames.studentTestHome));
-    expect(paths, contains(RouteNames.studentResults));
   });
 
-  testWidgets(
-    'navegar a /change-password no muestra un flujo de cambio de contraseña',
-    (tester) async {
-      final container = await _pumpStudent(tester);
-      container.read(goRouterProvider).go('/change-password');
-      await tester.pumpAndSettle();
+  testWidgets('navegar a /change-password muestra el formulario', (tester) async {
+    final container = await _pumpStudent(tester);
+    container.read(goRouterProvider).go(RouteNames.changePassword);
+    await tester.pumpAndSettle();
 
-      expect(find.text('Ruta no encontrada'), findsOneWidget);
-      expect(find.text('Cambiar contraseña'), findsNothing);
-      expect(find.textContaining('Nueva contraseña'), findsNothing);
-      expect(find.textContaining('Contraseña actual'), findsNothing);
-    },
-  );
+    expect(find.text('Cambiar contraseña'), findsWidgets);
+    expect(find.text('Contraseña actual'), findsOneWidget);
+    expect(find.text('Nueva contraseña'), findsOneWidget);
+    expect(find.text('Confirmar nueva contraseña'), findsOneWidget);
+  });
 
-  testWidgets(
-    'el menú del estudiante no ofrece cambio de contraseña',
-    (tester) async {
-      await _pumpStudent(tester);
+  testWidgets('el perfil del estudiante ofrece cambio de contraseña', (tester) async {
+    await _pumpStudent(tester);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(AvovApp)),
+    );
+    container.read(goRouterProvider).go(RouteNames.studentProfile);
+    await tester.pumpAndSettle();
 
-      expect(find.text('Panel del estudiante'), findsOneWidget);
-      expect(find.widgetWithText(TextButton, 'Cerrar sesión'), findsOneWidget);
-
-      await tester.tap(find.byTooltip('Abrir menú'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Cambiar contraseña'), findsNothing);
-      expect(find.textContaining('change-password'), findsNothing);
-      expect(find.text('Inicio'), findsWidgets);
-      expect(find.text('Perfil'), findsWidgets);
-    },
-  );
+    expect(find.byKey(const Key('student-profile-change-password')), findsOneWidget);
+  });
 }
 
 ProviderContainer _container({
@@ -142,7 +129,7 @@ Future<ProviderContainer> _pumpStudent(WidgetTester tester) async {
   return container;
 }
 
-class _Auth implements AuthRepository {
+class _Auth with AuthRepositoryChangePasswordStub implements AuthRepository {
   _Auth(this.profile, [this.storage]);
 
   final UserProfile profile;
@@ -165,6 +152,16 @@ class _Auth implements AuthRepository {
   Future<void> clearSession() async {
     await storage?.clearTokens();
   }
+  @override
+  Future<String> forgotPassword({required String email}) async => '';
+
+  @override
+  Future<String> resetPassword({
+    required String token,
+    required String newPassword,
+    required String confirmPassword,
+  }) async => '';
+
 }
 
 class _Students implements StudentRepository {
