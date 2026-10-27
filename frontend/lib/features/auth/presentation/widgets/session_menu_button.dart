@@ -5,7 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../../../router/route_names.dart';
 import '../providers/auth_session_provider.dart';
 
-/// Menú de sesión con cambio de contraseña y cierre de sesión.
+/// Acciones de sesión en la barra: cambio de contraseña y cierre visible.
+///
+/// El texto «Cerrar sesión» permanece en la barra para no exigir un menú.
+/// El acceso a cambio de contraseña usa un icono con tooltip accesible.
 class SessionMenuButton extends ConsumerWidget {
   const SessionMenuButton({super.key});
 
@@ -16,38 +19,34 @@ class SessionMenuButton extends ConsumerWidget {
     );
     final foreground =
         Theme.of(context).appBarTheme.foregroundColor ?? Colors.white;
-    if (busy) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: SizedBox(
-          width: 18,
-          height: 18,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: foreground,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          tooltip: 'Cambiar contraseña',
+          onPressed: busy
+              ? null
+              : () => context.go(RouteNames.changePassword),
+          icon: Icon(Icons.lock_outline, color: foreground),
+        ),
+        TextButton.icon(
+          onPressed: busy ? null : () => _logout(context, ref),
+          style: TextButton.styleFrom(
+            foregroundColor: foreground,
+            disabledForegroundColor: foreground.withValues(alpha: 0.7),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
           ),
-        ),
-      );
-    }
-    return PopupMenuButton<_SessionAction>(
-      tooltip: 'Opciones de sesión',
-      icon: Icon(Icons.account_circle_outlined, color: foreground),
-      onSelected: (action) async {
-        switch (action) {
-          case _SessionAction.changePassword:
-            context.go(RouteNames.changePassword);
-          case _SessionAction.logout:
-            await _logout(context, ref);
-        }
-      },
-      itemBuilder: (context) => const [
-        PopupMenuItem(
-          value: _SessionAction.changePassword,
-          child: Text('Cambiar contraseña'),
-        ),
-        PopupMenuItem(
-          value: _SessionAction.logout,
-          child: Text('Cerrar sesión'),
+          icon: busy
+              ? SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: foreground,
+                  ),
+                )
+              : const Icon(Icons.logout),
+          label: const Text('Cerrar sesión'),
         ),
       ],
     );
@@ -60,5 +59,3 @@ class SessionMenuButton extends ConsumerWidget {
     }
   }
 }
-
-enum _SessionAction { changePassword, logout }
