@@ -1,6 +1,6 @@
 # Manual de producción — AVOV
 
-**Estado:** operativo para preparación go-live (F8). Sustituye el stub anterior.  
+**Estado:** operativo para preparación go-live (F8). Sustituye el stub anterior.
 
 **Compose:** `docker-compose.prod.yml` · **Nginx TLS:** `nginx/nginx.prod.conf`
 

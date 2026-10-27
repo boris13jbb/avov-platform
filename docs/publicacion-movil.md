@@ -25,10 +25,10 @@
 
 Validar en dispositivo real o emulador:
 
-1. Login / logout / change-password / forgot-password  
-2. Espacio estudiante: test, resultados, PDF, asistente  
-3. Admin institución: estudiantes, orientadores, asignaciones  
-4. Orientador: listado, sesión, observaciones  
+1. Login / logout / change-password / forgot-password
+2. Espacio estudiante: test, resultados, PDF, asistente
+3. Admin institución: estudiantes, orientadores, asignaciones
+4. Orientador: listado, sesión, observaciones
 
 API: `--dart-define=API_BASE_URL=https://<dominio>/api/v1` (HTTPS en release).
 
