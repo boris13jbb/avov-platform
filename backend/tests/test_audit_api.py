@@ -337,3 +337,112 @@ def test_institution_admin_cannot_view_foreign_log_detail(
         headers=institution_admin_headers,
     )
     assert response.status_code == 403
+
+
+FAKE_EMBEDDED_JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.fake-api-embed.sig"
+FAKE_EMBEDDED_API = "sk-fake-api-embed-value-777"
+
+
+def _embedded_secret_details() -> dict:
+    return {
+        "message": f"Reintento fallido Authorization: Bearer {FAKE_EMBEDDED_JWT}",
+        "description": f"Proveedor devolvió api_key={FAKE_EMBEDDED_API}",
+        "notes": [
+            f"Cookie: sessionid=fake-embed-cookie-777; Path=/",
+            "Operación sin secretos",
+        ],
+        "source": "upstream",
+        "result": "error",
+    }
+
+
+@pytest.fixture
+def historical_embedded_secret_log(db: Session, institution_admin_headers):
+    token = institution_admin_headers["Authorization"].split(" ", 1)[1]
+    inst_admin_id = int(decode_token(token)["sub"])
+    row = AuditLog(
+        user_id=inst_admin_id,
+        action="ERROR",
+        entity="auth",
+        entity_id=None,
+        details=_embedded_secret_details(),
+    )
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+    yield row
+    db.delete(row)
+    db.commit()
+
+
+def test_audit_detail_redacts_secrets_embedded_in_text(
+    client: TestClient,
+    super_admin_headers,
+    historical_embedded_secret_log,
+):
+    response = client.get(
+        f"/api/v1/audit/logs/{historical_embedded_secret_log.id}",
+        headers=super_admin_headers,
+    )
+    assert response.status_code == 200
+    body = response.json()
+    details = body["data"]["details"]
+    assert "Reintento fallido" in details["message"]
+    assert FAKE_EMBEDDED_JWT not in details["message"]
+    assert REDACTED_MARKER in details["message"]
+    assert "Proveedor devolvió" in details["description"]
+    assert FAKE_EMBEDDED_API not in details["description"]
+    assert "fake-embed-cookie-777" not in details["notes"][0]
+    assert details["notes"][1] == "Operación sin secretos"
+    assert details["source"] == "upstream"
+    assert details["result"] == "error"
+    rendered = json.dumps(body, ensure_ascii=False)
+    assert FAKE_EMBEDDED_JWT not in rendered
+    assert FAKE_EMBEDDED_API not in rendered
+
+
+def test_audit_list_redacts_secrets_embedded_in_text(
+    client: TestClient,
+    super_admin_headers,
+    historical_embedded_secret_log,
+):
+    response = client.get(
+        "/api/v1/audit/logs",
+        headers=super_admin_headers,
+        params={"action": "ERROR", "page_size": 100},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    match = next(
+        item
+        for item in body["data"]["items"]
+        if item["id"] == historical_embedded_secret_log.id
+    )
+    assert FAKE_EMBEDDED_JWT not in json.dumps(match, ensure_ascii=False)
+    assert FAKE_EMBEDDED_API not in json.dumps(match, ensure_ascii=False)
+    assert REDACTED_MARKER in match["details"]["message"]
+
+
+def test_audit_create_sanitizes_embedded_secrets_before_persist(
+    db: Session,
+    institution_admin_headers,
+):
+    token = institution_admin_headers["Authorization"].split(" ", 1)[1]
+    inst_admin_id = int(decode_token(token)["sub"])
+    repo = AuditRepository(db)
+    created = repo.create(
+        user_id=inst_admin_id,
+        action="ERROR",
+        entity="auth",
+        entity_id=None,
+        details=_embedded_secret_details(),
+    )
+    stored = db.get(AuditLog, created.id)
+    assert stored is not None
+    assert stored.details is not None
+    assert FAKE_EMBEDDED_JWT not in json.dumps(stored.details, ensure_ascii=False)
+    assert FAKE_EMBEDDED_API not in json.dumps(stored.details, ensure_ascii=False)
+    assert "Reintento fallido" in stored.details["message"]
+    assert stored.details["source"] == "upstream"
+    db.delete(stored)
+    db.commit()
