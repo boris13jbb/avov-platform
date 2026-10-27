@@ -274,3 +274,67 @@ def test_preserves_legitimate_messages_mentioning_sensitive_words():
 def test_oversized_text_is_fully_redacted_fail_safe():
     huge = "x" * (256_000 + 1)
     assert redact_secrets_in_text(huge) == REDACTED_MARKER
+
+
+def test_redacts_credentials_in_urls_and_query_params():
+    db_url = (
+        f"Conexión fallida mysql+pymysql://avov_user:{FAKE_PASS}@127.0.0.1:3307/avov_db"
+    )
+    out = redact_secrets_in_text(db_url)
+    assert "mysql+pymysql://avov_user:" in out
+    assert FAKE_PASS not in out
+    assert "@127.0.0.1:3307/avov_db" in out
+    assert REDACTED_MARKER in out
+
+    redis_url = f"redis://:{FAKE_PASS}@redis:6379/0"
+    redis_out = redact_secrets_in_text(redis_url)
+    assert FAKE_PASS not in redis_out
+    assert redis_out.startswith("redis://:")
+    assert "@redis:6379/0" in redis_out
+
+    query = (
+        f"callback https://api.ejemplo.test/hook?api_key={FAKE_API}"
+        f"&token={FAKE_REFRESH}&resource=42"
+    )
+    query_out = redact_secrets_in_text(query)
+    assert "resource=42" in query_out
+    assert FAKE_API not in query_out
+    assert FAKE_REFRESH not in query_out
+    assert query_out.count(REDACTED_MARKER) >= 2
+
+
+def test_redacts_secrets_inside_json_string_values():
+    raw = (
+        '{"event":"login","nested":{"password":"'
+        + FAKE_PASS
+        + '"},"note":"ok"}'
+    )
+    sanitized = sanitize_audit_details({"payload": raw})
+    assert sanitized is not None
+    assert FAKE_PASS not in sanitized["payload"]
+    assert REDACTED_MARKER in sanitized["payload"]
+    assert '"event": "login"' in sanitized["payload"] or '"event":"login"' in sanitized[
+        "payload"
+    ]
+    assert "ok" in sanitized["payload"]
+
+
+def test_handles_empty_unicode_numbers_and_nulls():
+    assert redact_secrets_in_text("") == ""
+    payload = {
+        "empty": "",
+        "count": 3,
+        "flag": False,
+        "nullable": None,
+        "unicode": "Operación «éxito» — sin secretos",
+        "list": [1, "sin secretos", {"ok": True}],
+    }
+    assert sanitize_audit_details(payload) == payload
+
+
+def test_secret_assignment_without_key_suffix():
+    text = f"config secret={FAKE_PASS} listo"
+    out = redact_secrets_in_text(text)
+    assert "config secret=" in out or "config " in out
+    assert FAKE_PASS not in out
+    assert REDACTED_MARKER in out
