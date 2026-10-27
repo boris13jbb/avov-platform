@@ -6,6 +6,7 @@ import 'package:avov_frontend/features/admin/presentation/providers/admin_dashbo
 import 'package:avov_frontend/features/auth/data/api_auth_repository.dart';
 import 'package:avov_frontend/features/auth/data/auth_remote_datasource.dart';
 import 'package:avov_frontend/features/auth/domain/auth_repository.dart';
+import 'support/auth_repository_stubs.dart';
 import 'package:avov_frontend/features/auth/domain/auth_tokens.dart';
 import 'package:avov_frontend/features/auth/presentation/providers/auth_session_provider.dart';
 import 'package:avov_frontend/features/institutions/domain/institution.dart';
@@ -258,7 +259,7 @@ class _FailingRemote extends AuthRemoteDatasource {
   }
 }
 
-class _TrackingAuth implements AuthRepository {
+class _TrackingAuth with AuthRepositoryChangePasswordStub implements AuthRepository {
   _TrackingAuth(this.profile, this.storage, {this.delay, this.error});
 
   final UserProfile profile;

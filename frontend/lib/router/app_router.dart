@@ -7,6 +7,7 @@ import '../features/admin/presentation/screens/admin_dashboard_screen.dart';
 import '../features/admin/presentation/screens/vector_rebuild_screen.dart';
 import '../features/audit/presentation/screens/audit_log_detail_screen.dart';
 import '../features/audit/presentation/screens/audit_log_list_screen.dart';
+import '../features/auth/presentation/screens/change_password_screen.dart';
 import '../features/careers/presentation/screens/career_create_screen.dart';
 import '../features/careers/presentation/screens/career_edit_screen.dart';
 import '../features/careers/presentation/screens/career_list_screen.dart';
@@ -64,6 +65,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: RouteNames.login,
         name: 'login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.changePassword,
+        name: 'change-password',
+        builder: (context, state) => const ChangePasswordScreen(),
       ),
       GoRoute(
         path: RouteNames.home,

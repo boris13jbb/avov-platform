@@ -33,6 +33,10 @@ class AuthGuard {
       return destinationForRole(role);
     }
 
+    if (isAuthenticated && location == RouteNames.changePassword) {
+      return null;
+    }
+
     if (isAuthenticated && !routeMatchesRole(location, role)) {
       return RouteNames.unauthorized;
     }

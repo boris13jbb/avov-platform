@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
+import '../../../../router/route_names.dart';
 import '../../../../core/errors/failure_mapper.dart';
 import '../../../../shared/widgets/student_scaffold.dart';
 import '../../../students/presentation/providers/students_provider.dart';
@@ -53,6 +55,12 @@ class StudentProfileScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               const Text(
                 'Esta ficha es de consulta. El estudiante no puede modificarla.',
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                key: const Key('student-profile-change-password'),
+                onPressed: () => context.go(RouteNames.changePassword),
+                child: const Text('Cambiar contraseña'),
               ),
               const SizedBox(height: 24),
               StudentReportsHistorySection(studentId: data.id),

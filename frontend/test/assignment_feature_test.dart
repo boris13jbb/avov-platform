@@ -4,6 +4,7 @@ import 'package:avov_frontend/features/assignments/presentation/providers/assign
 import 'package:avov_frontend/features/assignments/presentation/screens/assignment_create_screen.dart';
 import 'package:avov_frontend/features/assignments/presentation/screens/assignment_list_screen.dart';
 import 'package:avov_frontend/features/auth/domain/auth_repository.dart';
+import 'support/auth_repository_stubs.dart';
 import 'package:avov_frontend/features/auth/domain/auth_tokens.dart';
 import 'package:avov_frontend/features/auth/presentation/providers/auth_session_provider.dart';
 import 'package:avov_frontend/features/students/domain/managed_student.dart';
@@ -544,7 +545,7 @@ class _FakeUserRepository implements UserAccountRepository {
   }
 }
 
-class _FakeAuthRepository implements AuthRepository {
+class _FakeAuthRepository with AuthRepositoryChangePasswordStub implements AuthRepository {
   @override
   Future<void> clearSession() async {}
 
