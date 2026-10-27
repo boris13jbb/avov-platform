@@ -1,0 +1,5 @@
+# Copiar a android/key.properties (ignorado por git) y rellenar con el keystore real.
+storePassword=
+keyPassword=
+keyAlias=avov
+storeFile=../keystore/avov-release.jks
