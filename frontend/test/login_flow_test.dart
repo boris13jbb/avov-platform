@@ -251,6 +251,16 @@ class _ImmediateRepository with AuthRepositoryChangePasswordStub implements Auth
 
   @override
   Future<void> clearSession() async {}
+  @override
+  Future<String> forgotPassword({required String email}) async => '';
+
+  @override
+  Future<String> resetPassword({
+    required String token,
+    required String newPassword,
+    required String confirmPassword,
+  }) async => '';
+
 }
 
 class _DelayedRepository with AuthRepositoryChangePasswordStub implements AuthRepository {
@@ -291,6 +301,16 @@ class _DelayedRepository with AuthRepositoryChangePasswordStub implements AuthRe
 
   @override
   Future<void> clearSession() async {}
+  @override
+  Future<String> forgotPassword({required String email}) async => '';
+
+  @override
+  Future<String> resetPassword({
+    required String token,
+    required String newPassword,
+    required String confirmPassword,
+  }) async => '';
+
 }
 
 class _ThrowingRepository with AuthRepositoryChangePasswordStub implements AuthRepository {
@@ -316,4 +336,14 @@ class _ThrowingRepository with AuthRepositoryChangePasswordStub implements AuthR
 
   @override
   Future<void> clearSession() async {}
+  @override
+  Future<String> forgotPassword({required String email}) async => '';
+
+  @override
+  Future<String> resetPassword({
+    required String token,
+    required String newPassword,
+    required String confirmPassword,
+  }) async => '';
+
 }

@@ -298,6 +298,16 @@ class _TrackingAuth with AuthRepositoryChangePasswordStub implements AuthReposit
 
   @override
   Future<void> clearSession() => storage.clearTokens();
+
+  @override
+  Future<String> forgotPassword({required String email}) async => '';
+
+  @override
+  Future<String> resetPassword({
+    required String token,
+    required String newPassword,
+    required String confirmPassword,
+  }) async => '';
 }
 
 class _Students implements StudentRepository {

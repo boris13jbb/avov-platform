@@ -210,6 +210,16 @@ class _AuthRepo with AuthRepositoryChangePasswordStub implements AuthRepository 
 
   @override
   Future<void> clearSession() async {}
+  @override
+  Future<String> forgotPassword({required String email}) async => '';
+
+  @override
+  Future<String> resetPassword({
+    required String token,
+    required String newPassword,
+    required String confirmPassword,
+  }) async => '';
+
 }
 
 class _ClearingAuthRepo extends _AuthRepo {

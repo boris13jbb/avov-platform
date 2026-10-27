@@ -58,3 +58,11 @@ def refresh_token_expires_at() -> datetime:
         days=settings.jwt_refresh_token_expire_days
     )
     return expires.replace(tzinfo=None)
+
+
+def password_reset_token_expires_at() -> datetime:
+    settings = get_settings()
+    expires = datetime.now(timezone.utc) + timedelta(
+        hours=settings.password_reset_token_expire_hours
+    )
+    return expires.replace(tzinfo=None)

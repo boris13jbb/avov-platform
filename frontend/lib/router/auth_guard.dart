@@ -14,6 +14,8 @@ class AuthGuard {
   static const _publicRoutes = {
     RouteNames.splash,
     RouteNames.login,
+    RouteNames.forgotPassword,
+    RouteNames.resetPassword,
     RouteNames.notFound,
   };
 
@@ -29,7 +31,10 @@ class AuthGuard {
     }
 
     if (isAuthenticated &&
-        (location == RouteNames.login || location == RouteNames.splash)) {
+        (location == RouteNames.login ||
+            location == RouteNames.splash ||
+            location == RouteNames.forgotPassword ||
+            location.startsWith(RouteNames.resetPassword))) {
       return destinationForRole(role);
     }
 

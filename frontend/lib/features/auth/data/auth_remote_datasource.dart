@@ -85,6 +85,38 @@ class AuthRemoteDatasource {
     }
   }
 
+  Future<String> forgotPassword({required String email}) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        '/auth/forgot-password',
+        data: <String, String>{'email': email},
+      );
+      return readSuccessMessage(response.data);
+    } on DioException catch (error) {
+      throw FailureMapper.fromDioException(error, duringLogin: true);
+    }
+  }
+
+  Future<String> resetPassword({
+    required String token,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    try {
+      final response = await _dio.post<dynamic>(
+        '/auth/reset-password',
+        data: <String, String>{
+          'token': token,
+          'new_password': newPassword,
+          'confirm_password': confirmPassword,
+        },
+      );
+      return readSuccessMessage(response.data);
+    } on DioException catch (error) {
+      throw FailureMapper.fromDioException(error, duringLogin: true);
+    }
+  }
+
   Future<T> _send<T>(
     Future<Response<dynamic>> Function() request, {
     required bool duringLogin,

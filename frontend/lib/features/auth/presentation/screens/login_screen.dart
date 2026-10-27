@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/validators/app_validators.dart';
 import '../../../../router/role_destination.dart';
+import '../../../../router/route_names.dart';
 import '../../../../shared/widgets/error_banner.dart';
 import '../providers/auth_session_provider.dart';
 
@@ -140,7 +141,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       validator: AppValidators.loginPassword,
                       onFieldSubmitted: (_) => _submit(),
                     ),
-                    const SizedBox(height: 24),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        key: const Key('login-forgot-password'),
+                        onPressed: session.isSubmitting
+                            ? null
+                            : () => context.go(RouteNames.forgotPassword),
+                        child: const Text('¿Olvidaste tu contraseña?'),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
