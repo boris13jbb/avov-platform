@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../router/app_navigation.dart';
 import '../../../../router/route_names.dart';
+import '../../../../shared/widgets/app_state_view.dart';
 import '../../../../shared/widgets/student_scaffold.dart';
 import '../../../students/domain/managed_student.dart';
 import '../../../students/presentation/providers/students_provider.dart';
@@ -27,68 +29,74 @@ class StudentDashboardScreen extends ConsumerWidget {
       body: SafeArea(
         child: profile.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _Notice(
+          error: (error, _) => AppStateView.error(
             message: error is AppException
                 ? error.message
                 : FailureMapper.unexpectedMessage,
             onRetry: () => ref.invalidate(currentOperatorProvider),
           ),
           data: (data) => ListView(
-              padding: const EdgeInsets.all(24),
-              children: [
-                Text(
-                  '${data.firstName} ${data.lastName}'.trim(),
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 4),
-                Text(data.email),
-                const SizedBox(height: 16),
-                Text(
-                  'Ficha académica',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                _RecordSection(
-                  record: ref.watch(ownStudentProvider),
-                  onRetry: () => ref.invalidate(ownStudentProvider),
-                ),
-                const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: OutlinedButton(
-                    onPressed: () => context.go(RouteNames.studentProfile),
-                    child: const Text('Ver mi ficha'),
+            padding: const EdgeInsets.all(AppSpacing.pagePadding),
+            children: [
+              Text(
+                '${data.firstName} ${data.lastName}'.trim(),
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 4),
+              Text(data.email),
+              const SizedBox(height: 16),
+              Text(
+                'Ficha académica',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              _RecordSection(
+                record: ref.watch(ownStudentProvider),
+                onRetry: () => ref.invalidate(ownStudentProvider),
+              ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton(
+                  onPressed: () => AppNavigation.open(
+                    context,
+                    RouteNames.studentProfile,
                   ),
+                  child: const Text('Ver mi ficha'),
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  'Evaluaciones vocacionales',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                _HistorySection(
-                  history: ref.watch(vocationalHistoryProvider),
-                  onRetry: () =>
-                      ref.read(vocationalHistoryProvider.notifier).refresh(),
-                ),
-                const SizedBox(height: 24),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: FilledButton.icon(
-                    key: const Key('student-open-assistant'),
-                    onPressed: () => context.go(RouteNames.studentAssistant),
-                    icon: const Icon(Icons.smart_toy_outlined),
-                    label: const Text('Abrir asistente vocacional'),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Evaluaciones vocacionales',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              _HistorySection(
+                history: ref.watch(vocationalHistoryProvider),
+                onRetry: () =>
+                    ref.read(vocationalHistoryProvider.notifier).refresh(),
+              ),
+              const SizedBox(height: 24),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: FilledButton.icon(
+                  key: const Key('student-open-assistant'),
+                  onPressed: () => AppNavigation.open(
+                    context,
+                    RouteNames.studentAssistant,
                   ),
+                  icon: const Icon(Icons.smart_toy_outlined),
+                  label: const Text('Abrir asistente vocacional'),
                 ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Las recomendaciones de carreras se generan en el resultado '
-                  'de cada evaluación completada (menú Resultados). '
-                  'El asistente con IA también está en el menú lateral.',
-                )
-              ],
-            ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Las recomendaciones de carreras se generan en el resultado '
+                'de cada evaluación completada (menú Resultados). '
+                'El asistente con IA también está en el menú lateral.',
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -105,7 +113,7 @@ class _RecordSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return record.when(
       loading: () => const LinearProgressIndicator(),
-      error: (error, _) => _Notice(
+      error: (error, _) => AppStateView.error(
         message: error is AppException
             ? error.message
             : FailureMapper.unexpectedMessage,
@@ -142,7 +150,7 @@ class _HistorySection extends StatelessWidget {
       skipLoadingOnReload: true,
       skipLoadingOnRefresh: true,
       loading: () => const LinearProgressIndicator(),
-      error: (error, _) => _Notice(
+      error: (error, _) => AppStateView.error(
         message: error is AppException
             ? error.message
             : FailureMapper.unexpectedMessage,
@@ -203,35 +211,13 @@ class _SessionTile extends StatelessWidget {
           ),
           if (session.isCompleted)
             OutlinedButton(
-              onPressed: () =>
-                  context.push(RouteNames.studentTestResult(session.id)),
+              onPressed: () => AppNavigation.open(
+                context,
+                RouteNames.studentTestResult(session.id),
+              ),
               child: const Text('Ver resultado'),
             ),
         ],
-      ),
-    );
-  }
-}
-
-class _Notice extends StatelessWidget {
-  const _Notice({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            FilledButton(onPressed: onRetry, child: const Text('Reintentar')),
-          ],
-        ),
       ),
     );
   }

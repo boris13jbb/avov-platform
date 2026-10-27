@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
@@ -10,6 +9,9 @@ import '../../../users/presentation/providers/users_provider.dart';
 import '../../../users/presentation/widgets/user_form.dart';
 import '../providers/counselor_provider.dart';
 import '../providers/institution_dashboard_provider.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class CounselorEditScreen extends ConsumerWidget {
   const CounselorEditScreen({super.key, required this.userId});
@@ -21,8 +23,13 @@ class CounselorEditScreen extends ConsumerWidget {
     final detail = ref.watch(userDetailProvider(userId));
     final operator = ref.watch(currentOperatorProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Editar orientador')),
+    return InternalRouteScope(
+        child: Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
+        title: const Text('Editar orientador'),
+      ),
       body: SafeArea(
         child: detail.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -76,14 +83,15 @@ class CounselorEditScreen extends ConsumerWidget {
                 ref.invalidate(userDetailProvider(userId));
                 ref.invalidate(institutionDashboardProvider);
                 if (context.mounted) {
-                  context.go(RouteNames.institutionCounselors);
+                  AppNavigation.completeTo(
+                      context, RouteNames.institutionCounselors);
                 }
               },
             );
           },
         ),
       ),
-    );
+    ));
   }
 }
 

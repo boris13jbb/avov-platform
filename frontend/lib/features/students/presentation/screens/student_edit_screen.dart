@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
@@ -11,6 +10,9 @@ import '../../../users/presentation/providers/users_provider.dart';
 import '../../domain/managed_student.dart';
 import '../providers/students_provider.dart';
 import '../widgets/student_form.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class StudentEditScreen extends ConsumerWidget {
   const StudentEditScreen({super.key, required this.studentId});
@@ -21,8 +23,13 @@ class StudentEditScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final detail = ref.watch(studentDetailProvider(studentId));
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Editar estudiante')),
+    return InternalRouteScope(
+        child: Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
+        title: const Text('Editar estudiante'),
+      ),
       body: SafeArea(
         child: detail.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -59,7 +66,7 @@ class StudentEditScreen extends ConsumerWidget {
           },
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -84,7 +91,7 @@ Widget _editForm(
       ref.invalidate(studentDetailProvider(student.id));
       ref.invalidate(adminDashboardProvider);
       if (context.mounted) {
-        context.go(listRoute);
+        AppNavigation.completeTo(context, listRoute);
       }
     },
   );

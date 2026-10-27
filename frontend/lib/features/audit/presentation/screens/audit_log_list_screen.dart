@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/errors/app_exception.dart';
@@ -8,6 +7,9 @@ import '../../../../core/errors/failure_mapper.dart';
 import '../../../auth/presentation/widgets/session_menu_button.dart';
 import '../../domain/audit_log.dart';
 import '../providers/audit_provider.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class AuditLogListScreen extends ConsumerStatefulWidget {
   const AuditLogListScreen({
@@ -49,8 +51,11 @@ class _AuditLogListScreenState extends ConsumerState<AuditLogListScreen> {
     final logs = ref.watch(auditLogListProvider);
     final page = ref.watch(auditPageProvider);
 
-    return Scaffold(
+    return InternalRouteScope(
+        child: Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
         title: const Text('Auditoría del sistema'),
         actions: const [SessionMenuButton()],
       ),
@@ -118,7 +123,8 @@ class _AuditLogListScreenState extends ConsumerState<AuditLogListScreen> {
                       final item = result.items[index];
                       return _AuditTile(
                         entry: item,
-                        onTap: () => context.go(widget.detailRouteBuilder(item.id)),
+                        onTap: () => AppNavigation.open(
+                            context, widget.detailRouteBuilder(item.id)),
                       );
                     },
                   );
@@ -127,7 +133,8 @@ class _AuditLogListScreenState extends ConsumerState<AuditLogListScreen> {
             ),
             _PaginationBar(
               page: page,
-              pages: logs.maybeWhen(data: (data) => data.pages, orElse: () => 0),
+              pages:
+                  logs.maybeWhen(data: (data) => data.pages, orElse: () => 0),
               onPrevious: page > 1
                   ? () => ref.read(auditPageProvider.notifier).state = page - 1
                   : null,
@@ -142,7 +149,7 @@ class _AuditLogListScreenState extends ConsumerState<AuditLogListScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 }
 

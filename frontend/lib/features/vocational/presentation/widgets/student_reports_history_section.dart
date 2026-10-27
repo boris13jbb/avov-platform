@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/errors/app_exception.dart';
-import '../../../../router/route_names.dart';
 import '../../../../core/errors/failure_mapper.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../router/route_names.dart';
 import '../../domain/report_history.dart';
 import '../providers/report_provider.dart';
 import 'download_vocational_pdf_button.dart';
@@ -154,7 +154,8 @@ class _HistoryTile extends StatelessWidget {
                   key: ValueKey(
                     'counselor-review-session-${item.testSessionId}',
                   ),
-                  onPressed: () => context.go(
+                  onPressed: () => AppNavigation.open(
+                    context,
                     RouteNames.counselorStudentSession(
                       studentId,
                       item.testSessionId,

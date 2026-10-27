@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
@@ -11,6 +10,9 @@ import '../../../institutions/domain/institution.dart';
 import '../../../auth/presentation/widgets/session_menu_button.dart';
 import '../../domain/managed_user.dart';
 import '../providers/users_provider.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class UserListScreen extends ConsumerWidget {
   const UserListScreen({super.key});
@@ -22,8 +24,11 @@ class UserListScreen extends ConsumerWidget {
     final names = ref.watch(institutionChoicesProvider);
     final operator = ref.watch(currentOperatorProvider);
 
-    return Scaffold(
+    return InternalRouteScope(
+        child: Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
         title: const Text('Usuarios'),
         actions: const [SessionMenuButton()],
       ),
@@ -46,7 +51,8 @@ class UserListScreen extends ConsumerWidget {
               return _Notice(
                 message: 'Todavía no hay usuarios.',
                 actionLabel: 'Crear usuario',
-                onPressed: () => context.go(RouteNames.adminUserNew),
+                onPressed: () =>
+                    AppNavigation.open(context, RouteNames.adminUserNew),
               );
             }
             final institutionNames = names.maybeWhen(
@@ -94,16 +100,18 @@ class UserListScreen extends ConsumerWidget {
                       children: [
                         IconButton(
                           onPressed: page > 1
-                              ? () => ref.read(userPageProvider.notifier).state =
-                                  page - 1
+                              ? () => ref
+                                  .read(userPageProvider.notifier)
+                                  .state = page - 1
                               : null,
                           icon: const Icon(Icons.chevron_left),
                         ),
                         Text('Página $page de ${result.pages}'),
                         IconButton(
                           onPressed: page < result.pages
-                              ? () => ref.read(userPageProvider.notifier).state =
-                                  page + 1
+                              ? () => ref
+                                  .read(userPageProvider.notifier)
+                                  .state = page + 1
                               : null,
                           icon: const Icon(Icons.chevron_right),
                         ),
@@ -115,7 +123,7 @@ class UserListScreen extends ConsumerWidget {
           },
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -156,9 +164,11 @@ class _Filters extends ConsumerWidget {
               isExpanded: true,
               decoration: const InputDecoration(labelText: 'Rol'),
               items: [
-                const DropdownMenuItem(value: null, child: Text('Todos los roles')),
+                const DropdownMenuItem(
+                    value: null, child: Text('Todos los roles')),
                 for (final role in userRoles)
-                  DropdownMenuItem(value: role, child: Text(userRoleLabel(role))),
+                  DropdownMenuItem(
+                      value: role, child: Text(userRoleLabel(role))),
               ],
               onChanged: (value) {
                 ref.read(userRoleFilterProvider.notifier).state = value;
@@ -178,10 +188,11 @@ class _Filters extends ConsumerWidget {
                   value: null,
                   child: Text('Todas las instituciones'),
                 ),
-                for (final institution in ref.watch(institutionChoicesProvider).maybeWhen(
-                      data: (items) => items,
-                      orElse: () => const <Institution>[],
-                    ))
+                for (final institution
+                    in ref.watch(institutionChoicesProvider).maybeWhen(
+                          data: (items) => items,
+                          orElse: () => const <Institution>[],
+                        ))
                   DropdownMenuItem<int?>(
                     value: institution.id,
                     child: Text(institution.name),
@@ -218,7 +229,8 @@ class _Filters extends ConsumerWidget {
             ),
           ),
           FilledButton.icon(
-            onPressed: () => context.go(RouteNames.adminUserNew),
+            onPressed: () =>
+                AppNavigation.open(context, RouteNames.adminUserNew),
             icon: const Icon(Icons.person_add_alt_1_outlined),
             label: const Text('Crear usuario'),
           ),
@@ -263,7 +275,8 @@ class _UserTileState extends ConsumerState<_UserTile> {
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(user.fullName, style: Theme.of(context).textTheme.titleMedium),
+                  Text(user.fullName,
+                      style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 4),
                   Text(user.statusLabel),
                   const SizedBox(height: 8),
@@ -303,7 +316,8 @@ class _UserTileState extends ConsumerState<_UserTile> {
       OutlinedButton(
         onPressed: _busy
             ? null
-            : () => context.go(RouteNames.adminUserEdit(user.id)),
+            : () =>
+                AppNavigation.open(context, RouteNames.adminUserEdit(user.id)),
         child: const Text('Editar'),
       ),
       if (widget.canChangeStatus && user.isActive) ...[
@@ -363,7 +377,8 @@ class _UserTileState extends ConsumerState<_UserTile> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 

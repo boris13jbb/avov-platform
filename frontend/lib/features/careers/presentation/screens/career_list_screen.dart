@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
@@ -9,6 +8,9 @@ import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../auth/presentation/widgets/session_menu_button.dart';
 import '../../domain/career.dart';
 import '../providers/career_provider.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class CareerListScreen extends ConsumerWidget {
   const CareerListScreen({super.key});
@@ -19,8 +21,11 @@ class CareerListScreen extends ConsumerWidget {
     final page = ref.watch(careerPageProvider);
     final statusFilter = ref.watch(careerStatusFilterProvider);
 
-    return Scaffold(
+    return InternalRouteScope(
+        child: Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
         title: const Text('Carreras'),
         actions: const [SessionMenuButton()],
       ),
@@ -39,7 +44,8 @@ class CareerListScreen extends ConsumerWidget {
                 message:
                     'Todavía no hay carreras registradas. Crea la primera para comenzar.',
                 actionLabel: 'Crear carrera',
-                onRetry: () => context.go(RouteNames.adminCareerNew),
+                onRetry: () =>
+                    AppNavigation.open(context, RouteNames.adminCareerNew),
               );
             }
             return Column(
@@ -98,7 +104,8 @@ class CareerListScreen extends ConsumerWidget {
                         ),
                       ),
                       FilledButton.icon(
-                        onPressed: () => context.go(RouteNames.adminCareerNew),
+                        onPressed: () => AppNavigation.open(
+                            context, RouteNames.adminCareerNew),
                         icon: const Icon(Icons.add),
                         label: const Text('Crear carrera'),
                       ),
@@ -146,7 +153,7 @@ class CareerListScreen extends ConsumerWidget {
           },
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -196,14 +203,14 @@ class _CareerTileState extends ConsumerState<_CareerTile> {
                 OutlinedButton(
                   onPressed: _busy
                       ? null
-                      : () => context.go(RouteNames.adminCareerEdit(career.id)),
+                      : () => AppNavigation.open(
+                          context, RouteNames.adminCareerEdit(career.id)),
                   child: const Text('Editar'),
                 ),
                 FilledButton.tonal(
                   onPressed: _busy
                       ? null
-                      : () =>
-                          career.status == 'ACTIVE' ? _deactivate() : null,
+                      : () => career.status == 'ACTIVE' ? _deactivate() : null,
                   child: const Text('Desactivar'),
                 ),
               ],
@@ -250,7 +257,8 @@ class _CareerTileState extends ConsumerState<_CareerTile> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 

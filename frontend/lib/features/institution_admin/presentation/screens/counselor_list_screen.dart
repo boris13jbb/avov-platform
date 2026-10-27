@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
@@ -11,6 +10,9 @@ import '../../../users/domain/managed_user.dart';
 import '../../../users/presentation/providers/users_provider.dart';
 import '../providers/counselor_provider.dart';
 import '../providers/institution_dashboard_provider.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class CounselorListScreen extends ConsumerWidget {
   const CounselorListScreen({super.key});
@@ -24,8 +26,11 @@ class CounselorListScreen extends ConsumerWidget {
           orElse: () => null,
         );
 
-    return Scaffold(
+    return InternalRouteScope(
+        child: Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
         title: const Text('Orientadores'),
         actions: const [SessionMenuButton()],
       ),
@@ -44,7 +49,8 @@ class CounselorListScreen extends ConsumerWidget {
               return _Notice(
                 message: 'Todavía no hay orientadores.',
                 actionLabel: 'Crear orientador',
-                onPressed: () => context.go(RouteNames.institutionCounselorNew),
+                onPressed: () => AppNavigation.open(
+                    context, RouteNames.institutionCounselorNew),
               );
             }
             return Column(
@@ -54,7 +60,8 @@ class CounselorListScreen extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                     child: FilledButton.icon(
-                      onPressed: () => context.go(RouteNames.institutionCounselorNew),
+                      onPressed: () => AppNavigation.open(
+                          context, RouteNames.institutionCounselorNew),
                       icon: const Icon(Icons.person_add_alt_1_outlined),
                       label: const Text('Crear orientador'),
                     ),
@@ -64,12 +71,14 @@ class CounselorListScreen extends ConsumerWidget {
                   child: ListView.separated(
                     padding: const EdgeInsets.all(16),
                     itemCount: result.items.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 12),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final user = result.items[index];
                       return _CounselorTile(
                         user: user,
-                        canChangeStatus: operatorId != null && operatorId != user.id,
+                        canChangeStatus:
+                            operatorId != null && operatorId != user.id,
                       );
                     },
                   ),
@@ -82,14 +91,18 @@ class CounselorListScreen extends ConsumerWidget {
                       children: [
                         IconButton(
                           onPressed: page > 1
-                              ? () => ref.read(counselorPageProvider.notifier).state = page - 1
+                              ? () => ref
+                                  .read(counselorPageProvider.notifier)
+                                  .state = page - 1
                               : null,
                           icon: const Icon(Icons.chevron_left),
                         ),
                         Text('Página $page de ${result.pages}'),
                         IconButton(
                           onPressed: page < result.pages
-                              ? () => ref.read(counselorPageProvider.notifier).state = page + 1
+                              ? () => ref
+                                  .read(counselorPageProvider.notifier)
+                                  .state = page + 1
                               : null,
                           icon: const Icon(Icons.chevron_right),
                         ),
@@ -101,7 +114,7 @@ class CounselorListScreen extends ConsumerWidget {
           },
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -138,7 +151,8 @@ class _CounselorTileState extends ConsumerState<_CounselorTile> {
                 OutlinedButton(
                   onPressed: _busy
                       ? null
-                      : () => context.go(RouteNames.institutionCounselorEdit(user.id)),
+                      : () => AppNavigation.open(context,
+                          RouteNames.institutionCounselorEdit(user.id)),
                   child: const Text('Editar'),
                 ),
                 if (widget.canChangeStatus && user.isActive) ...[
@@ -184,12 +198,15 @@ class _CounselorTileState extends ConsumerState<_CounselorTile> {
       return;
     }
     try {
-      await ref.read(userAccountRepositoryProvider).updateStatus(widget.user.id, status);
+      await ref
+          .read(userAccountRepositoryProvider)
+          .updateStatus(widget.user.id, status);
       ref.invalidate(counselorListProvider);
       ref.invalidate(institutionDashboardProvider);
     } on AppException catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error.message)));
       }
     } catch (_) {
       if (mounted) {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
@@ -11,6 +10,9 @@ import '../../../users/presentation/providers/users_provider.dart';
 import '../../domain/managed_student.dart';
 import '../providers/students_provider.dart';
 import '../widgets/student_form.dart';
+import '../../../../router/app_navigation.dart';
+import '../../../../shared/widgets/internal_route_scope.dart';
+import '../../../../shared/widgets/navigation_back_button.dart';
 
 class StudentCreateScreen extends ConsumerWidget {
   const StudentCreateScreen({super.key});
@@ -18,8 +20,13 @@ class StudentCreateScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final operator = ref.watch(currentOperatorProvider);
-    return Scaffold(
-      appBar: AppBar(title: const Text('Crear estudiante')),
+    return InternalRouteScope(
+        child: Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: NavigationBackButton.maybeOf(context),
+        title: const Text('Crear estudiante'),
+      ),
       body: SafeArea(
         child: operator.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -54,7 +61,7 @@ class StudentCreateScreen extends ConsumerWidget {
           },
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -75,7 +82,7 @@ Widget _form(
       ref.invalidate(adminDashboardProvider);
       ref.read(studentPageProvider.notifier).state = 1;
       if (context.mounted) {
-        context.go(listRoute);
+        AppNavigation.completeTo(context, listRoute);
       }
     },
   );
