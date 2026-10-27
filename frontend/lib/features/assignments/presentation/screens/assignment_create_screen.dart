@@ -3,13 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/failure_mapper.dart';
-import '../../../../router/route_names.dart';
-import '../../../auth/presentation/widgets/session_menu_button.dart';
-import '../../../users/presentation/providers/users_provider.dart';
-import '../providers/assignment_provider.dart';
 import '../../../../router/app_navigation.dart';
+import '../../../../router/route_names.dart';
 import '../../../../shared/widgets/internal_route_scope.dart';
 import '../../../../shared/widgets/navigation_back_button.dart';
+import '../../../auth/presentation/widgets/session_menu_button.dart';
+import '../../../students/domain/managed_student.dart';
+import '../../../users/domain/managed_user.dart';
+import '../../../users/presentation/providers/users_provider.dart';
+import '../providers/assignment_provider.dart';
 
 class AssignmentCreateScreen extends ConsumerStatefulWidget {
   const AssignmentCreateScreen({super.key, this.preselectedStudentId});
@@ -34,128 +36,179 @@ class _AssignmentCreateScreenState
     _studentId = widget.preselectedStudentId;
   }
 
+  /// Ajusta la selección al catálogo actual sin lanzar la aserción del dropdown.
+  int? _reconcileSelection(int? selectedId, Iterable<int> availableIds) {
+    if (selectedId == null) {
+      return null;
+    }
+    return availableIds.contains(selectedId) ? selectedId : null;
+  }
+
+  void _scheduleSelectionSync({
+    required int? nextStudentId,
+    required int? nextCounselorId,
+  }) {
+    if (nextStudentId == _studentId && nextCounselorId == _counselorId) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _studentId = nextStudentId;
+        _counselorId = nextCounselorId;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final students = ref.watch(studentChoicesForAssignmentProvider);
     final counselors = ref.watch(counselorChoicesForAssignmentProvider);
 
     return InternalRouteScope(
-        child: Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leading: NavigationBackButton.maybeOf(context),
-        title: const Text('Nueva asignación'),
-        actions: const [SessionMenuButton()],
-      ),
-      body: SafeArea(
-        child: students.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _ErrorBody(
-            message: error is AppException
-                ? error.message
-                : FailureMapper.unexpectedMessage,
-            onRetry: () {
-              ref.invalidate(studentChoicesForAssignmentProvider);
-              ref.invalidate(counselorChoicesForAssignmentProvider);
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          leading: NavigationBackButton.maybeOf(context),
+          title: const Text('Nueva asignación'),
+          actions: const [SessionMenuButton()],
+        ),
+        body: SafeArea(
+          child: students.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, _) => _ErrorBody(
+              message: error is AppException
+                  ? error.message
+                  : FailureMapper.unexpectedMessage,
+              onRetry: () {
+                ref.invalidate(studentChoicesForAssignmentProvider);
+                ref.invalidate(counselorChoicesForAssignmentProvider);
+              },
+            ),
+            data: (studentItems) {
+              return counselors.when(
+                loading: () =>
+                    const Center(child: CircularProgressIndicator()),
+                error: (error, _) => _ErrorBody(
+                  message: error is AppException
+                      ? error.message
+                      : FailureMapper.unexpectedMessage,
+                  onRetry: () =>
+                      ref.invalidate(counselorChoicesForAssignmentProvider),
+                ),
+                data: (counselorItems) {
+                  if (studentItems.isEmpty || counselorItems.isEmpty) {
+                    return _ErrorBody(
+                      message: studentItems.isEmpty
+                          ? 'No hay estudiantes activos para asignar.'
+                          : 'No hay orientadores activos para asignar.',
+                      onRetry: () {
+                        ref.invalidate(studentChoicesForAssignmentProvider);
+                        ref.invalidate(counselorChoicesForAssignmentProvider);
+                      },
+                    );
+                  }
+
+                  final effectiveStudentId = _reconcileSelection(
+                    _studentId,
+                    studentItems.map((ManagedStudent s) => s.id),
+                  );
+                  final effectiveCounselorId = _reconcileSelection(
+                    _counselorId,
+                    counselorItems.map((ManagedUser c) => c.id),
+                  );
+                  _scheduleSelectionSync(
+                    nextStudentId: effectiveStudentId,
+                    nextCounselorId: effectiveCounselorId,
+                  );
+
+                  final studentOptionKey = studentItems
+                      .map((ManagedStudent s) => s.id)
+                      .join(',');
+                  final counselorOptionKey = counselorItems
+                      .map((ManagedUser c) => c.id)
+                      .join(',');
+
+                  return Form(
+                    key: _formKey,
+                    child: ListView(
+                      padding: const EdgeInsets.all(24),
+                      children: [
+                        DropdownButtonFormField<int>(
+                          key: ValueKey<String>(
+                            'student-$effectiveStudentId-$studentOptionKey',
+                          ),
+                          initialValue: effectiveStudentId,
+                          decoration: const InputDecoration(
+                            labelText: 'Estudiante',
+                            border: OutlineInputBorder(),
+                          ),
+                          items: [
+                            for (final student in studentItems)
+                              DropdownMenuItem<int>(
+                                value: student.id,
+                                child: Text(
+                                  '${student.fullName} (${student.identification})',
+                                ),
+                              ),
+                          ],
+                          onChanged: _submitting
+                              ? null
+                              : (value) => setState(() => _studentId = value),
+                          validator: (value) => value == null
+                              ? 'Selecciona un estudiante'
+                              : null,
+                        ),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<int>(
+                          key: ValueKey<String>(
+                            'counselor-$effectiveCounselorId-$counselorOptionKey',
+                          ),
+                          initialValue: effectiveCounselorId,
+                          decoration: const InputDecoration(
+                            labelText: 'Orientador',
+                            border: OutlineInputBorder(),
+                          ),
+                          items: [
+                            for (final counselor in counselorItems)
+                              DropdownMenuItem<int>(
+                                value: counselor.id,
+                                child: Text(counselor.fullName),
+                              ),
+                          ],
+                          onChanged: _submitting
+                              ? null
+                              : (value) =>
+                                  setState(() => _counselorId = value),
+                          validator: (value) => value == null
+                              ? 'Selecciona un orientador'
+                              : null,
+                        ),
+                        const SizedBox(height: 24),
+                        FilledButton(
+                          onPressed: _submitting ? null : _submit,
+                          child: _submitting
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('Asignar'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
             },
           ),
-          data: (studentItems) {
-            return counselors.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => _ErrorBody(
-                message: error is AppException
-                    ? error.message
-                    : FailureMapper.unexpectedMessage,
-                onRetry: () =>
-                    ref.invalidate(counselorChoicesForAssignmentProvider),
-              ),
-              data: (counselorItems) {
-                if (studentItems.isEmpty || counselorItems.isEmpty) {
-                  return _ErrorBody(
-                    message: studentItems.isEmpty
-                        ? 'No hay estudiantes activos para asignar.'
-                        : 'No hay orientadores activos para asignar.',
-                    onRetry: () {
-                      ref.invalidate(studentChoicesForAssignmentProvider);
-                      ref.invalidate(counselorChoicesForAssignmentProvider);
-                    },
-                  );
-                }
-                return Form(
-                  key: _formKey,
-                  child: ListView(
-                    padding: const EdgeInsets.all(24),
-                    children: [
-                      DropdownButtonFormField<int>(
-                        key: ValueKey<int?>(_studentId),
-                        initialValue: _studentId != null &&
-                                studentItems.any((s) => s.id == _studentId)
-                            ? _studentId
-                            : null,
-                        decoration: const InputDecoration(
-                          labelText: 'Estudiante',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: [
-                          for (final student in studentItems)
-                            DropdownMenuItem(
-                              value: student.id,
-                              child: Text(
-                                '${student.fullName} (${student.identification})',
-                              ),
-                            ),
-                        ],
-                        onChanged: _submitting
-                            ? null
-                            : (value) => setState(() => _studentId = value),
-                        validator: (value) =>
-                            value == null ? 'Selecciona un estudiante' : null,
-                      ),
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<int>(
-                        key: ValueKey<int?>(_counselorId),
-                        initialValue: _counselorId != null &&
-                                counselorItems.any((c) => c.id == _counselorId)
-                            ? _counselorId
-                            : null,
-                        decoration: const InputDecoration(
-                          labelText: 'Orientador',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: [
-                          for (final counselor in counselorItems)
-                            DropdownMenuItem(
-                              value: counselor.id,
-                              child: Text(counselor.fullName),
-                            ),
-                        ],
-                        onChanged: _submitting
-                            ? null
-                            : (value) => setState(() => _counselorId = value),
-                        validator: (value) =>
-                            value == null ? 'Selecciona un orientador' : null,
-                      ),
-                      const SizedBox(height: 24),
-                      FilledButton(
-                        onPressed: _submitting ? null : _submit,
-                        child: _submitting
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Text('Asignar'),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          },
         ),
       ),
-    ));
+    );
   }
 
   Future<void> _submit() async {
@@ -191,7 +244,9 @@ class _AssignmentCreateScreenState
             orElse: () => null,
           );
       AppNavigation.completeTo(
-          context, listHref ?? RouteNames.institutionAssignments);
+        context,
+        listHref ?? RouteNames.institutionAssignments,
+      );
     } catch (error) {
       if (!mounted) {
         return;

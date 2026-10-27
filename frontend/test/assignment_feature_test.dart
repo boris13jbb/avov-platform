@@ -84,6 +84,26 @@ void main() {
     expect(item.studentName, 'Estu Diante');
   });
 
+  test('uniqueByEntityId conserva el primero y elimina duplicados del mismo id',
+      () {
+    final items = <ManagedStudent>[
+      _student(id: 1, identification: 'A', firstName: 'Uno'),
+      _student(id: 1, identification: 'A-dup', firstName: 'UnoDup'),
+      _student(id: 2, identification: 'B', firstName: 'Dos'),
+    ];
+    final unique = uniqueByEntityId(items, (s) => s.id);
+    expect(unique.map((s) => s.id), [1, 2]);
+    expect(unique.first.identification, 'A');
+    expect(uniqueByEntityId(<ManagedStudent>[], (s) => s.id), isEmpty);
+    expect(
+      uniqueByEntityId(
+        [_student(id: 7, identification: 'S', firstName: 'Solo')],
+        (s) => s.id,
+      ).single.id,
+      7,
+    );
+  });
+
   testWidgets('lista muestra vacío y permite crear', (tester) async {
     final repo = _FakeAssignmentRepository(
       page: const CounselorAssignmentPage(
@@ -126,7 +146,8 @@ void main() {
         overrides: [
           assignmentRepositoryProvider.overrideWithValue(repo),
           studentRepositoryProvider.overrideWithValue(_FakeStudentRepository()),
-          userAccountRepositoryProvider.overrideWithValue(_FakeUserRepository()),
+          userAccountRepositoryProvider
+              .overrideWithValue(_FakeUserRepository()),
           authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
         ],
         child: const MaterialApp(home: AssignmentCreateScreen()),
@@ -141,6 +162,258 @@ void main() {
     expect(find.text('Selecciona un orientador'), findsOneWidget);
     expect(repo.createCalls, 0);
   });
+
+  testWidgets('lista vacía de estudiantes muestra mensaje claro',
+      (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          assignmentRepositoryProvider.overrideWithValue(
+            _FakeAssignmentRepository(
+              page: const CounselorAssignmentPage(
+                items: [],
+                total: 0,
+                page: 1,
+                pageSize: 20,
+                pages: 0,
+              ),
+            ),
+          ),
+          studentRepositoryProvider.overrideWithValue(
+            _FakeStudentRepository(items: const []),
+          ),
+          userAccountRepositoryProvider
+              .overrideWithValue(_FakeUserRepository()),
+          authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        ],
+        child: const MaterialApp(home: AssignmentCreateScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('No hay estudiantes activos para asignar.'),
+      findsOneWidget,
+    );
+    expect(find.text('Reintentar'), findsOneWidget);
+  });
+
+  testWidgets(
+    'ids duplicados del mismo estudiante no rompen el dropdown (valor 1)',
+    (tester) async {
+      final students = [
+        _student(id: 1, identification: 'DUP-1', firstName: 'Primero'),
+        _student(id: 1, identification: 'DUP-1b', firstName: 'Duplicado'),
+        _student(id: 3, identification: 'OK', firstName: 'Otro'),
+      ];
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            assignmentRepositoryProvider.overrideWithValue(
+              _FakeAssignmentRepository(
+                page: const CounselorAssignmentPage(
+                  items: [],
+                  total: 0,
+                  page: 1,
+                  pageSize: 20,
+                  pages: 0,
+                ),
+              ),
+            ),
+            studentRepositoryProvider.overrideWithValue(
+              _FakeStudentRepository(items: students),
+            ),
+            userAccountRepositoryProvider.overrideWithValue(
+              _FakeUserRepository(
+                items: [
+                  _counselor(id: 5, firstName: 'Ori', lastName: 'Entador'),
+                ],
+              ),
+            ),
+            authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+          ],
+          child: const MaterialApp(
+            home: AssignmentCreateScreen(preselectedStudentId: 1),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(DropdownButtonFormField<int>), findsNWidgets(2));
+      expect(find.textContaining('Primero'), findsWidgets);
+      expect(find.textContaining('Duplicado'), findsNothing);
+    },
+  );
+
+  testWidgets('selección preseleccionada inexistente no lanza aserción',
+      (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          assignmentRepositoryProvider.overrideWithValue(
+            _FakeAssignmentRepository(
+              page: const CounselorAssignmentPage(
+                items: [],
+                total: 0,
+                page: 1,
+                pageSize: 20,
+                pages: 0,
+              ),
+            ),
+          ),
+          studentRepositoryProvider.overrideWithValue(_FakeStudentRepository()),
+          userAccountRepositoryProvider
+              .overrideWithValue(_FakeUserRepository()),
+          authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        ],
+        child: const MaterialApp(
+          home: AssignmentCreateScreen(preselectedStudentId: 1),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Asignar'), findsOneWidget);
+  });
+
+  testWidgets('recarga asíncrona del catálogo mantiene el formulario usable',
+      (tester) async {
+    final studentRepo = _FakeStudentRepository(
+      items: [_student(id: 9, identification: 'ABC', firstName: 'Estu')],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          assignmentRepositoryProvider.overrideWithValue(
+            _FakeAssignmentRepository(
+              page: const CounselorAssignmentPage(
+                items: [],
+                total: 0,
+                page: 1,
+                pageSize: 20,
+                pages: 0,
+              ),
+            ),
+          ),
+          studentRepositoryProvider.overrideWithValue(studentRepo),
+          userAccountRepositoryProvider
+              .overrideWithValue(_FakeUserRepository()),
+          authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        ],
+        child: const MaterialApp(home: AssignmentCreateScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    studentRepo.items = [
+      _student(id: 9, identification: 'ABC', firstName: 'Estu'),
+      _student(id: 10, identification: 'XYZ', firstName: 'Nuevo'),
+    ];
+
+    await tester.tap(find.byType(DropdownButtonFormField<int>).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Estu').last);
+    await tester.pumpAndSettle();
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(AssignmentCreateScreen)),
+    );
+    container.invalidate(studentChoicesForAssignmentProvider);
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Asignar'), findsOneWidget);
+  });
+
+  testWidgets('guardado válido de una asignación', (tester) async {
+    final repo = _FakeAssignmentRepository(
+      page: const CounselorAssignmentPage(
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 20,
+        pages: 0,
+      ),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          assignmentRepositoryProvider.overrideWithValue(repo),
+          studentRepositoryProvider.overrideWithValue(_FakeStudentRepository()),
+          userAccountRepositoryProvider
+              .overrideWithValue(_FakeUserRepository()),
+          authRepositoryProvider.overrideWithValue(_FakeAuthRepository()),
+        ],
+        child: MaterialApp(
+          home: const AssignmentCreateScreen(),
+          routes: {
+            RouteNames.institutionAssignments: (_) =>
+                const Scaffold(body: Text('lista-asignaciones')),
+          },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(DropdownButtonFormField<int>).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Estu').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(DropdownButtonFormField<int>).at(1));
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Ori').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Asignar'));
+    await tester.pumpAndSettle();
+
+    expect(repo.createCalls, 1);
+    expect(repo.lastStudentId, 9);
+    expect(repo.lastCounselorId, 5);
+  });
+}
+
+ManagedStudent _student({
+  required int id,
+  required String identification,
+  required String firstName,
+  String lastName = 'Test',
+}) {
+  return ManagedStudent(
+    id: id,
+    userId: id + 100,
+    institutionId: 1,
+    identification: identification,
+    birthDate: '2008-01-01',
+    gender: 'NOT_SPECIFIED',
+    grade: '11',
+    status: 'ACTIVE',
+    email: '$firstName@test.edu',
+    firstName: firstName,
+    lastName: lastName,
+  );
+}
+
+ManagedUser _counselor({
+  required int id,
+  required String firstName,
+  required String lastName,
+}) {
+  return ManagedUser(
+    id: id,
+    email: '$firstName@test.edu',
+    firstName: firstName,
+    lastName: lastName,
+    role: 'COUNSELOR',
+    status: 'ACTIVE',
+    institutionId: 1,
+  );
 }
 
 class _FakeAssignmentRepository implements AssignmentRepository {
@@ -148,6 +421,8 @@ class _FakeAssignmentRepository implements AssignmentRepository {
 
   final CounselorAssignmentPage page;
   int createCalls = 0;
+  int? lastStudentId;
+  int? lastCounselorId;
 
   @override
   Future<CounselorAssignment> create({
@@ -155,6 +430,8 @@ class _FakeAssignmentRepository implements AssignmentRepository {
     required int counselorId,
   }) async {
     createCalls += 1;
+    lastStudentId = studentId;
+    lastCounselorId = counselorId;
     return CounselorAssignment(
       id: 1,
       counselorId: counselorId,
@@ -178,6 +455,19 @@ class _FakeAssignmentRepository implements AssignmentRepository {
 }
 
 class _FakeStudentRepository implements StudentRepository {
+  _FakeStudentRepository({List<ManagedStudent>? items})
+      : items = items ??
+            [
+              _student(
+                id: 9,
+                identification: 'ABC',
+                firstName: 'Estu',
+                lastName: 'Diante',
+              ),
+            ];
+
+  List<ManagedStudent> items;
+
   @override
   Future<ManagedStudent> create(StudentDraft draft) {
     throw UnimplementedError();
@@ -195,23 +485,9 @@ class _FakeStudentRepository implements StudentRepository {
 
   @override
   Future<ManagedStudentPage> list(StudentListQuery query) async {
-    return const ManagedStudentPage(
-      items: [
-        ManagedStudent(
-          id: 9,
-          userId: 11,
-          institutionId: 1,
-          identification: 'ABC',
-          birthDate: '2008-01-01',
-          gender: 'NOT_SPECIFIED',
-          grade: '11',
-          status: 'ACTIVE',
-          email: 's@test.edu',
-          firstName: 'Estu',
-          lastName: 'Diante',
-        ),
-      ],
-      total: 1,
+    return ManagedStudentPage(
+      items: items,
+      total: items.length,
       page: 1,
       pages: 1,
     );
@@ -229,6 +505,14 @@ class _FakeStudentRepository implements StudentRepository {
 }
 
 class _FakeUserRepository implements UserAccountRepository {
+  _FakeUserRepository({List<ManagedUser>? items})
+      : items = items ??
+            [
+              _counselor(id: 5, firstName: 'Ori', lastName: 'Entador'),
+            ];
+
+  final List<ManagedUser> items;
+
   @override
   Future<ManagedUser> create(UserDraft draft) {
     throw UnimplementedError();
@@ -241,19 +525,9 @@ class _FakeUserRepository implements UserAccountRepository {
 
   @override
   Future<ManagedUserPage> list(UserListQuery query) async {
-    return const ManagedUserPage(
-      items: [
-        ManagedUser(
-          id: 5,
-          email: 'o@test.edu',
-          firstName: 'Ori',
-          lastName: 'Entador',
-          role: 'COUNSELOR',
-          status: 'ACTIVE',
-          institutionId: 1,
-        ),
-      ],
-      total: 1,
+    return ManagedUserPage(
+      items: items,
+      total: items.length,
       page: 1,
       pages: 1,
     );

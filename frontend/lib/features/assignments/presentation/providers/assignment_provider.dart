@@ -35,6 +35,24 @@ final studentAssignmentListProvider = FutureProvider.autoDispose
       );
 });
 
+/// Conserva el primer registro por ``id`` (estable) para alimentar dropdowns.
+///
+/// [DropdownButtonFormField] exige exactamente un ítem por valor seleccionado;
+/// entradas duplicadas del mismo id provocan la aserción en tiempo de ejecución.
+List<T> uniqueByEntityId<T>(
+  Iterable<T> items,
+  int Function(T item) idOf,
+) {
+  final seen = <int>{};
+  final unique = <T>[];
+  for (final item in items) {
+    if (seen.add(idOf(item))) {
+      unique.add(item);
+    }
+  }
+  return unique;
+}
+
 final counselorChoicesForAssignmentProvider =
     FutureProvider.autoDispose<List<ManagedUser>>((ref) async {
   final profile = await ref.watch(authRepositoryProvider).currentProfile();
@@ -44,7 +62,8 @@ final counselorChoicesForAssignmentProvider =
   final page = await ref.watch(userAccountRepositoryProvider).list(
         const UserListQuery(page: 1, pageSize: 100, role: 'COUNSELOR'),
       );
-  return page.items.where((user) => user.status == 'ACTIVE').toList();
+  final active = page.items.where((user) => user.status == 'ACTIVE');
+  return uniqueByEntityId(active, (user) => user.id);
 });
 
 final studentChoicesForAssignmentProvider =
@@ -56,7 +75,7 @@ final studentChoicesForAssignmentProvider =
   final page = await ref.watch(studentRepositoryProvider).list(
         const StudentListQuery(page: 1, pageSize: 100, status: 'ACTIVE'),
       );
-  return page.items;
+  return uniqueByEntityId(page.items, (student) => student.id);
 });
 
 bool canManageAssignments(String? role) {
